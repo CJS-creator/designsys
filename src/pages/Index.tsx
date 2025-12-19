@@ -18,17 +18,19 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap } from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnimationSystemDocs } from "@/components/AnimationSystemDocs";
 import { ComponentLibraryPreview } from "@/components/ComponentLibraryPreview";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
   const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { user, signOut } = useAuth();
+  const { resetOnboarding } = useOnboarding();
 
   const handleGenerate = async (input: DesignSystemInput) => {
     setIsLoading(true);
@@ -78,6 +80,9 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={resetOnboarding} title="Restart tour">
+                <HelpCircle className="h-4 w-4" />
+              </Button>
               {user ? (
                 <Button variant="ghost" size="sm" onClick={signOut}>
                   <LogOut className="h-4 w-4 mr-2" />
