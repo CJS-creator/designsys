@@ -68,10 +68,10 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl animate-slide-in-down">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={handleReset}>
+              <Button variant="ghost" size="icon" onClick={handleReset} className="hover:rotate-[-10deg] transition-transform duration-300">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
@@ -80,16 +80,16 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={resetOnboarding} title="Restart tour">
+              <Button variant="ghost" size="icon" onClick={resetOnboarding} title="Restart tour" className="hover-scale">
                 <HelpCircle className="h-4 w-4" />
               </Button>
               {user ? (
-                <Button variant="ghost" size="sm" onClick={signOut}>
+                <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
               ) : (
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="hover-lift">
                   <Link to="/auth">
                     <User className="h-4 w-4 mr-2" />
                     Sign In
@@ -102,18 +102,18 @@ const Index = () => {
         </header>
 
         {/* Design System Display */}
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8 animate-fade-in">
           <Tabs defaultValue="overview" className="space-y-8">
-            <TabsList className="flex-wrap">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="interactive">Interactive</TabsTrigger>
-              <TabsTrigger value="animations">Animations</TabsTrigger>
-              <TabsTrigger value="animation-system"><Zap className="h-4 w-4 mr-1" />Animation System</TabsTrigger>
-              <TabsTrigger value="components">Components</TabsTrigger>
-              <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
-              <TabsTrigger value="preview">Live Preview</TabsTrigger>
-              <TabsTrigger value="compare">Compare</TabsTrigger>
-              <TabsTrigger value="saved">Saved</TabsTrigger>
+            <TabsList className="flex-wrap transition-all duration-300">
+              <TabsTrigger value="overview" className="transition-all duration-200 data-[state=active]:scale-105">Overview</TabsTrigger>
+              <TabsTrigger value="interactive" className="transition-all duration-200 data-[state=active]:scale-105">Interactive</TabsTrigger>
+              <TabsTrigger value="animations" className="transition-all duration-200 data-[state=active]:scale-105">Animations</TabsTrigger>
+              <TabsTrigger value="animation-system" className="transition-all duration-200 data-[state=active]:scale-105"><Zap className="h-4 w-4 mr-1" />Animation System</TabsTrigger>
+              <TabsTrigger value="components" className="transition-all duration-200 data-[state=active]:scale-105">Components</TabsTrigger>
+              <TabsTrigger value="accessibility" className="transition-all duration-200 data-[state=active]:scale-105">Accessibility</TabsTrigger>
+              <TabsTrigger value="preview" className="transition-all duration-200 data-[state=active]:scale-105">Live Preview</TabsTrigger>
+              <TabsTrigger value="compare" className="transition-all duration-200 data-[state=active]:scale-105">Compare</TabsTrigger>
+              <TabsTrigger value="saved" className="transition-all duration-200 data-[state=active]:scale-105">Saved</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-8">
@@ -170,25 +170,25 @@ const Index = () => {
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-primary/10 via-transparent to-transparent rounded-full blur-3xl" />
-        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-accent/20 via-transparent to-transparent rounded-full blur-3xl" />
+        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-primary/10 via-transparent to-transparent rounded-full blur-3xl animate-pulse-soft" />
+        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-accent/20 via-transparent to-transparent rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />
       </div>
 
       <div className="relative z-10">
         {/* Header */}
-        <header className="py-6">
+        <header className="py-6 animate-fade-in">
           <div className="container mx-auto px-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Wand2 className="h-8 w-8 text-primary" />
+            <div className="flex items-center gap-2 group">
+              <Wand2 className="h-8 w-8 text-primary transition-transform duration-300 group-hover:rotate-12" />
               <span className="text-2xl font-bold">DesignForge</span>
             </div>
             {user ? (
-              <Button variant="ghost" size="sm" onClick={signOut}>
+              <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift">
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="sm" asChild className="hover-lift">
                 <Link to="/auth">
                   <User className="h-4 w-4 mr-2" />
                   Sign In
@@ -202,33 +202,38 @@ const Index = () => {
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-                <Brain className="h-4 w-4" />
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-fade-in-up hover-scale cursor-default">
+                <Brain className="h-4 w-4 animate-pulse-soft" />
                 Powered by AI
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                 Create Complete{" "}
-                <span className="text-primary">Design Systems</span>{" "}
+                <span className="text-primary relative">
+                  Design Systems
+                  <span className="absolute -bottom-2 left-0 w-full h-1 bg-primary/30 rounded-full" />
+                </span>{" "}
                 in Seconds
               </h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                 Our AI analyzes your project requirements and generates a comprehensive, 
                 context-aware design system with colors, typography, spacing, shadows, and grid.
               </p>
             </div>
 
-            <DesignSystemForm 
-              onGenerate={handleGenerate} 
-              isLoading={isLoading}
-              initialValues={
-                selectedTemplate ? {
-                  industry: selectedTemplate.industry,
-                  brandMood: selectedTemplate.mood,
-                  primaryColor: selectedTemplate.primaryColor,
-                  description: selectedTemplate.description,
-                } : undefined
-              }
-            />
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+              <DesignSystemForm 
+                onGenerate={handleGenerate} 
+                isLoading={isLoading}
+                initialValues={
+                  selectedTemplate ? {
+                    industry: selectedTemplate.industry,
+                    brandMood: selectedTemplate.mood,
+                    primaryColor: selectedTemplate.primaryColor,
+                    description: selectedTemplate.description,
+                  } : undefined
+                }
+              />
+            </div>
 
             {/* Features */}
             <div className="mt-16 grid md:grid-cols-3 gap-6">
@@ -251,10 +256,11 @@ const Index = () => {
               ].map((feature, index) => (
                 <div
                   key={index}
-                  className="p-6 rounded-2xl bg-card/50 border border-border/50 backdrop-blur-sm"
+                  className="p-6 rounded-2xl bg-card/50 border border-border/50 backdrop-blur-sm card-interactive animate-fade-in-up group"
+                  style={{ animationDelay: `${0.4 + index * 0.1}s` }}
                 >
-                  <feature.icon className="h-8 w-8 text-primary mb-3" />
-                  <h3 className="font-semibold mb-2">{feature.title}</h3>
+                  <feature.icon className="h-8 w-8 text-primary mb-3 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                  <h3 className="font-semibold mb-2 transition-colors duration-300 group-hover:text-primary">{feature.title}</h3>
                   <p className="text-sm text-muted-foreground">{feature.description}</p>
                 </div>
               ))}
