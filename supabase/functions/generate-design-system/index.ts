@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -130,26 +131,70 @@ Design Guidelines:
    - Mobile apps = 4-6 columns
    - Web apps = 12 columns`;
 
+// Input validation schema
+const inputSchema = z.object({
+  appType: z.enum(['mobile', 'web', 'both']).default('web'),
+  industry: z.string().min(1, 'Industry is required').max(100, 'Industry must be 100 characters or less'),
+  brandMood: z.array(z.string().max(50)).min(1, 'At least one brand mood is required').max(5, 'Maximum 5 brand moods allowed'),
+  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Primary color must be a valid hex color').optional().nullable(),
+  description: z.string().max(500, 'Description must be 500 characters or less').optional().nullable(),
+});
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { appType, industry, brandMood, primaryColor, description } = await req.json();
+    // Parse and validate input
+    let rawInput;
+    try {
+      rawInput = await req.json();
+    } catch {
+      console.error("Failed to parse request body as JSON");
+      return new Response(JSON.stringify({ 
+        error: "Invalid JSON in request body" 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const validationResult = inputSchema.safeParse(rawInput);
+    if (!validationResult.success) {
+      console.error("Input validation failed:", validationResult.error.errors);
+      return new Response(JSON.stringify({ 
+        error: "Invalid input",
+        details: validationResult.error.errors.map(e => ({
+          field: e.path.join('.'),
+          message: e.message
+        }))
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { appType, industry, brandMood, primaryColor, description } = validationResult.data;
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Sanitize inputs for AI prompt (escape special characters)
+    const sanitize = (str: string) => str.replace(/[`${}]/g, '');
+    const sanitizedIndustry = sanitize(industry);
+    const sanitizedMoods = brandMood.map(sanitize);
+    const sanitizedDescription = description ? sanitize(description) : null;
+
     const userPrompt = `Generate a design system for the following project:
 
 Platform: ${appType}
-Industry: ${industry}
-Brand Mood: ${brandMood.join(", ")}
+Industry: ${sanitizedIndustry}
+Brand Mood: ${sanitizedMoods.join(", ")}
 ${primaryColor ? `Preferred Primary Color: ${primaryColor}` : "Choose an appropriate primary color based on the mood and industry"}
-Project Description: ${description || "A modern application in the " + industry + " industry"}
+Project Description: ${sanitizedDescription || "A modern application in the " + sanitizedIndustry + " industry"}
 
 Consider:
 - The platform type affects grid columns (mobile=4, web=12, both=responsive)
@@ -159,7 +204,7 @@ Consider:
 - Make the design system feel cohesive and professional`;
 
     console.log("Generating design system with AI...");
-    console.log("Input:", { appType, industry, brandMood, primaryColor, description });
+    console.log("Input:", { appType, industry: sanitizedIndustry, brandMood: sanitizedMoods, primaryColor, description: sanitizedDescription ? sanitizedDescription.substring(0, 50) + '...' : null });
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
