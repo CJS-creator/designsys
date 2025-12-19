@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DesignSystemInput } from "@/types/designSystem";
-import { Sparkles, Smartphone, Monitor, Layers } from "lucide-react";
+import { Brain, Smartphone, Monitor, Layers } from "lucide-react";
 
 const moods = [
   "modern",
@@ -76,7 +76,7 @@ export function DesignSystemForm({ onGenerate, isLoading }: DesignSystemFormProp
     <Card className="border-border/50 bg-card/80 backdrop-blur-sm shadow-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl">
-          <Sparkles className="h-6 w-6 text-primary" />
+          <Brain className="h-6 w-6 text-primary" />
           Design Requirements
         </CardTitle>
       </CardHeader>
@@ -200,12 +200,12 @@ export function DesignSystemForm({ onGenerate, isLoading }: DesignSystemFormProp
             {isLoading ? (
               <div className="flex items-center gap-2">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                Generating...
+                AI is analyzing your requirements...
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
-                Generate Design System
+                <Brain className="h-5 w-5" />
+                Generate with AI
               </div>
             )}
           </Button>
