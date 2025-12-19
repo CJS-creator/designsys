@@ -18,9 +18,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut } from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { AnimationSystemDocs } from "@/components/AnimationSystemDocs";
 
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
@@ -101,6 +102,7 @@ const Index = () => {
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="interactive">Interactive</TabsTrigger>
               <TabsTrigger value="animations">Animations</TabsTrigger>
+              <TabsTrigger value="animation-system"><Zap className="h-4 w-4 mr-1" />Animation System</TabsTrigger>
               <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
               <TabsTrigger value="preview">Live Preview</TabsTrigger>
               <TabsTrigger value="compare">Compare</TabsTrigger>
@@ -126,6 +128,10 @@ const Index = () => {
 
             <TabsContent value="animations">
               <AnimationDisplay animations={designSystem.animations} />
+            </TabsContent>
+
+            <TabsContent value="animation-system">
+              <AnimationSystemDocs />
             </TabsContent>
 
             <TabsContent value="accessibility">
