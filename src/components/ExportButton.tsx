@@ -33,6 +33,22 @@ interface ExportOption {
 }
 
 function generateCSSVariables(ds: GeneratedDesignSystem): string {
+  const animationVars = ds.animations ? `
+  /* Animation Durations */
+${Object.entries(ds.animations.duration || {})
+  .map(([key, value]) => `  --duration-${key}: ${value};`)
+  .join("\n")}
+
+  /* Animation Easings */
+${Object.entries(ds.animations.easing || {})
+  .map(([key, value]) => `  --easing-${key}: ${value};`)
+  .join("\n")}
+
+  /* Animation Transitions */
+${Object.entries(ds.animations.transitions || {})
+  .map(([key, value]) => `  --transition-${key}: ${value};`)
+  .join("\n")}` : "";
+
   return `:root {
   /* Colors */
   --color-primary: ${ds.colors.primary};
@@ -76,10 +92,47 @@ ${Object.entries(ds.borderRadius)
   --grid-gutter: ${ds.grid.gutter};
   --grid-margin: ${ds.grid.margin};
   --grid-max-width: ${ds.grid.maxWidth};
+${animationVars}
 }`;
 }
 
 function generateTailwindConfig(ds: GeneratedDesignSystem): string {
+  const animationConfig = ds.animations ? `
+      transitionDuration: {
+${Object.entries(ds.animations.duration || {})
+  .map(([key, value]) => `        '${key}': '${value}',`)
+  .join("\n")}
+      },
+      transitionTimingFunction: {
+${Object.entries(ds.animations.easing || {})
+  .map(([key, value]) => `        '${key}': '${value}',`)
+  .join("\n")}
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeOut: {
+          '0%': { opacity: '1', transform: 'translateY(0)' },
+          '100%': { opacity: '0', transform: 'translateY(10px)' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+      },
+      animation: {
+        'fade-in': 'fadeIn var(--duration-normal, 0.3s) var(--easing-easeOut, ease-out)',
+        'fade-out': 'fadeOut var(--duration-normal, 0.3s) var(--easing-easeOut, ease-out)',
+        'scale-in': 'scaleIn var(--duration-fast, 0.15s) var(--easing-easeOut, ease-out)',
+        'slide-up': 'slideUp var(--duration-normal, 0.3s) var(--easing-easeOut, ease-out)',
+      },` : "";
+
   return `/** @type {import('tailwindcss').Config} */
 module.exports = {
   theme: {
@@ -120,7 +173,7 @@ ${Object.entries(ds.shadows)
 ${Object.entries(ds.borderRadius)
   .map(([key, value]) => `        '${key}': '${value}',`)
   .join("\n")}
-      },
+      },${animationConfig}
     },
   },
 }`;
