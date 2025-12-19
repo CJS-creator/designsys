@@ -22,6 +22,7 @@ import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap } from "lucide-rea
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnimationSystemDocs } from "@/components/AnimationSystemDocs";
+import { ComponentLibraryPreview } from "@/components/ComponentLibraryPreview";
 
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
@@ -103,6 +104,7 @@ const Index = () => {
               <TabsTrigger value="interactive">Interactive</TabsTrigger>
               <TabsTrigger value="animations">Animations</TabsTrigger>
               <TabsTrigger value="animation-system"><Zap className="h-4 w-4 mr-1" />Animation System</TabsTrigger>
+              <TabsTrigger value="components">Components</TabsTrigger>
               <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
               <TabsTrigger value="preview">Live Preview</TabsTrigger>
               <TabsTrigger value="compare">Compare</TabsTrigger>
@@ -132,6 +134,10 @@ const Index = () => {
 
             <TabsContent value="animation-system">
               <AnimationSystemDocs />
+            </TabsContent>
+
+            <TabsContent value="components">
+              <ComponentLibraryPreview designSystem={designSystem} />
             </TabsContent>
 
             <TabsContent value="accessibility">
