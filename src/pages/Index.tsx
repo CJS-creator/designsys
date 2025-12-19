@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { DesignSystemForm } from "@/components/DesignSystemForm";
 import { ColorPaletteDisplay } from "@/components/ColorPaletteDisplay";
 import { TypographyDisplay } from "@/components/TypographyDisplay";
@@ -7,21 +8,28 @@ import { ShadowDisplay } from "@/components/ShadowDisplay";
 import { GridDisplay } from "@/components/GridDisplay";
 import { BorderRadiusDisplay } from "@/components/BorderRadiusDisplay";
 import { ExportButton } from "@/components/ExportButton";
+import { LivePreview } from "@/components/LivePreview";
+import { ComparisonView } from "@/components/ComparisonView";
+import { SavedDesigns } from "@/components/SavedDesigns";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { Sparkles, ArrowLeft, Wand2, Brain } from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
+  const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { user, signOut } = useAuth();
 
   const handleGenerate = async (input: DesignSystemInput) => {
     setIsLoading(true);
+    setCurrentInput(input);
     
     try {
-      // Try AI-powered generation first
       const generated = await generateDesignSystemWithAI(input);
       setDesignSystem(generated);
       toast.success("AI-powered design system generated!", {
@@ -29,11 +37,8 @@ const Index = () => {
       });
     } catch (error) {
       console.error("AI generation failed, using fallback:", error);
-      
-      // Fallback to local generation
       const fallbackSystem = generateDesignSystemFallback(input);
       setDesignSystem(fallbackSystem);
-      
       toast.warning("Generated with fallback algorithm", {
         description: error instanceof Error ? error.message : "AI generation unavailable",
       });
@@ -44,9 +49,15 @@ const Index = () => {
 
   const handleReset = () => {
     setDesignSystem(null);
+    setCurrentInput(null);
   };
 
-  if (designSystem) {
+  const handleLoadDesign = (system: GeneratedDesignSystem) => {
+    setDesignSystem(system);
+    toast.success("Design system loaded!");
+  };
+
+  if (designSystem && currentInput) {
     return (
       <div className="min-h-screen bg-background">
         {/* Header */}
@@ -61,22 +72,60 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">AI-Generated Design System</p>
               </div>
             </div>
-            <ExportButton designSystem={designSystem} />
+            <div className="flex items-center gap-2">
+              {user ? (
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              ) : (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/auth">
+                    <User className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Link>
+                </Button>
+              )}
+              <ExportButton designSystem={designSystem} />
+            </div>
           </div>
         </header>
 
         {/* Design System Display */}
-        <main className="container mx-auto px-4 py-8 space-y-8">
-          <ColorPaletteDisplay colors={designSystem.colors} />
-          <div className="grid lg:grid-cols-2 gap-8">
-            <TypographyDisplay typography={designSystem.typography} />
-            <SpacingDisplay spacing={designSystem.spacing} />
-          </div>
-          <div className="grid lg:grid-cols-2 gap-8">
-            <ShadowDisplay shadows={designSystem.shadows} />
-            <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
-          </div>
-          <GridDisplay grid={designSystem.grid} />
+        <main className="container mx-auto px-4 py-8">
+          <Tabs defaultValue="overview" className="space-y-8">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="preview">Live Preview</TabsTrigger>
+              <TabsTrigger value="compare">Compare</TabsTrigger>
+              <TabsTrigger value="saved">Saved</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-8">
+              <ColorPaletteDisplay colors={designSystem.colors} />
+              <div className="grid lg:grid-cols-2 gap-8">
+                <TypographyDisplay typography={designSystem.typography} />
+                <SpacingDisplay spacing={designSystem.spacing} />
+              </div>
+              <div className="grid lg:grid-cols-2 gap-8">
+                <ShadowDisplay shadows={designSystem.shadows} />
+                <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
+              </div>
+              <GridDisplay grid={designSystem.grid} />
+            </TabsContent>
+
+            <TabsContent value="preview">
+              <LivePreview designSystem={designSystem} />
+            </TabsContent>
+
+            <TabsContent value="compare">
+              <ComparisonView baseInput={currentInput} initialSystem={designSystem} />
+            </TabsContent>
+
+            <TabsContent value="saved">
+              <SavedDesigns onLoad={handleLoadDesign} currentSystem={designSystem} />
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     );
@@ -93,11 +142,24 @@ const Index = () => {
       <div className="relative z-10">
         {/* Header */}
         <header className="py-6">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Wand2 className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold">DesignForge</span>
             </div>
+            {user ? (
+              <Button variant="ghost" size="sm" onClick={signOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/auth">
+                  <User className="h-4 w-4 mr-2" />
+                  Sign In
+                </Link>
+              </Button>
+            )}
           </div>
         </header>
 
