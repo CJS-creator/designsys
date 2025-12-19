@@ -6,12 +6,30 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { GeneratedDesignSystem } from "@/types/designSystem";
-import { Download, FileJson, FileCode, Copy, Check } from "lucide-react";
+import { Download, FileJson, FileCode, Copy, Check, Eye, Layers } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExportButtonProps {
   designSystem: GeneratedDesignSystem;
+}
+
+type ExportFormat = "json" | "css" | "scss" | "tailwind" | "figma" | "style-dictionary";
+
+interface ExportOption {
+  id: ExportFormat;
+  label: string;
+  filename: string;
+  icon: typeof FileJson;
+  generator: (ds: GeneratedDesignSystem) => string;
 }
 
 function generateCSSVariables(ds: GeneratedDesignSystem): string {
@@ -244,8 +262,98 @@ function generateFigmaTokens(ds: GeneratedDesignSystem): string {
   return JSON.stringify(tokens, null, 2);
 }
 
+function generateStyleDictionary(ds: GeneratedDesignSystem): string {
+  const tokens = {
+    color: {
+      primary: { value: ds.colors.primary },
+      secondary: { value: ds.colors.secondary },
+      accent: { value: ds.colors.accent },
+      background: { value: ds.colors.background },
+      surface: { value: ds.colors.surface },
+      text: {
+        primary: { value: ds.colors.text },
+        secondary: { value: ds.colors.textSecondary },
+      },
+      feedback: {
+        success: { value: ds.colors.success },
+        warning: { value: ds.colors.warning },
+        error: { value: ds.colors.error },
+      },
+    },
+    font: {
+      family: {
+        heading: { value: ds.typography.fontFamily.heading },
+        body: { value: ds.typography.fontFamily.body },
+        mono: { value: ds.typography.fontFamily.mono },
+      },
+      size: Object.fromEntries(
+        Object.entries(ds.typography.sizes).map(([key, value]) => [
+          key,
+          { value },
+        ])
+      ),
+      weight: Object.fromEntries(
+        Object.entries(ds.typography.weights).map(([key, value]) => [
+          key,
+          { value },
+        ])
+      ),
+      lineHeight: Object.fromEntries(
+        Object.entries(ds.typography.lineHeights).map(([key, value]) => [
+          key,
+          { value },
+        ])
+      ),
+    },
+    spacing: Object.fromEntries(
+      Object.entries(ds.spacing.scale).map(([key, value]) => [
+        key,
+        { value },
+      ])
+    ),
+    shadow: Object.fromEntries(
+      Object.entries(ds.shadows).map(([key, value]) => [
+        key,
+        { value },
+      ])
+    ),
+    borderRadius: Object.fromEntries(
+      Object.entries(ds.borderRadius).map(([key, value]) => [
+        key,
+        { value },
+      ])
+    ),
+    grid: {
+      columns: { value: ds.grid.columns },
+      gutter: { value: ds.grid.gutter },
+      margin: { value: ds.grid.margin },
+      maxWidth: { value: ds.grid.maxWidth },
+      breakpoints: Object.fromEntries(
+        Object.entries(ds.grid.breakpoints).map(([key, value]) => [
+          key,
+          { value },
+        ])
+      ),
+    },
+  };
+
+  return JSON.stringify(tokens, null, 2);
+}
+
+const exportOptions: ExportOption[] = [
+  { id: "json", label: "JSON", filename: "design-system.json", icon: FileJson, generator: (ds) => JSON.stringify(ds, null, 2) },
+  { id: "css", label: "CSS Variables", filename: "design-system.css", icon: FileCode, generator: generateCSSVariables },
+  { id: "scss", label: "SCSS", filename: "design-system.scss", icon: FileCode, generator: generateSCSS },
+  { id: "tailwind", label: "Tailwind Config", filename: "tailwind.config.js", icon: FileCode, generator: generateTailwindConfig },
+  { id: "figma", label: "Figma Tokens", filename: "figma-tokens.json", icon: FileJson, generator: generateFigmaTokens },
+  { id: "style-dictionary", label: "Style Dictionary", filename: "tokens.json", icon: Layers, generator: generateStyleDictionary },
+];
+
 export function ExportButton({ designSystem }: ExportButtonProps) {
   const [copied, setCopied] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFormat, setPreviewFormat] = useState<ExportOption | null>(null);
+  const [previewContent, setPreviewContent] = useState("");
 
   const downloadFile = (content: string, filename: string) => {
     const blob = new Blob([content], { type: "text/plain" });
@@ -267,40 +375,86 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const openPreview = (option: ExportOption) => {
+    const content = option.generator(designSystem);
+    setPreviewFormat(option);
+    setPreviewContent(content);
+    setPreviewOpen(true);
+  };
+
+  const copyPreviewContent = () => {
+    navigator.clipboard.writeText(previewContent);
+    toast.success("Copied to clipboard");
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button size="lg" className="gap-2">
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={() => downloadFile(JSON.stringify(designSystem, null, 2), "design-system.json")}>
-          <FileJson className="h-4 w-4 mr-2" />
-          Download JSON
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => downloadFile(generateCSSVariables(designSystem), "design-system.css")}>
-          <FileCode className="h-4 w-4 mr-2" />
-          Download CSS
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => downloadFile(generateSCSS(designSystem), "design-system.scss")}>
-          <FileCode className="h-4 w-4 mr-2" />
-          Download SCSS
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => downloadFile(generateTailwindConfig(designSystem), "tailwind.config.js")}>
-          <FileCode className="h-4 w-4 mr-2" />
-          Tailwind Config
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => downloadFile(generateFigmaTokens(designSystem), "figma-tokens.json")}>
-          <FileJson className="h-4 w-4 mr-2" />
-          Figma Tokens
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={copyJSON}>
-          {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-          Copy JSON
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="lg" className="gap-2">
+            <Download className="h-4 w-4" />
+            Export
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          {exportOptions.map((option) => (
+            <DropdownMenuItem key={option.id} className="flex items-center justify-between">
+              <span 
+                className="flex items-center flex-1 cursor-pointer"
+                onClick={() => downloadFile(option.generator(designSystem), option.filename)}
+              >
+                <option.icon className="h-4 w-4 mr-2" />
+                {option.label}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 ml-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openPreview(option);
+                }}
+              >
+                <Eye className="h-3 w-3" />
+              </Button>
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuItem onClick={copyJSON}>
+            {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+            Copy JSON
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {previewFormat && <previewFormat.icon className="h-5 w-5" />}
+              {previewFormat?.label} Preview
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[50vh] rounded-md border bg-muted/50 p-4">
+            <pre className="text-xs font-mono whitespace-pre-wrap break-all">
+              {previewContent}
+            </pre>
+          </ScrollArea>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={copyPreviewContent}>
+              <Copy className="h-4 w-4 mr-2" />
+              Copy
+            </Button>
+            <Button onClick={() => {
+              if (previewFormat) {
+                downloadFile(previewContent, previewFormat.filename);
+              }
+            }}>
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
