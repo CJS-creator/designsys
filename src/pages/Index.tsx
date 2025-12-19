@@ -30,7 +30,7 @@ const Index = () => {
   const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { user, signOut } = useAuth();
-  const { resetOnboarding } = useOnboarding();
+  const { resetOnboarding, selectedTemplate } = useOnboarding();
 
   const handleGenerate = async (input: DesignSystemInput) => {
     setIsLoading(true);
@@ -217,7 +217,18 @@ const Index = () => {
               </p>
             </div>
 
-            <DesignSystemForm onGenerate={handleGenerate} isLoading={isLoading} />
+            <DesignSystemForm 
+              onGenerate={handleGenerate} 
+              isLoading={isLoading}
+              initialValues={
+                selectedTemplate ? {
+                  industry: selectedTemplate.industry,
+                  brandMood: selectedTemplate.mood,
+                  primaryColor: selectedTemplate.primaryColor,
+                  description: selectedTemplate.description,
+                } : undefined
+              }
+            />
 
             {/* Features */}
             <div className="mt-16 grid md:grid-cols-3 gap-6">

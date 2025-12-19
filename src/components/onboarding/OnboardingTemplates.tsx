@@ -95,8 +95,28 @@ const templates: Template[] = [
 ];
 
 export function OnboardingTemplates() {
-  const { nextStep, prevStep } = useOnboarding();
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const { nextStep, prevStep, setSelectedTemplate } = useOnboarding();
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+
+  const handleTemplateSelect = (templateId: string) => {
+    if (selectedTemplateId === templateId) {
+      setSelectedTemplateId(null);
+      setSelectedTemplate(null);
+    } else {
+      setSelectedTemplateId(templateId);
+      const template = templates.find(t => t.id === templateId);
+      if (template) {
+        setSelectedTemplate({
+          id: template.id,
+          name: template.name,
+          industry: template.industry.toLowerCase(),
+          mood: template.mood.map(m => m.toLowerCase()),
+          primaryColor: template.colors[0],
+          description: template.description,
+        });
+      }
+    }
+  };
 
   return (
     <motion.div
@@ -123,18 +143,16 @@ export function OnboardingTemplates() {
             variants={staggerItem}
             whileHover={{ y: -4 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setSelectedTemplate(
-              selectedTemplate === template.id ? null : template.id
-            )}
+            onClick={() => handleTemplateSelect(template.id)}
             className={`
               relative p-4 rounded-xl border text-left transition-all
-              ${selectedTemplate === template.id 
+              ${selectedTemplateId === template.id 
                 ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2 ring-offset-background" 
                 : "border-border hover:border-primary/50 hover:bg-muted/50"
               }
             `}
           >
-            {selectedTemplate === template.id && (
+            {selectedTemplateId === template.id && (
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -171,8 +189,8 @@ export function OnboardingTemplates() {
 
       <div className="text-center mb-6">
         <p className="text-sm text-muted-foreground">
-          {selectedTemplate 
-            ? `Selected: ${templates.find(t => t.id === selectedTemplate)?.name}` 
+          {selectedTemplateId 
+            ? `Selected: ${templates.find(t => t.id === selectedTemplateId)?.name}` 
             : "No template selected - you'll start with a blank canvas"
           }
         </p>
@@ -183,7 +201,7 @@ export function OnboardingTemplates() {
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
         <Button onClick={nextStep} className="gap-2">
-          {selectedTemplate ? "Use Template" : "Start Fresh"} <ArrowRight className="h-4 w-4" />
+          {selectedTemplateId ? "Use Template" : "Start Fresh"} <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
     </motion.div>
