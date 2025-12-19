@@ -6,6 +6,19 @@ export interface DesignSystemInput {
   description: string;
 }
 
+export interface InteractiveColors {
+  hover: string;
+  active: string;
+  disabled: string;
+  focus: string;
+}
+
+export interface SemanticColors {
+  primary: InteractiveColors;
+  secondary: InteractiveColors;
+  accent: InteractiveColors;
+}
+
 export interface ColorPalette {
   primary: string;
   secondary: string;
@@ -17,6 +30,28 @@ export interface ColorPalette {
   success: string;
   warning: string;
   error: string;
+  // Semantic tokens
+  overlay: string;
+  border: string;
+  borderLight: string;
+  interactive: SemanticColors;
+}
+
+export interface DarkModeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text: string;
+  textSecondary: string;
+  success: string;
+  warning: string;
+  error: string;
+  overlay: string;
+  border: string;
+  borderLight: string;
+  interactive: SemanticColors;
 }
 
 export interface TypographyScale {
@@ -102,12 +137,40 @@ export interface BorderRadius {
   full: string;
 }
 
+export interface AnimationTokens {
+  duration: {
+    instant: string;
+    fast: string;
+    normal: string;
+    slow: string;
+    slower: string;
+  };
+  easing: {
+    linear: string;
+    easeIn: string;
+    easeOut: string;
+    easeInOut: string;
+    spring: string;
+    bounce: string;
+  };
+  transitions: {
+    fade: string;
+    scale: string;
+    slide: string;
+    all: string;
+    colors: string;
+    transform: string;
+  };
+}
+
 export interface GeneratedDesignSystem {
   name: string;
   colors: ColorPalette;
+  darkColors?: DarkModeColors;
   typography: TypographyScale;
   spacing: SpacingScale;
   shadows: ShadowScale;
   grid: GridSystem;
   borderRadius: BorderRadius;
+  animations: AnimationTokens;
 }

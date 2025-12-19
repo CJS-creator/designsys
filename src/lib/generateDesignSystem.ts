@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
-import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
+import { DesignSystemInput, GeneratedDesignSystem, SemanticColors, ColorPalette, DarkModeColors, AnimationTokens } from "@/types/designSystem";
+import { generateInteractiveStates, hslToString, parseHslString, hexToHsl } from "./colorUtils";
 
 export async function generateDesignSystemWithAI(input: DesignSystemInput): Promise<GeneratedDesignSystem> {
   console.log("Calling AI to generate design system...", input);
@@ -29,7 +30,48 @@ export async function generateDesignSystemWithAI(input: DesignSystemInput): Prom
   }
 
   console.log("AI generated design system:", data.designSystem);
-  return data.designSystem;
+  
+  // Ensure the AI response has all required fields, fill in missing ones
+  const aiSystem = data.designSystem;
+  return ensureCompleteDesignSystem(aiSystem, input);
+}
+
+function ensureCompleteDesignSystem(aiSystem: Partial<GeneratedDesignSystem>, input: DesignSystemInput): GeneratedDesignSystem {
+  const fallback = generateDesignSystemFallback(input);
+  
+  // Merge colors with interactive states
+  const colors: ColorPalette = {
+    primary: aiSystem.colors?.primary || fallback.colors.primary,
+    secondary: aiSystem.colors?.secondary || fallback.colors.secondary,
+    accent: aiSystem.colors?.accent || fallback.colors.accent,
+    background: aiSystem.colors?.background || fallback.colors.background,
+    surface: aiSystem.colors?.surface || fallback.colors.surface,
+    text: aiSystem.colors?.text || fallback.colors.text,
+    textSecondary: aiSystem.colors?.textSecondary || fallback.colors.textSecondary,
+    success: aiSystem.colors?.success || fallback.colors.success,
+    warning: aiSystem.colors?.warning || fallback.colors.warning,
+    error: aiSystem.colors?.error || fallback.colors.error,
+    overlay: aiSystem.colors?.overlay || fallback.colors.overlay,
+    border: aiSystem.colors?.border || fallback.colors.border,
+    borderLight: aiSystem.colors?.borderLight || fallback.colors.borderLight,
+    interactive: aiSystem.colors?.interactive || generateSemanticColors(
+      aiSystem.colors?.primary || fallback.colors.primary,
+      aiSystem.colors?.secondary || fallback.colors.secondary,
+      aiSystem.colors?.accent || fallback.colors.accent
+    ),
+  };
+
+  return {
+    name: aiSystem.name || fallback.name,
+    colors,
+    darkColors: aiSystem.darkColors || generateDarkModeColors(colors),
+    typography: aiSystem.typography || fallback.typography,
+    spacing: aiSystem.spacing || fallback.spacing,
+    shadows: aiSystem.shadows || fallback.shadows,
+    grid: aiSystem.grid || fallback.grid,
+    borderRadius: aiSystem.borderRadius || fallback.borderRadius,
+    animations: aiSystem.animations || fallback.animations,
+  };
 }
 
 // Fallback local generation (used if AI fails)
@@ -59,41 +101,71 @@ const industryFonts: Record<string, { heading: string; body: string }> = {
   other: { heading: "Poppins", body: "Inter" },
 };
 
-function hexToHsl(hex: string): { h: number; s: number; l: number } {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return { h: 220, s: 85, l: 50 };
-
-  let r = parseInt(result[1], 16) / 255;
-  let g = parseInt(result[2], 16) / 255;
-  let b = parseInt(result[3], 16) / 255;
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0,
-    s = 0;
-  const l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        break;
-      case g:
-        h = ((b - r) / d + 2) / 6;
-        break;
-      case b:
-        h = ((r - g) / d + 4) / 6;
-        break;
-    }
-  }
-
-  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+function generateSemanticColors(primary: string, secondary: string, accent: string): SemanticColors {
+  return {
+    primary: generateInteractiveStates(primary),
+    secondary: generateInteractiveStates(secondary),
+    accent: generateInteractiveStates(accent),
+  };
 }
 
-function hslToString(h: number, s: number, l: number): string {
-  return `hsl(${h}, ${s}%, ${l}%)`;
+function generateDarkModeColors(lightColors: ColorPalette): DarkModeColors {
+  const primaryHsl = parseHslString(lightColors.primary);
+  const secondaryHsl = parseHslString(lightColors.secondary);
+  const accentHsl = parseHslString(lightColors.accent);
+  
+  const darkPrimary = primaryHsl ? hslToString(primaryHsl.h, Math.min(primaryHsl.s + 10, 100), Math.min(primaryHsl.l + 15, 70)) : lightColors.primary;
+  const darkSecondary = secondaryHsl ? hslToString(secondaryHsl.h, Math.min(secondaryHsl.s + 10, 100), Math.min(secondaryHsl.l + 15, 70)) : lightColors.secondary;
+  const darkAccent = accentHsl ? hslToString(accentHsl.h, Math.min(accentHsl.s + 10, 100), Math.min(accentHsl.l + 15, 70)) : lightColors.accent;
+  
+  return {
+    primary: darkPrimary,
+    secondary: darkSecondary,
+    accent: darkAccent,
+    background: "hsl(220, 20%, 10%)",
+    surface: "hsl(220, 18%, 14%)",
+    text: "hsl(220, 15%, 95%)",
+    textSecondary: "hsl(220, 10%, 65%)",
+    success: "hsl(145, 70%, 50%)",
+    warning: "hsl(38, 95%, 55%)",
+    error: "hsl(0, 75%, 55%)",
+    overlay: "hsla(220, 20%, 5%, 0.8)",
+    border: "hsl(220, 15%, 25%)",
+    borderLight: "hsl(220, 15%, 20%)",
+    interactive: generateSemanticColors(darkPrimary, darkSecondary, darkAccent),
+  };
+}
+
+function generateAnimationTokens(brandMood: string[]): AnimationTokens {
+  const isPlayful = brandMood.includes("playful") || brandMood.includes("energetic");
+  const isElegant = brandMood.includes("elegant") || brandMood.includes("luxurious");
+  const isMinimal = brandMood.includes("minimalist");
+  
+  return {
+    duration: {
+      instant: "50ms",
+      fast: isPlayful ? "100ms" : "150ms",
+      normal: isMinimal ? "200ms" : "300ms",
+      slow: isElegant ? "500ms" : "400ms",
+      slower: "600ms",
+    },
+    easing: {
+      linear: "linear",
+      easeIn: "cubic-bezier(0.4, 0, 1, 1)",
+      easeOut: "cubic-bezier(0, 0, 0.2, 1)",
+      easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
+      spring: isPlayful ? "cubic-bezier(0.175, 0.885, 0.32, 1.275)" : "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      bounce: "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+    },
+    transitions: {
+      fade: isMinimal ? "opacity 200ms ease-out" : "opacity 300ms ease-out",
+      scale: "transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+      slide: "transform 300ms ease-out",
+      all: isElegant ? "all 400ms ease-in-out" : "all 300ms ease-in-out",
+      colors: "color 200ms ease, background-color 200ms ease, border-color 200ms ease",
+      transform: "transform 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+    },
+  };
 }
 
 export function generateDesignSystemFallback(input: DesignSystemInput): GeneratedDesignSystem {
@@ -110,10 +182,14 @@ export function generateDesignSystemFallback(input: DesignSystemInput): Generate
     primarySaturation = mood.saturation;
   }
 
-  const colors = {
-    primary: hslToString(primaryHue, primarySaturation, 50),
-    secondary: hslToString((primaryHue + 30) % 360, primarySaturation - 20, 55),
-    accent: hslToString((primaryHue + 180) % 360, primarySaturation, 55),
+  const primaryColor = hslToString(primaryHue, primarySaturation, 50);
+  const secondaryColor = hslToString((primaryHue + 30) % 360, primarySaturation - 20, 55);
+  const accentColor = hslToString((primaryHue + 180) % 360, primarySaturation, 55);
+
+  const colors: ColorPalette = {
+    primary: primaryColor,
+    secondary: secondaryColor,
+    accent: accentColor,
     background: hslToString(primaryHue, 10, 98),
     surface: hslToString(primaryHue, 10, 100),
     text: hslToString(primaryHue, 15, 15),
@@ -121,6 +197,10 @@ export function generateDesignSystemFallback(input: DesignSystemInput): Generate
     success: hslToString(145, 65, 42),
     warning: hslToString(38, 92, 50),
     error: hslToString(0, 72, 51),
+    overlay: `hsla(${primaryHue}, 20%, 10%, 0.6)`,
+    border: hslToString(primaryHue, 15, 80),
+    borderLight: hslToString(primaryHue, 10, 90),
+    interactive: generateSemanticColors(primaryColor, secondaryColor, accentColor),
   };
 
   const fonts = industryFonts[input.industry] || industryFonts.other;
@@ -220,13 +300,18 @@ export function generateDesignSystemFallback(input: DesignSystemInput): Generate
     full: "9999px",
   };
 
+  const animations = generateAnimationTokens(input.brandMood);
+  const darkColors = generateDarkModeColors(colors);
+
   return {
     name: `${input.industry.charAt(0).toUpperCase() + input.industry.slice(1)} Design System`,
     colors,
+    darkColors,
     typography,
     spacing,
     shadows,
     grid,
     borderRadius,
+    animations,
   };
 }

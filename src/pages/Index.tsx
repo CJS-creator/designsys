@@ -11,6 +11,9 @@ import { ExportButton } from "@/components/ExportButton";
 import { LivePreview } from "@/components/LivePreview";
 import { ComparisonView } from "@/components/ComparisonView";
 import { SavedDesigns } from "@/components/SavedDesigns";
+import { AccessibilityChecker } from "@/components/AccessibilityChecker";
+import { AnimationDisplay } from "@/components/AnimationDisplay";
+import { InteractiveColorsDisplay } from "@/components/InteractiveColorsDisplay";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
@@ -94,8 +97,11 @@ const Index = () => {
         {/* Design System Display */}
         <main className="container mx-auto px-4 py-8">
           <Tabs defaultValue="overview" className="space-y-8">
-            <TabsList>
+            <TabsList className="flex-wrap">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="interactive">Interactive</TabsTrigger>
+              <TabsTrigger value="animations">Animations</TabsTrigger>
+              <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
               <TabsTrigger value="preview">Live Preview</TabsTrigger>
               <TabsTrigger value="compare">Compare</TabsTrigger>
               <TabsTrigger value="saved">Saved</TabsTrigger>
@@ -112,6 +118,18 @@ const Index = () => {
                 <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
               </div>
               <GridDisplay grid={designSystem.grid} />
+            </TabsContent>
+
+            <TabsContent value="interactive">
+              <InteractiveColorsDisplay colors={designSystem.colors} />
+            </TabsContent>
+
+            <TabsContent value="animations">
+              <AnimationDisplay animations={designSystem.animations} />
+            </TabsContent>
+
+            <TabsContent value="accessibility">
+              <AccessibilityChecker colors={designSystem.colors} darkColors={designSystem.darkColors} />
             </TabsContent>
 
             <TabsContent value="preview">
