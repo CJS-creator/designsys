@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,17 +41,37 @@ const industries = [
   "other",
 ];
 
+interface InitialFormValues {
+  appType?: "mobile" | "web" | "both";
+  industry?: string;
+  brandMood?: string[];
+  primaryColor?: string;
+  description?: string;
+}
+
 interface DesignSystemFormProps {
   onGenerate: (input: DesignSystemInput) => void;
   isLoading: boolean;
+  initialValues?: InitialFormValues;
 }
 
-export function DesignSystemForm({ onGenerate, isLoading }: DesignSystemFormProps) {
-  const [appType, setAppType] = useState<"mobile" | "web" | "both">("web");
-  const [industry, setIndustry] = useState("");
-  const [brandMood, setBrandMood] = useState<string[]>([]);
-  const [primaryColor, setPrimaryColor] = useState("");
-  const [description, setDescription] = useState("");
+export function DesignSystemForm({ onGenerate, isLoading, initialValues }: DesignSystemFormProps) {
+  const [appType, setAppType] = useState<"mobile" | "web" | "both">(initialValues?.appType || "web");
+  const [industry, setIndustry] = useState(initialValues?.industry || "");
+  const [brandMood, setBrandMood] = useState<string[]>(initialValues?.brandMood || []);
+  const [primaryColor, setPrimaryColor] = useState(initialValues?.primaryColor || "");
+  const [description, setDescription] = useState(initialValues?.description || "");
+
+  // Update form when initialValues change (template selected)
+  useEffect(() => {
+    if (initialValues) {
+      if (initialValues.appType) setAppType(initialValues.appType);
+      if (initialValues.industry) setIndustry(initialValues.industry);
+      if (initialValues.brandMood) setBrandMood(initialValues.brandMood);
+      if (initialValues.primaryColor) setPrimaryColor(initialValues.primaryColor);
+      if (initialValues.description) setDescription(initialValues.description);
+    }
+  }, [initialValues]);
 
   const toggleMood = (mood: string) => {
     if (brandMood.includes(mood)) {

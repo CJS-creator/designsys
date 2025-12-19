@@ -7,6 +7,15 @@ export interface OnboardingPreferences {
   learningStyle: "visual" | "text" | "both";
 }
 
+export interface SelectedTemplate {
+  id: string;
+  name: string;
+  industry: string;
+  mood: string[];
+  primaryColor: string;
+  description: string;
+}
+
 interface OnboardingState {
   isActive: boolean;
   currentStep: number;
@@ -15,6 +24,7 @@ interface OnboardingState {
   hasCompletedOnboarding: boolean;
   preferences: OnboardingPreferences | null;
   tooltipsShown: string[];
+  selectedTemplate: SelectedTemplate | null;
 }
 
 interface OnboardingContextType extends OnboardingState {
@@ -29,6 +39,8 @@ interface OnboardingContextType extends OnboardingState {
   markTooltipShown: (tooltipId: string) => void;
   hasSeenTooltip: (tooltipId: string) => boolean;
   resetOnboarding: () => void;
+  setSelectedTemplate: (template: SelectedTemplate | null) => void;
+  trackAnalytics: (event: string, data?: Record<string, unknown>) => void;
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
@@ -44,6 +56,36 @@ const defaultState: OnboardingState = {
   hasCompletedOnboarding: false,
   preferences: null,
   tooltipsShown: [],
+  selectedTemplate: null,
+};
+
+// Analytics storage key
+const ANALYTICS_KEY = "designforge_onboarding_analytics";
+
+interface AnalyticsData {
+  sessionId: string;
+  startedAt: string;
+  completedAt?: string;
+  skippedAt?: string;
+  stepTimestamps: Record<number, string>;
+  events: Array<{ event: string; timestamp: string; data?: Record<string, unknown> }>;
+}
+
+const getOrCreateAnalytics = (): AnalyticsData => {
+  const saved = localStorage.getItem(ANALYTICS_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      // Fall through to create new
+    }
+  }
+  return {
+    sessionId: crypto.randomUUID(),
+    startedAt: new Date().toISOString(),
+    stepTimestamps: {},
+    events: [],
+  };
 };
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
@@ -75,11 +117,26 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
+  const trackAnalytics = (event: string, data?: Record<string, unknown>) => {
+    const analytics = getOrCreateAnalytics();
+    analytics.events.push({
+      event,
+      timestamp: new Date().toISOString(),
+      data,
+    });
+    localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analytics));
+    
+    // Log for debugging - in production this would send to analytics service
+    console.log("[Onboarding Analytics]", event, data);
+  };
+
   const startOnboarding = () => {
+    trackAnalytics("onboarding_started");
     setState(prev => ({ ...prev, isActive: true, currentStep: 0 }));
   };
 
   const skipOnboarding = () => {
+    trackAnalytics("onboarding_skipped", { atStep: state.currentStep });
     setState(prev => ({ 
       ...prev, 
       isActive: false, 
@@ -88,6 +145,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   const completeOnboarding = () => {
+    trackAnalytics("onboarding_completed", { 
+      selectedTemplate: state.selectedTemplate?.id || null,
+      preferences: state.preferences 
+    });
     setState(prev => ({ 
       ...prev, 
       isActive: false, 
@@ -99,6 +160,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const nextStep = () => {
     setState(prev => {
       const next = Math.min(prev.currentStep + 1, prev.totalSteps - 1);
+      trackAnalytics("step_completed", { fromStep: prev.currentStep, toStep: next });
       return { 
         ...prev, 
         currentStep: next,
@@ -110,6 +172,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   const prevStep = () => {
+    trackAnalytics("step_back", { fromStep: state.currentStep });
     setState(prev => ({ 
       ...prev, 
       currentStep: Math.max(prev.currentStep - 1, 0) 
@@ -117,6 +180,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   const goToStep = (step: number) => {
+    trackAnalytics("step_jumped", { fromStep: state.currentStep, toStep: step });
     setState(prev => ({ 
       ...prev, 
       currentStep: Math.max(0, Math.min(step, prev.totalSteps - 1)) 
@@ -133,7 +197,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   const setPreferences = (prefs: OnboardingPreferences) => {
+    trackAnalytics("preferences_set", { preferences: prefs });
     setState(prev => ({ ...prev, preferences: prefs }));
+  };
+
+  const setSelectedTemplate = (template: SelectedTemplate | null) => {
+    trackAnalytics("template_selected", { templateId: template?.id || null });
+    setState(prev => ({ ...prev, selectedTemplate: template }));
   };
 
   const markTooltipShown = (tooltipId: string) => {
@@ -152,6 +222,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const resetOnboarding = () => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("designforge_visited");
+    localStorage.removeItem(ANALYTICS_KEY);
+    trackAnalytics("onboarding_reset");
     setState({ ...defaultState, isActive: true });
   };
 
@@ -169,6 +241,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       markTooltipShown,
       hasSeenTooltip,
       resetOnboarding,
+      setSelectedTemplate,
+      trackAnalytics,
     }}>
       {children}
     </OnboardingContext.Provider>
