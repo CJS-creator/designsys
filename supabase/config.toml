@@ -1,1 +1,4 @@
 project_id = "fzhzrdkojwrgdotrscug"
+
+[functions.generate-design-system]
+verify_jwt = false

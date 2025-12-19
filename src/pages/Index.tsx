@@ -9,8 +9,9 @@ import { BorderRadiusDisplay } from "@/components/BorderRadiusDisplay";
 import { ExportButton } from "@/components/ExportButton";
 import { Button } from "@/components/ui/button";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
-import { generateDesignSystem } from "@/lib/generateDesignSystem";
-import { Sparkles, ArrowLeft, Wand2 } from "lucide-react";
+import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
+import { Sparkles, ArrowLeft, Wand2, Brain } from "lucide-react";
+import { toast } from "sonner";
 
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
@@ -18,11 +19,27 @@ const Index = () => {
 
   const handleGenerate = async (input: DesignSystemInput) => {
     setIsLoading(true);
-    // Simulate AI processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    const generated = generateDesignSystem(input);
-    setDesignSystem(generated);
-    setIsLoading(false);
+    
+    try {
+      // Try AI-powered generation first
+      const generated = await generateDesignSystemWithAI(input);
+      setDesignSystem(generated);
+      toast.success("AI-powered design system generated!", {
+        description: "Your custom design system is ready to use.",
+      });
+    } catch (error) {
+      console.error("AI generation failed, using fallback:", error);
+      
+      // Fallback to local generation
+      const fallbackSystem = generateDesignSystemFallback(input);
+      setDesignSystem(fallbackSystem);
+      
+      toast.warning("Generated with fallback algorithm", {
+        description: error instanceof Error ? error.message : "AI generation unavailable",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -41,7 +58,7 @@ const Index = () => {
               </Button>
               <div>
                 <h1 className="text-xl font-bold">{designSystem.name}</h1>
-                <p className="text-sm text-muted-foreground">Generated Design System</p>
+                <p className="text-sm text-muted-foreground">AI-Generated Design System</p>
               </div>
             </div>
             <ExportButton designSystem={designSystem} />
@@ -89,8 +106,8 @@ const Index = () => {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-                <Sparkles className="h-4 w-4" />
-                AI-Powered Design System Generator
+                <Brain className="h-4 w-4" />
+                Powered by AI
               </div>
               <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
                 Create Complete{" "}
@@ -98,8 +115,8 @@ const Index = () => {
                 in Seconds
               </h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Tell us about your project and we'll generate a comprehensive design system 
-                with colors, typography, spacing, shadows, and grid—all tailored to your needs.
+                Our AI analyzes your project requirements and generates a comprehensive, 
+                context-aware design system with colors, typography, spacing, shadows, and grid.
               </p>
             </div>
 
@@ -109,14 +126,17 @@ const Index = () => {
             <div className="mt-16 grid md:grid-cols-3 gap-6">
               {[
                 {
-                  title: "Smart Color Generation",
-                  description: "Harmonious palettes based on your brand mood and industry",
+                  icon: Brain,
+                  title: "AI-Powered Analysis",
+                  description: "Our AI understands your industry and mood to create perfect color harmonies",
                 },
                 {
-                  title: "Typography Pairing",
-                  description: "Professionally paired fonts with complete type scales",
+                  icon: Sparkles,
+                  title: "Smart Typography",
+                  description: "Professionally paired fonts based on industry best practices",
                 },
                 {
+                  icon: Wand2,
                   title: "Export Anywhere",
                   description: "Download as CSS variables, Tailwind config, or JSON",
                 },
@@ -125,6 +145,7 @@ const Index = () => {
                   key={index}
                   className="p-6 rounded-2xl bg-card/50 border border-border/50 backdrop-blur-sm"
                 >
+                  <feature.icon className="h-8 w-8 text-primary mb-3" />
                   <h3 className="font-semibold mb-2">{feature.title}</h3>
                   <p className="text-sm text-muted-foreground">{feature.description}</p>
                 </div>

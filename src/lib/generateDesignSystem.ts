@@ -1,5 +1,38 @@
+import { supabase } from "@/integrations/supabase/client";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 
+export async function generateDesignSystemWithAI(input: DesignSystemInput): Promise<GeneratedDesignSystem> {
+  console.log("Calling AI to generate design system...", input);
+  
+  const { data, error } = await supabase.functions.invoke("generate-design-system", {
+    body: {
+      appType: input.appType,
+      industry: input.industry,
+      brandMood: input.brandMood,
+      primaryColor: input.primaryColor,
+      description: input.description,
+    },
+  });
+
+  if (error) {
+    console.error("Edge function error:", error);
+    throw new Error(error.message || "Failed to generate design system");
+  }
+
+  if (data?.error) {
+    console.error("AI generation error:", data.error);
+    throw new Error(data.error);
+  }
+
+  if (!data?.designSystem) {
+    throw new Error("No design system returned from AI");
+  }
+
+  console.log("AI generated design system:", data.designSystem);
+  return data.designSystem;
+}
+
+// Fallback local generation (used if AI fails)
 const moodColorMappings: Record<string, { hue: number; saturation: number }> = {
   modern: { hue: 220, saturation: 85 },
   playful: { hue: 340, saturation: 80 },
@@ -63,8 +96,7 @@ function hslToString(h: number, s: number, l: number): string {
   return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
-export function generateDesignSystem(input: DesignSystemInput): GeneratedDesignSystem {
-  // Determine primary color
+export function generateDesignSystemFallback(input: DesignSystemInput): GeneratedDesignSystem {
   let primaryHue = 220;
   let primarySaturation = 85;
 
@@ -78,7 +110,6 @@ export function generateDesignSystem(input: DesignSystemInput): GeneratedDesignS
     primarySaturation = mood.saturation;
   }
 
-  // Generate color palette
   const colors = {
     primary: hslToString(primaryHue, primarySaturation, 50),
     secondary: hslToString((primaryHue + 30) % 360, primarySaturation - 20, 55),
@@ -92,7 +123,6 @@ export function generateDesignSystem(input: DesignSystemInput): GeneratedDesignS
     error: hslToString(0, 72, 51),
   };
 
-  // Get typography based on industry
   const fonts = industryFonts[input.industry] || industryFonts.other;
   const baseSize = input.appType === "mobile" ? 16 : 16;
 
@@ -126,8 +156,7 @@ export function generateDesignSystem(input: DesignSystemInput): GeneratedDesignS
     },
   };
 
-  // Spacing scale
-  const spacingUnit = input.appType === "mobile" ? 4 : 4;
+  const spacingUnit = 4;
   const spacing = {
     unit: spacingUnit,
     scale: {
@@ -147,7 +176,6 @@ export function generateDesignSystem(input: DesignSystemInput): GeneratedDesignS
     },
   };
 
-  // Shadows based on mood
   const isMinimal = input.brandMood.includes("minimalist");
   const shadows = {
     none: "none",
@@ -165,7 +193,6 @@ export function generateDesignSystem(input: DesignSystemInput): GeneratedDesignS
     inner: "inset 0 2px 4px 0 rgb(0 0 0 / 0.05)",
   };
 
-  // Grid system
   const grid = {
     columns: input.appType === "mobile" ? 4 : 12,
     gutter: input.appType === "mobile" ? "16px" : "24px",
@@ -180,7 +207,6 @@ export function generateDesignSystem(input: DesignSystemInput): GeneratedDesignS
     },
   };
 
-  // Border radius based on mood
   const isPlayful = input.brandMood.includes("playful") || input.brandMood.includes("friendly");
   const radiusBase = isPlayful ? 16 : input.brandMood.includes("minimalist") ? 4 : 8;
 
