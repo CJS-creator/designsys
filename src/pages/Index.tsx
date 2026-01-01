@@ -14,17 +14,20 @@ import { SavedDesigns } from "@/components/SavedDesigns";
 import { AccessibilityChecker } from "@/components/AccessibilityChecker";
 import { AnimationDisplay } from "@/components/AnimationDisplay";
 import { InteractiveColorsDisplay } from "@/components/InteractiveColorsDisplay";
+import { DesignSystemPresets } from "@/components/DesignSystemPresets";
+import { ResponsivePreview } from "@/components/ResponsivePreview";
+import { TokenVersioning } from "@/components/TokenVersioning";
+import { BrandGuidelinesPDF } from "@/components/BrandGuidelinesPDF";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle } from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle, Smartphone, History, FileText, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnimationSystemDocs } from "@/components/AnimationSystemDocs";
 import { ComponentLibraryPreview } from "@/components/ComponentLibraryPreview";
 import { useOnboarding } from "@/contexts/OnboardingContext";
-
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
   const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
@@ -64,6 +67,21 @@ const Index = () => {
     toast.success("Design system loaded!");
   };
 
+  const handleApplyPreset = (preset: GeneratedDesignSystem) => {
+    setDesignSystem(preset);
+    setCurrentInput({
+      appType: "web",
+      industry: "Technology",
+      brandMood: ["Modern", "Professional"],
+      primaryColor: preset.colors.primary,
+      description: `Design system based on ${preset.name}`,
+    });
+    toast.success(`${preset.name} preset applied!`);
+  };
+
+  const handleRestoreVersion = (system: GeneratedDesignSystem) => {
+    setDesignSystem(system);
+  };
   if (designSystem && currentInput) {
     return (
       <div className="min-h-screen bg-background">
@@ -110,8 +128,11 @@ const Index = () => {
               <TabsTrigger value="animations" className="transition-all duration-200 data-[state=active]:scale-105">Animations</TabsTrigger>
               <TabsTrigger value="animation-system" className="transition-all duration-200 data-[state=active]:scale-105"><Zap className="h-4 w-4 mr-1" />Animation System</TabsTrigger>
               <TabsTrigger value="components" className="transition-all duration-200 data-[state=active]:scale-105">Components</TabsTrigger>
+              <TabsTrigger value="responsive" className="transition-all duration-200 data-[state=active]:scale-105"><Smartphone className="h-4 w-4 mr-1" />Responsive</TabsTrigger>
               <TabsTrigger value="accessibility" className="transition-all duration-200 data-[state=active]:scale-105">Accessibility</TabsTrigger>
               <TabsTrigger value="preview" className="transition-all duration-200 data-[state=active]:scale-105">Live Preview</TabsTrigger>
+              <TabsTrigger value="versioning" className="transition-all duration-200 data-[state=active]:scale-105"><History className="h-4 w-4 mr-1" />Versions</TabsTrigger>
+              <TabsTrigger value="export" className="transition-all duration-200 data-[state=active]:scale-105"><FileText className="h-4 w-4 mr-1" />Guidelines</TabsTrigger>
               <TabsTrigger value="compare" className="transition-all duration-200 data-[state=active]:scale-105">Compare</TabsTrigger>
               <TabsTrigger value="saved" className="transition-all duration-200 data-[state=active]:scale-105">Saved</TabsTrigger>
             </TabsList>
@@ -149,8 +170,20 @@ const Index = () => {
               <AccessibilityChecker colors={designSystem.colors} darkColors={designSystem.darkColors} />
             </TabsContent>
 
+            <TabsContent value="responsive">
+              <ResponsivePreview designSystem={designSystem} />
+            </TabsContent>
+
             <TabsContent value="preview">
               <LivePreview designSystem={designSystem} />
+            </TabsContent>
+
+            <TabsContent value="versioning">
+              <TokenVersioning currentSystem={designSystem} onRestore={handleRestoreVersion} />
+            </TabsContent>
+
+            <TabsContent value="export">
+              <BrandGuidelinesPDF designSystem={designSystem} />
             </TabsContent>
 
             <TabsContent value="compare">
@@ -233,6 +266,18 @@ const Index = () => {
                   } : undefined
                 }
               />
+            </div>
+
+            {/* Design System Presets */}
+            <div className="mt-12 animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+                  <Palette className="h-6 w-6 text-primary" />
+                  Or Start from a Preset
+                </h2>
+                <p className="text-muted-foreground">Choose from popular design systems</p>
+              </div>
+              <DesignSystemPresets onApplyPreset={handleApplyPreset} />
             </div>
 
             {/* Features */}
