@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { DesignSystemForm } from "@/components/DesignSystemForm";
 import { ColorPaletteDisplay } from "@/components/ColorPaletteDisplay";
@@ -35,7 +35,26 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const { resetOnboarding, selectedTemplate } = useOnboarding();
 
+  const [pendingInput, setPendingInput] = useState<DesignSystemInput | null>(null);
+
   const handleGenerate = async (input: DesignSystemInput) => {
+    // Require authentication before generating
+    if (!user) {
+      setPendingInput(input);
+      toast.info("Please sign in to generate your design system", {
+        description: "Create a free account to save and manage your designs.",
+        action: {
+          label: "Sign In",
+          onClick: () => window.location.href = "/auth",
+        },
+      });
+      return;
+    }
+
+    await generateDesignSystem(input);
+  };
+
+  const generateDesignSystem = async (input: DesignSystemInput) => {
     setIsLoading(true);
     setCurrentInput(input);
     
@@ -56,6 +75,14 @@ const Index = () => {
       setIsLoading(false);
     }
   };
+
+  // Auto-generate after authentication if there's a pending input
+  useEffect(() => {
+    if (user && pendingInput) {
+      generateDesignSystem(pendingInput);
+      setPendingInput(null);
+    }
+  }, [user, pendingInput]);
 
   const handleReset = () => {
     setDesignSystem(null);
