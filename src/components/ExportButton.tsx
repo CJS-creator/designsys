@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GeneratedDesignSystem } from "@/types/designSystem";
-import { Download, FileJson, FileCode, Copy, Check, Eye, Layers } from "lucide-react";
+import { Download, FileJson, FileCode, Copy, Check, Eye, Layers, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExportButtonProps {
@@ -403,12 +405,18 @@ const exportOptions: ExportOption[] = [
 ];
 
 export function ExportButton({ designSystem }: ExportButtonProps) {
+  const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewFormat, setPreviewFormat] = useState<ExportOption | null>(null);
   const [previewContent, setPreviewContent] = useState("");
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
 
   const downloadFile = (content: string, filename: string) => {
+    if (!user) {
+      setAuthDialogOpen(true);
+      return;
+    }
     const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -422,6 +430,10 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
   };
 
   const copyJSON = () => {
+    if (!user) {
+      setAuthDialogOpen(true);
+      return;
+    }
     navigator.clipboard.writeText(JSON.stringify(designSystem, null, 2));
     setCopied(true);
     toast.success("Copied JSON to clipboard");
@@ -436,8 +448,31 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
   };
 
   const copyPreviewContent = () => {
+    if (!user) {
+      setAuthDialogOpen(true);
+      return;
+    }
     navigator.clipboard.writeText(previewContent);
     toast.success("Copied to clipboard");
+  };
+
+  const handleDownloadFromPreview = () => {
+    if (!user) {
+      setAuthDialogOpen(true);
+      return;
+    }
+    if (previewFormat) {
+      const blob = new Blob([previewContent], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = previewFormat.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Downloaded ${previewFormat.filename}`);
+    }
   };
 
   return (
@@ -447,6 +482,7 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
           <Button size="lg" className="gap-2">
             <Download className="h-4 w-4" />
             Export
+            {!user && <Lock className="h-3 w-3 ml-1" />}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
@@ -479,6 +515,7 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
+      {/* Preview Dialog */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh]">
           <DialogHeader>
@@ -496,16 +533,37 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
             <Button variant="outline" onClick={copyPreviewContent}>
               <Copy className="h-4 w-4 mr-2" />
               Copy
+              {!user && <Lock className="h-3 w-3 ml-1" />}
             </Button>
-            <Button onClick={() => {
-              if (previewFormat) {
-                downloadFile(previewContent, previewFormat.filename);
-              }
-            }}>
+            <Button onClick={handleDownloadFromPreview}>
               <Download className="h-4 w-4 mr-2" />
               Download
+              {!user && <Lock className="h-3 w-3 ml-1" />}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Auth Required Dialog */}
+      <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" />
+              Sign In Required
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-4">
+            <p className="text-muted-foreground mb-4">
+              Create a free account to export and save your design systems.
+            </p>
+            <Button asChild className="w-full">
+              <Link to="/auth">
+                <User className="mr-2 h-4 w-4" />
+                Sign In to Export
+              </Link>
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DesignSystemForm } from "@/components/DesignSystemForm";
 import { ColorPaletteDisplay } from "@/components/ColorPaletteDisplay";
@@ -19,10 +19,11 @@ import { ResponsivePreview } from "@/components/ResponsivePreview";
 import { TokenVersioning } from "@/components/TokenVersioning";
 import { BrandGuidelinesPDF } from "@/components/BrandGuidelinesPDF";
 import { Button } from "@/components/ui/button";
+import { AuthRequiredWrapper } from "@/components/AuthRequiredWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle, Smartphone, History, FileText, Palette } from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle, Smartphone, History, FileText, Palette, Download, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnimationSystemDocs } from "@/components/AnimationSystemDocs";
@@ -35,26 +36,7 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const { resetOnboarding, selectedTemplate } = useOnboarding();
 
-  const [pendingInput, setPendingInput] = useState<DesignSystemInput | null>(null);
-
   const handleGenerate = async (input: DesignSystemInput) => {
-    // Require authentication before generating
-    if (!user) {
-      setPendingInput(input);
-      toast.info("Please sign in to generate your design system", {
-        description: "Create a free account to save and manage your designs.",
-        action: {
-          label: "Sign In",
-          onClick: () => window.location.href = "/auth",
-        },
-      });
-      return;
-    }
-
-    await generateDesignSystem(input);
-  };
-
-  const generateDesignSystem = async (input: DesignSystemInput) => {
     setIsLoading(true);
     setCurrentInput(input);
     
@@ -75,14 +57,6 @@ const Index = () => {
       setIsLoading(false);
     }
   };
-
-  // Auto-generate after authentication if there's a pending input
-  useEffect(() => {
-    if (user && pendingInput) {
-      generateDesignSystem(pendingInput);
-      setPendingInput(null);
-    }
-  }, [user, pendingInput]);
 
   const handleReset = () => {
     setDesignSystem(null);
@@ -206,11 +180,23 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="versioning">
-              <TokenVersioning currentSystem={designSystem} onRestore={handleRestoreVersion} />
+              <AuthRequiredWrapper
+                title="Version History"
+                description="Sign in to track changes and restore previous versions of your design system."
+                icon={<History className="h-6 w-6 text-primary" />}
+              >
+                <TokenVersioning currentSystem={designSystem} onRestore={handleRestoreVersion} />
+              </AuthRequiredWrapper>
             </TabsContent>
 
             <TabsContent value="export">
-              <BrandGuidelinesPDF designSystem={designSystem} />
+              <AuthRequiredWrapper
+                title="Brand Guidelines PDF"
+                description="Sign in to generate and download professional brand guidelines."
+                icon={<FileText className="h-6 w-6 text-primary" />}
+              >
+                <BrandGuidelinesPDF designSystem={designSystem} />
+              </AuthRequiredWrapper>
             </TabsContent>
 
             <TabsContent value="compare">
