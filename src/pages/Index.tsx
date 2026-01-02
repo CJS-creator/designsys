@@ -23,8 +23,9 @@ import { AuthRequiredWrapper } from "@/components/AuthRequiredWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle, Smartphone, History, FileText, Palette, Download, Save } from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle, Smartphone, History, FileText, Palette, Download, Save, Lock, X } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnimationSystemDocs } from "@/components/AnimationSystemDocs";
 import { ComponentLibraryPreview } from "@/components/ComponentLibraryPreview";
@@ -33,6 +34,7 @@ const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
   const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showGuestBanner, setShowGuestBanner] = useState(true);
   const { user, signOut } = useAuth();
   const { resetOnboarding, selectedTemplate } = useOnboarding();
 
@@ -119,6 +121,39 @@ const Index = () => {
             </div>
           </div>
         </header>
+
+        {/* Guest Sign-in Banner */}
+        {!user && showGuestBanner && (
+          <div className="bg-primary/10 border-b border-primary/20 animate-fade-in">
+            <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                  <Lock className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-sm">
+                  <span className="font-medium">You are previewing as a guest.</span>{" "}
+                  <span className="text-muted-foreground">Sign in to export, save, and access all features.</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" asChild>
+                  <Link to="/auth">
+                    <User className="h-4 w-4 mr-2" />
+                    Sign In Free
+                  </Link>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8" 
+                  onClick={() => setShowGuestBanner(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Design System Display */}
         <main className="container mx-auto px-4 py-8 animate-fade-in">
