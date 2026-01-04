@@ -216,7 +216,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
               type="submit"
               size="lg"
               className="w-full h-14 text-lg font-semibold"
-              disabled={!industry || brandMood.length === 0 || isLoading}
+              disabled={brandMood.length === 0 || isLoading}
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
@@ -230,13 +230,9 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                 </div>
               )}
             </Button>
-            {(!industry || brandMood.length === 0) && !isLoading && (
+            {brandMood.length === 0 && !isLoading && (
               <p className="text-sm text-muted-foreground text-center">
-                {!industry && !brandMood.length 
-                  ? "Please select an industry and at least one brand mood"
-                  : !industry 
-                    ? "Please select an industry" 
-                    : "Please select at least one brand mood"}
+                Please select at least one brand mood
               </p>
             )}
           </div>
