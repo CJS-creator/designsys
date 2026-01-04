@@ -211,24 +211,35 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
           </div>
 
           {/* Submit Button */}
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full h-14 text-lg font-semibold"
-            disabled={!industry || brandMood.length === 0 || isLoading}
-          >
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                AI is analyzing your requirements...
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Brain className="h-5 w-5" />
-                Generate with AI
-              </div>
+          <div className="space-y-2">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full h-14 text-lg font-semibold"
+              disabled={!industry || brandMood.length === 0 || isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                  AI is analyzing your requirements...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Brain className="h-5 w-5" />
+                  Generate with AI
+                </div>
+              )}
+            </Button>
+            {(!industry || brandMood.length === 0) && !isLoading && (
+              <p className="text-sm text-muted-foreground text-center">
+                {!industry && !brandMood.length 
+                  ? "Please select an industry and at least one brand mood"
+                  : !industry 
+                    ? "Please select an industry" 
+                    : "Please select at least one brand mood"}
+              </p>
             )}
-          </Button>
+          </div>
         </form>
       </CardContent>
     </Card>
