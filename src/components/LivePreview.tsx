@@ -70,7 +70,7 @@ export const LivePreview = ({ designSystem }: LivePreviewProps) => {
                 <button style={{ background: "transparent", color: colors.primary, borderRadius: borderRadius.md, padding: "8px 16px", fontFamily: typography.fontFamily.body, border: `2px solid ${colors.primary}` }}>
                   Outline
                 </button>
-                <button style={{ background: colors.interactive.primary.disabled, color: colors.textSecondary, borderRadius: borderRadius.md, padding: "8px 16px", fontFamily: typography.fontFamily.body, cursor: "not-allowed" }} disabled>
+                <button style={{ background: colors.interactive?.primary?.disabled || colors.textSecondary, color: colors.textSecondary, borderRadius: borderRadius.md, padding: "8px 16px", fontFamily: typography.fontFamily.body, cursor: "not-allowed" }} disabled>
                   Disabled
                 </button>
               </div>

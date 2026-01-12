@@ -128,7 +128,7 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
             <button
               className="px-4 py-2 rounded-md font-medium transition-all cursor-not-allowed"
               style={{
-                background: colors.interactive.primary.disabled,
+                background: interactive.primary.disabled,
                 color: colors.textSecondary,
               }}
               disabled

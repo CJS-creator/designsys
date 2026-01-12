@@ -11,11 +11,13 @@ interface ColorPaletteDisplayProps {
 export function ColorPaletteDisplay({ colors }: ColorPaletteDisplayProps) {
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
 
-  const colorEntries = Object.entries(colors).map(([name, value]) => ({
-    name: name.replace(/([A-Z])/g, " $1").trim(),
-    value,
-    key: name,
-  }));
+  const colorEntries = Object.entries(colors)
+    .filter(([_, value]) => typeof value === "string") // Filter out non-string values like 'interactive'
+    .map(([name, value]) => ({
+      name: name.replace(/([A-Z])/g, " $1").trim(),
+      value: value as string,
+      key: name,
+    }));
 
   const copyColor = (value: string, name: string) => {
     navigator.clipboard.writeText(value);
