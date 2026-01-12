@@ -203,7 +203,7 @@ export function generateDesignSystemFallback(input: DesignSystemInput): Generate
     interactive: generateSemanticColors(primaryColor, secondaryColor, accentColor),
   };
 
-  const fonts = industryFonts[input.industry] || industryFonts.other;
+  const fonts = (input.industry && industryFonts[input.industry]) || industryFonts.other;
   const baseSize = input.appType === "mobile" ? 16 : 16;
 
   const typography = {
@@ -304,7 +304,7 @@ export function generateDesignSystemFallback(input: DesignSystemInput): Generate
   const darkColors = generateDarkModeColors(colors);
 
   return {
-    name: `${input.industry.charAt(0).toUpperCase() + input.industry.slice(1)} Design System`,
+    name: input.industry ? `${input.industry.charAt(0).toUpperCase() + input.industry.slice(1)} Design System` : "Custom Design System",
     colors,
     darkColors,
     typography,

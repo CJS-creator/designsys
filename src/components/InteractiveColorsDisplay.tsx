@@ -7,10 +7,17 @@ interface InteractiveColorsDisplayProps {
 }
 
 export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayProps) {
+  // Ensure interactive colors exist with fallback
+  const interactive = colors.interactive || {
+    primary: { hover: colors.primary, active: colors.primary, disabled: colors.primary, focus: colors.primary },
+    secondary: { hover: colors.secondary, active: colors.secondary, disabled: colors.secondary, focus: colors.secondary },
+    accent: { hover: colors.accent, active: colors.accent, disabled: colors.accent, focus: colors.accent },
+  };
+
   const colorGroups = [
-    { name: "Primary", states: colors.interactive.primary, base: colors.primary },
-    { name: "Secondary", states: colors.interactive.secondary, base: colors.secondary },
-    { name: "Accent", states: colors.interactive.accent, base: colors.accent },
+    { name: "Primary", states: interactive.primary, base: colors.primary },
+    { name: "Secondary", states: interactive.secondary, base: colors.secondary },
+    { name: "Accent", states: interactive.accent, base: colors.accent },
   ];
 
   const stateIcons = {
