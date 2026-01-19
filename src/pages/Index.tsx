@@ -170,6 +170,8 @@ const Index = () => {
               <TabsTrigger value="components" className="transition-all duration-200 data-[state=active]:scale-105">Components</TabsTrigger>
               <TabsTrigger value="responsive" className="transition-all duration-200 data-[state=active]:scale-105"><Smartphone className="h-4 w-4 mr-1" />Responsive</TabsTrigger>
               <TabsTrigger value="accessibility" className="transition-all duration-200 data-[state=active]:scale-105">Accessibility</TabsTrigger>
+              <TabsTrigger value="color-blindness" className="transition-all duration-200 data-[state=active]:scale-105"><Eye className="h-4 w-4 mr-1" />Color Blindness</TabsTrigger>
+              <TabsTrigger value="token-search" className="transition-all duration-200 data-[state=active]:scale-105"><Search className="h-4 w-4 mr-1" />Token Search</TabsTrigger>
               <TabsTrigger value="preview" className="transition-all duration-200 data-[state=active]:scale-105">Live Preview</TabsTrigger>
               <TabsTrigger value="versioning" className="transition-all duration-200 data-[state=active]:scale-105"><History className="h-4 w-4 mr-1" />Versions</TabsTrigger>
               <TabsTrigger value="export" className="transition-all duration-200 data-[state=active]:scale-105"><FileText className="h-4 w-4 mr-1" />Guidelines</TabsTrigger>
@@ -208,6 +210,14 @@ const Index = () => {
 
             <TabsContent value="accessibility">
               <AccessibilityChecker colors={designSystem.colors} darkColors={designSystem.darkColors} />
+            </TabsContent>
+
+            <TabsContent value="color-blindness">
+              <ColorBlindnessSimulator colors={designSystem.colors} />
+            </TabsContent>
+
+            <TabsContent value="token-search">
+              <TokenSearch designSystem={designSystem} />
             </TabsContent>
 
             <TabsContent value="responsive">
