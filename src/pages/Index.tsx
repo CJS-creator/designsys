@@ -21,12 +21,16 @@ import { BrandGuidelinesPDF } from "@/components/BrandGuidelinesPDF";
 import { ColorBlindnessSimulator } from "@/components/ColorBlindnessSimulator";
 import { TokenSearch } from "@/components/TokenSearch";
 import { ImageColorExtractor } from "@/components/ImageColorExtractor";
+import { MultiPaletteGenerator } from "@/components/MultiPaletteGenerator";
+import { AdvancedTypographyScale } from "@/components/AdvancedTypographyScale";
+import { SpacingGridEditor } from "@/components/SpacingGridEditor";
+import { RealTimePreview } from "@/components/RealTimePreview";
 import { Button } from "@/components/ui/button";
 import { AuthRequiredWrapper } from "@/components/AuthRequiredWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle, Smartphone, History, FileText, Palette, Search, X, Lock, Eye } from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle, Smartphone, History, FileText, Palette, Search, X, Lock, Eye, Type, Grid3X3, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
@@ -164,6 +168,9 @@ const Index = () => {
           <Tabs defaultValue="overview" className="space-y-8">
             <TabsList className="flex-wrap transition-all duration-300">
               <TabsTrigger value="overview" className="transition-all duration-200 data-[state=active]:scale-105">Overview</TabsTrigger>
+              <TabsTrigger value="palettes" className="transition-all duration-200 data-[state=active]:scale-105"><Layers className="h-4 w-4 mr-1" />Palettes</TabsTrigger>
+              <TabsTrigger value="typography-editor" className="transition-all duration-200 data-[state=active]:scale-105"><Type className="h-4 w-4 mr-1" />Type Scale</TabsTrigger>
+              <TabsTrigger value="spacing-grid" className="transition-all duration-200 data-[state=active]:scale-105"><Grid3X3 className="h-4 w-4 mr-1" />Spacing & Grid</TabsTrigger>
               <TabsTrigger value="interactive" className="transition-all duration-200 data-[state=active]:scale-105">Interactive</TabsTrigger>
               <TabsTrigger value="animations" className="transition-all duration-200 data-[state=active]:scale-105">Animations</TabsTrigger>
               <TabsTrigger value="animation-system" className="transition-all duration-200 data-[state=active]:scale-105"><Zap className="h-4 w-4 mr-1" />Animation System</TabsTrigger>
@@ -173,6 +180,7 @@ const Index = () => {
               <TabsTrigger value="color-blindness" className="transition-all duration-200 data-[state=active]:scale-105"><Eye className="h-4 w-4 mr-1" />Color Blindness</TabsTrigger>
               <TabsTrigger value="token-search" className="transition-all duration-200 data-[state=active]:scale-105"><Search className="h-4 w-4 mr-1" />Token Search</TabsTrigger>
               <TabsTrigger value="preview" className="transition-all duration-200 data-[state=active]:scale-105">Live Preview</TabsTrigger>
+              <TabsTrigger value="realtime-preview" className="transition-all duration-200 data-[state=active]:scale-105"><Eye className="h-4 w-4 mr-1" />Real-Time</TabsTrigger>
               <TabsTrigger value="versioning" className="transition-all duration-200 data-[state=active]:scale-105"><History className="h-4 w-4 mr-1" />Versions</TabsTrigger>
               <TabsTrigger value="export" className="transition-all duration-200 data-[state=active]:scale-105"><FileText className="h-4 w-4 mr-1" />Guidelines</TabsTrigger>
               <TabsTrigger value="compare" className="transition-all duration-200 data-[state=active]:scale-105">Compare</TabsTrigger>
@@ -190,6 +198,25 @@ const Index = () => {
                 <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
               </div>
               <GridDisplay grid={designSystem.grid} />
+            </TabsContent>
+
+            <TabsContent value="palettes" className="space-y-8">
+              <MultiPaletteGenerator 
+                primaryColor={designSystem.colors.primary}
+                secondaryColor={designSystem.colors.secondary}
+                accentColor={designSystem.colors.accent}
+              />
+            </TabsContent>
+
+            <TabsContent value="typography-editor" className="space-y-8">
+              <AdvancedTypographyScale typography={designSystem.typography} />
+            </TabsContent>
+
+            <TabsContent value="spacing-grid" className="space-y-8">
+              <SpacingGridEditor 
+                spacing={designSystem.spacing} 
+                grid={designSystem.grid} 
+              />
             </TabsContent>
 
             <TabsContent value="interactive">
@@ -226,6 +253,10 @@ const Index = () => {
 
             <TabsContent value="preview">
               <LivePreview designSystem={designSystem} />
+            </TabsContent>
+
+            <TabsContent value="realtime-preview">
+              <RealTimePreview designSystem={designSystem} />
             </TabsContent>
 
             <TabsContent value="versioning">
