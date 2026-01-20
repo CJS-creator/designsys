@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,23 +42,39 @@ const industries = [
   "food",
   "travel",
   "fitness",
+  "wellness",
   "other",
 ];
 
 const EXAMPLE_PROMPTS = [
-  "A fintech dashboard for managing crypto assets...",
-  "A meditation app with calming nature sounds...",
-  "A high-energy fitness tracker for pro athletes...",
-  "A luxury e-commerce store for handmade jewelry...",
-  "A minimalist portfolio for a photography studio...",
+  "A fintech dashboard for managing crypto assets with real-time market data...",
+  "A meditation app with calming nature sounds and guided breathing exercises...",
+  "A high-energy fitness tracker for athletes with workout plans and progress tracking...",
+  "A luxury e-commerce store for handmade jewelry with virtual try-on features...",
+  "A minimalist portfolio for a photography studio showcasing creative work...",
+  "A healthcare app for patients to book appointments and view medical records...",
 ];
 
 const SUGGESTION_CHIPS = [
-  { label: "SaaS Startup", industry: "technology", mood: ["modern", "professional"], desc: "A clean, B2B SaaS dashboard for analytics." },
-  { label: "Health App", industry: "healthcare", mood: ["calm", "friendly"], desc: "A patient-facing mobile app for tracking wellness." },
-  { label: "E-Commerce", industry: "ecommerce", mood: ["bold", "energetic"], desc: "A vibrant marketplace for trendy sneakers." },
-  { label: "Portfolio", industry: "creative", mood: ["minimalist", "elegant"], desc: "A sleek portfolio site for a UX designer." },
+  { label: "SaaS Startup", industry: "technology", mood: ["modern", "professional"], desc: "A clean, B2B SaaS dashboard for analytics.", hint: "Tech • Modern + Professional" },
+  { label: "Health App", industry: "healthcare", mood: ["calm", "friendly"], desc: "A patient-facing mobile app for tracking wellness.", hint: "Healthcare • Calm + Friendly" },
+  { label: "E-Commerce", industry: "ecommerce", mood: ["bold", "energetic"], desc: "A vibrant marketplace for trendy sneakers.", hint: "Ecommerce • Bold + Energetic" },
+  { label: "Portfolio", industry: "creative", mood: ["minimalist", "elegant"], desc: "A sleek portfolio site for a UX designer.", hint: "Creative • Minimalist + Elegant" },
 ];
+
+const INDUSTRY_MOOD_SUGGESTIONS: Record<string, string[]> = {
+  technology: ["modern", "professional", "minimalist"],
+  healthcare: ["calm", "professional", "friendly"],
+  finance: ["professional", "elegant", "calm"],
+  education: ["friendly", "calm", "professional"],
+  ecommerce: ["bold", "energetic", "modern"],
+  creative: ["bold", "elegant", "playful"],
+  food: ["playful", "friendly", "energetic"],
+  travel: ["energetic", "friendly", "bold"],
+  fitness: ["energetic", "bold", "modern"],
+  wellness: ["calm", "friendly", "elegant"],
+  other: ["modern", "professional", "friendly"],
+};
 
 const COLOR_MAP: Record<string, string> = {
   blue: "#3b82f6",
@@ -97,14 +114,59 @@ interface DesignSystemFormProps {
   initialValues?: InitialFormValues;
 }
 
+const FORM_STORAGE_KEY = 'designsys-form-state';
+
 export function DesignSystemForm({ onGenerate, isLoading, initialValues }: DesignSystemFormProps) {
-  const [appType, setAppType] = useState<"mobile" | "web" | "both">(initialValues?.appType || "web");
-  const [industry, setIndustry] = useState(initialValues?.industry || "");
-  const [brandMood, setBrandMood] = useState<string[]>(initialValues?.brandMood || []);
-  const [primaryColor, setPrimaryColor] = useState(initialValues?.primaryColor || "");
-  const [description, setDescription] = useState(initialValues?.description || "");
+  // Load from localStorage or use initialValues
+  const loadSavedState = () => {
+    try {
+      const saved = localStorage.getItem(FORM_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          appType: parsed.appType || initialValues?.appType || "web",
+          industry: parsed.industry || initialValues?.industry || "",
+          brandMood: parsed.brandMood || initialValues?.brandMood || [],
+          primaryColor: parsed.primaryColor || initialValues?.primaryColor || "",
+          description: parsed.description || initialValues?.description || ""
+        };
+      }
+    } catch (error) {
+      console.error('Failed to load saved form state:', error);
+    }
+    return {
+      appType: initialValues?.appType || "web",
+      industry: initialValues?.industry || "",
+      brandMood: initialValues?.brandMood || [],
+      primaryColor: initialValues?.primaryColor || "",
+      description: initialValues?.description || ""
+    };
+  };
+
+  const savedState = loadSavedState();
+  const [appType, setAppType] = useState<"mobile" | "web" | "both">(savedState.appType);
+  const [industry, setIndustry] = useState(savedState.industry);
+  const [brandMood, setBrandMood] = useState<string[]>(savedState.brandMood);
+  const [primaryColor, setPrimaryColor] = useState(savedState.primaryColor);
+  const [description, setDescription] = useState(savedState.description);
   const [progress, setProgress] = useState(0);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+  // Save form state to localStorage whenever it changes
+  useEffect(() => {
+    const formState = {
+      appType,
+      industry,
+      brandMood,
+      primaryColor,
+      description
+    };
+    try {
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formState));
+    } catch (error) {
+      console.error('Failed to save form state:', error);
+    }
+  }, [appType, industry, brandMood, primaryColor, description]);
 
   // Rotate placeholder text
   useEffect(() => {
@@ -201,6 +263,11 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
       setBrandMood(brandMood.filter((m) => m !== mood));
     } else if (brandMood.length < 3) {
       setBrandMood([...brandMood, mood]);
+    } else {
+      // Show feedback when limit reached
+      toast.info("Maximum 3 moods selected. Deselect one to choose another.", {
+        icon: "ℹ️"
+      });
     }
   };
 
@@ -229,21 +296,43 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
     });
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <Card className="border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+    <Card className="border-border/50 bg-card/95 backdrop-blur-xl shadow-xl relative overflow-hidden group">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-50 pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-2xl text-white">
-          <Brain className="h-6 w-6 text-primary" />
+        <CardTitle className="flex items-center gap-2 text-2xl text-foreground">
+          <Brain className="h-6 w-6 text-primary animate-pulse" />
           Design Requirements
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <motion.form
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
           {/* App Type */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium text-neutral-200">Platform Type</Label>
+          <motion.div variants={itemVariants} className="space-y-3">
+            <Label className="text-base font-medium text-foreground">Platform Type</Label>
             <div className="grid grid-cols-3 gap-3">
               {[
                 { value: "mobile", icon: Smartphone, label: "Mobile" },
@@ -254,116 +343,139 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                   key={value}
                   type="button"
                   onClick={() => setAppType(value as typeof appType)}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200 ${appType === value
-                    ? "border-primary bg-primary/20 text-primary shadow-[0_0_15px_rgba(var(--primary),0.3)]"
-                    : "border-white/10 bg-white/5 text-neutral-400 hover:border-white/20 hover:bg-white/10"
+                  className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 group/btn ${appType === value
+                    ? "bg-primary/10 border-primary shadow-lg shadow-primary/20 scale-[1.02]"
+                    : "bg-muted/50 border-border hover:border-primary/50 hover:bg-muted hover:shadow-md"
                     }`}
                 >
-                  <Icon className="h-6 w-6" />
-                  <span className="text-sm font-medium">{label}</span>
+                  <Icon className={`h-7 w-7 transition-all duration-300 ${appType === value ? "text-primary" : "text-muted-foreground group-hover/btn:text-foreground"
+                    }`} />
+                  <span className={`text-sm font-semibold transition-all duration-300 ${appType === value ? "text-primary" : "text-muted-foreground group-hover/btn:text-foreground"
+                    }`}>{label}</span>
                 </button>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Industry */}
-          <div className="space-y-3">
-            <Label htmlFor="industry" className="text-base font-medium text-neutral-200">
+          <motion.div variants={itemVariants} className="space-y-3">
+            <Label htmlFor="industry" className="text-base font-medium text-foreground">
               Industry
             </Label>
             <Select value={industry} onValueChange={setIndustry}>
-              <SelectTrigger className="h-12 bg-white/5 border-white/10 text-white focus:ring-primary/50">
+              <SelectTrigger className="h-12 bg-background border-2 border-border text-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all rounded-xl hover:border-primary/50 hover:shadow-sm font-medium">
                 <SelectValue placeholder="Select your industry" />
               </SelectTrigger>
-              <SelectContent className="bg-neutral-900 border-neutral-800 text-white">
+              <SelectContent className="bg-popover/95 backdrop-blur-xl border-2 border-border text-popover-foreground rounded-xl shadow-2xl">
                 {industries.map((ind) => (
-                  <SelectItem key={ind} value={ind} className="capitalize focus:bg-white/10 focus:text-white">
+                  <SelectItem key={ind} value={ind} className="capitalize focus:bg-primary/10 focus:text-primary cursor-pointer py-3 rounded-lg my-1 font-medium transition-colors">
                     {ind.charAt(0).toUpperCase() + ind.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </motion.div>
 
           {/* Brand Mood */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium text-neutral-200">
-              Brand Mood <span className="text-neutral-500 text-sm">(Select up to 3)</span>
-            </Label>
-            <div className="flex flex-wrap gap-2">
-              {moods.map((mood) => (
-                <Badge
-                  key={mood}
-                  variant={brandMood.includes(mood) ? "default" : "outline"}
-                  className={`cursor-pointer px-4 py-2 text-sm transition-all duration-200 capitalize ${brandMood.includes(mood)
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
-                    : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white hover:border-white/20"
-                    }`}
-                  onClick={() => toggleMood(mood)}
-                >
-                  {mood}
-                </Badge>
-              ))}
+          <motion.div variants={itemVariants} className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium text-foreground">
+                Brand Mood <span className="text-neutral-500 text-sm">({brandMood.length}/3 selected)</span>
+              </Label>
+              {industry && INDUSTRY_MOOD_SUGGESTIONS[industry] && (
+                <span className="text-xs text-primary/80 flex items-center gap-1">
+                  <Lightbulb className="h-3 w-3" />
+                  Suggested: {INDUSTRY_MOOD_SUGGESTIONS[industry].slice(0, 3).map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(", ")}
+                </span>
+              )}
             </div>
-          </div>
+            <div className="flex flex-wrap gap-2">
+              {moods.map((mood) => {
+                const isSuggested = industry && INDUSTRY_MOOD_SUGGESTIONS[industry]?.includes(mood);
+                return (
+                  <Badge
+                    key={mood}
+                    variant={brandMood.includes(mood) ? "default" : "outline"}
+                    className={`cursor-pointer px-5 py-2.5 text-sm transition-all duration-300 capitalize rounded-full select-none font-medium ${brandMood.includes(mood)
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 scale-[1.02] border-transparent"
+                      : isSuggested
+                        ? "bg-primary/5 border-2 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50"
+                        : "bg-muted/50 border-2 border-border text-muted-foreground hover:bg-muted hover:text-foreground hover:border-primary/30"
+                      }`}
+                    onClick={() => toggleMood(mood)}
+                  >
+                    {mood}
+                  </Badge>
+                );
+              })}
+            </div>
+          </motion.div>
 
           {/* Primary Color */}
-          <div className="space-y-3">
-            <Label htmlFor="primaryColor" className="text-base font-medium text-neutral-200">
+          <motion.div variants={itemVariants} className="space-y-3">
+            <Label htmlFor="primaryColor" className="text-base font-medium text-foreground">
               Primary Brand Color{" "}
-              <span className="text-neutral-500 text-sm">(Optional)</span>
+              <span className="text-neutral-500 text-sm">(Optional - AI will suggest if empty)</span>
             </Label>
+            <p className="text-xs text-neutral-400 -mt-1">
+              Your brand color will influence the generated palette. Leave empty for AI-suggested colors.
+            </p>
             <div className="flex gap-3">
-              <div className="relative group/picker">
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 rounded-lg blur opacity-20 group-hover/picker:opacity-40 transition-opacity" />
-                <Input
-                  type="color"
-                  id="colorPicker"
-                  value={primaryColor || "#6366f1"}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="h-12 w-16 cursor-pointer border-white/10 bg-black p-1 relative z-10"
-                />
+              <div className="relative group/picker cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 rounded-xl blur opacity-20 group-hover/picker:opacity-40 transition-opacity" />
+                <div className="h-12 w-16 overflow-hidden rounded-xl border border-white/10 ring-2 ring-transparent group-hover/picker:ring-white/20 transition-all relative z-10 bg-black">
+                  <Input
+                    type="color"
+                    id="colorPicker"
+                    value={primaryColor || "#6366f1"}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="h-[150%] w-[150%] -translate-x-[25%] -translate-y-[25%] p-0 border-0 cursor-pointer"
+                  />
+                </div>
               </div>
               <Input
                 type="text"
                 placeholder="#6366f1"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                className="h-12 flex-1 font-mono bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:ring-primary/50"
+                className="h-12 flex-1 font-mono bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all rounded-xl hover:bg-white/10"
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* Description */}
-          <div className="space-y-3">
+          <motion.div variants={itemVariants} className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label htmlFor="description" className="text-base font-medium text-neutral-200">
+              <Label htmlFor="description" className="text-base font-medium text-foreground">
                 Project Description
               </Label>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="text-primary hover:text-primary hover:bg-primary/10 h-7"
+                className="text-primary hover:text-primary hover:bg-primary/10 h-7 rounded-full text-xs"
                 onClick={handleRandomPrompt}
                 title="Fill with random idea"
               >
-                <Dice5 className="h-4 w-4 mr-1.5" />
+                <Dice5 className="h-3 w-3 mr-1.5" />
                 Surprise Me
               </Button>
             </div>
-            <Textarea
-              id="description"
-              placeholder={EXAMPLE_PROMPTS[placeholderIndex]}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="min-h-24 resize-none bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:ring-primary/50 transition-all"
-            />
+            <div className="relative group/textarea">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-xl opacity-0 group-focus-within/textarea:opacity-100 transition-opacity duration-500 blur" />
+              <Textarea
+                id="description"
+                placeholder={EXAMPLE_PROMPTS[placeholderIndex]}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="min-h-32 resize-none bg-background border-2 border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary relative z-10 rounded-xl transition-all hover:border-primary/50 hover:shadow-sm"
+              />
+            </div>
 
             {/* Suggestion Chips */}
             <div className="flex flex-wrap gap-2 pt-1">
               <span className="text-xs text-neutral-500 flex items-center mr-1">
-                <Lightbulb className="h-3 w-3 mr-1" />
+                <Lightbulb className="h-3 w-3 mr-1 text-yellow-500" />
                 Quick Start:
               </span>
               {SUGGESTION_CHIPS.map((chip) => (
@@ -371,43 +483,49 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                   key={chip.label}
                   type="button"
                   onClick={() => handleSuggestionClick(chip)}
-                  className="text-xs px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 text-neutral-400 hover:text-primary transition-all"
+                  className="text-xs px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 text-neutral-400 hover:text-primary transition-all hover:scale-105 active:scale-95"
                 >
                   {chip.label}
                 </button>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Submit Button */}
-          <div className="space-y-6 pt-4">
+          <motion.div variants={itemVariants} className="space-y-6 pt-4">
             <MovingBorderButton
               borderRadius="0.75rem"
-              className="bg-black text-white dark:bg-slate-900 border-neutral-200 dark:border-slate-800"
+              className="bg-black text-white dark:bg-slate-900 border-neutral-200 dark:border-slate-800 font-bold tracking-wide"
               containerClassName="w-full h-14"
               disabled={brandMood.length === 0 || isLoading}
               onClick={handleSubmit}
             >
               {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold"><NumberTicker value={progress} />%</span>
-                  <span className="text-neutral-300">Generating System...</span>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500">
+                      <NumberTicker value={progress} />%
+                    </span>
+                    <div className="absolute -inset-4 bg-primary/20 blur-lg rounded-full animate-pulse" />
+                  </div>
+                  <span className="text-neutral-300 font-medium tracking-tight">Constructing System...</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-lg font-bold">
-                  <Brain className="h-5 w-5" />
+                <div className="flex items-center gap-2 text-lg">
+                  <Sparkles className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                   Generate Design System
                 </div>
               )}
             </MovingBorderButton>
 
             {brandMood.length === 0 && !isLoading && (
-              <p className="text-sm text-red-400 text-center animate-pulse">
-                Please select at least one brand mood to proceed
+              <p className="text-sm text-red-400 text-center animate-pulse flex items-center justify-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                Select a mood to proceed
               </p>
             )}
-          </div>
-        </form>
+          </motion.div>
+        </motion.form>
       </CardContent>
     </Card>
   );

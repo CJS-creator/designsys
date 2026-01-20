@@ -936,10 +936,10 @@ export const DesignSystemPresets = ({ onApplyPreset }: DesignSystemPresetsProps)
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header & Search */}
-      <div className="flex flex-col xl:flex-row gap-6 items-center justify-between bg-black/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-blue-500/10 pointer-events-none" />
+      <div className="flex flex-col xl:flex-row gap-6 items-center justify-between bg-card/95 backdrop-blur-xl p-8 rounded-3xl border-2 border-border/50 relative overflow-hidden shadow-xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 opacity-50 pointer-events-none" />
         <div className="space-y-2 relative z-10 text-center xl:text-left">
-          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+          <h2 className="text-3xl font-bold text-foreground">
             Design System Presets
           </h2>
           <p className="text-neutral-400 max-w-md">
@@ -954,7 +954,7 @@ export const DesignSystemPresets = ({ onApplyPreset }: DesignSystemPresetsProps)
               placeholder="Search styles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-12 bg-white/5 border-white/10 text-white w-full sm:w-72 focus:ring-primary/50 focus:bg-white/10 transition-all rounded-xl"
+              className="pl-10 h-12 bg-background border-2 border-border text-foreground w-full sm:w-72 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all rounded-xl hover:border-primary/50 hover:shadow-sm font-medium"
             />
           </div>
         </div>
@@ -966,9 +966,9 @@ export const DesignSystemPresets = ({ onApplyPreset }: DesignSystemPresetsProps)
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
-            className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${selectedCategory === category
-              ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105"
-              : "bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white border border-white/5"
+            className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${selectedCategory === category
+              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]"
+              : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border-2 border-border hover:border-primary/50"
               }`}
           >
             {category}
@@ -980,18 +980,32 @@ export const DesignSystemPresets = ({ onApplyPreset }: DesignSystemPresetsProps)
       <BentoGrid className="max-w-7xl mx-auto md:auto-rows-auto">
         {filteredPresets.map((preset, i) => (
           <CardContainer key={preset.name} className="inter-var h-full">
-            <CardBody className="bg-black/40 relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] dark:bg-black/40 dark:border-white/[0.1] border-black/[0.1] w-full h-auto rounded-xl p-6 border backdrop-blur-md transition-colors hover:bg-black/60">
+            <CardBody className="bg-card/95 relative group/card hover:shadow-2xl hover:shadow-primary/10 border-2 border-border/50 w-full h-auto rounded-2xl p-6 backdrop-blur-md transition-all hover:border-primary/30 hover:scale-[1.02] overflow-hidden">
+              {/* Colored accent border */}
+              <div
+                className="absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 group-hover/card:w-2"
+                style={{ backgroundColor: preset.system.colors.primary }}
+              />
 
-              <CardItem translateZ="50" className="w-full flex justify-between items-start">
+              <CardItem translateZ="50" className="w-full flex justify-between items-start relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-xl bg-neutral-900/50 border border-white/10 shadow-inner">
-                    <preset.icon className="h-6 w-6" style={{ color: preset.system.colors.primary }} />
+                  <div
+                    className="p-3 rounded-xl border-2 shadow-inner transition-all duration-300 group-hover/card:scale-110"
+                    style={{
+                      backgroundColor: `${preset.system.colors.primary}15`,
+                      borderColor: `${preset.system.colors.primary}40`
+                    }}
+                  >
+                    <preset.icon className="h-6 w-6 transition-transform duration-300 group-hover/card:rotate-12" style={{ color: preset.system.colors.primary }} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-neutral-200 group-hover/card:text-white transition-colors">
+                    <h3
+                      className="text-xl font-bold transition-colors group-hover/card:opacity-90"
+                      style={{ color: preset.system.colors.primary }}
+                    >
                       {preset.name}
                     </h3>
-                    <p className="text-xs text-neutral-500 font-mono mt-0.5">{preset.category}</p>
+                    <p className="text-xs text-muted-foreground font-mono mt-0.5 uppercase tracking-wider">{preset.category}</p>
                   </div>
                 </div>
                 {/* Color Bubbles */}
@@ -1031,7 +1045,7 @@ export const DesignSystemPresets = ({ onApplyPreset }: DesignSystemPresetsProps)
                   translateZ={20}
                   as="button"
                   onClick={() => onApplyPreset(preset.system)}
-                  className="px-6 py-2 rounded-xl bg-white/10 hover:bg-white hover:text-black border border-white/10 text-white text-xs font-bold transition-all duration-300"
+                  className="px-6 py-2.5 rounded-xl bg-primary/10 hover:bg-primary hover:text-primary-foreground border-2 border-primary/30 hover:border-primary text-primary text-xs font-bold transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
                 >
                   Apply &rarr;
                 </CardItem>

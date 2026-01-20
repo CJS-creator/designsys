@@ -14,39 +14,22 @@ export function SpacingDisplay({ spacing }: SpacingDisplayProps) {
   };
 
   return (
-    <Card className="border-border/50 bg-card/80 backdrop-blur-sm shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Maximize2 className="h-5 w-5 text-primary" />
-          Spacing Scale
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Base unit:</span>
-            <code className="px-2 py-0.5 bg-muted rounded font-mono">{spacing.unit}px</code>
+    <div className="grid gap-3">
+      {Object.entries(spacing.scale).map(([key, value], index) => (
+        <button
+          key={key}
+          onClick={() => copyValue(value)}
+          className="flex items-center gap-4 w-full p-2 rounded-lg hover:bg-muted/50 transition-all group border border-transparent hover:border-border/50"
+        >
+          <div className="w-12 text-right">
+            <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase">{key}</span>
           </div>
-          <div className="space-y-2">
-            {Object.entries(spacing.scale).map(([key, value]) => (
-              <button
-                key={key}
-                onClick={() => copyValue(value)}
-                className="flex items-center gap-4 w-full p-2 rounded-lg hover:bg-muted/50 transition-colors group"
-              >
-                <span className="text-xs font-mono text-muted-foreground w-6">{key}</span>
-                <div className="flex-1 flex items-center gap-3">
-                  <div
-                    className="bg-primary rounded-sm h-6 transition-all"
-                    style={{ width: value }}
-                  />
-                  <span className="text-xs font-mono text-muted-foreground">{value}</span>
-                </div>
-              </button>
-            ))}
+          <div className="flex-1 flex items-center gap-4">
+            <div className="h-4 bg-primary/20 rounded-sm transition-all duration-300 group-hover:bg-primary/30" style={{ width: `min(100%, ${parseInt(value) * 2}px)` }} />
+            <span className="text-[10px] font-mono text-muted-foreground">{value}</span>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </button>
+      ))}
+    </div>
   );
 }

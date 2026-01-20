@@ -28,116 +28,159 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MousePointer className="h-5 w-5" />
-          Interactive States
-        </CardTitle>
-        <CardDescription>Hover, active, disabled, and focus color tokens</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {colorGroups.map((group) => (
-          <div key={group.name} className="space-y-3">
-            <div className="flex items-center gap-3">
+    <div className="space-y-12 p-4">
+      <div className="grid gap-10">
+        {colorGroups.map((group, groupIdx) => (
+          <div key={group.name} className="space-y-6">
+            <div className="flex items-center gap-4">
               <div
-                className="w-8 h-8 rounded-lg border border-border"
+                className="w-12 h-12 rounded-2xl shadow-lg border-2 border-white/10"
                 style={{ background: group.base }}
               />
-              <h3 className="font-semibold">{group.name}</h3>
+              <div>
+                <h3 className="text-xl font-bold tracking-tight">{group.name} System</h3>
+                <p className="text-sm text-muted-foreground">Reactive states for {group.name.toLowerCase()} elements</p>
+              </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {Object.entries(group.states).map(([state, color]) => (
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {Object.entries(group.states).map(([state, color], idx) => (
                 <div
                   key={state}
-                  className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-2"
+                  className="group relative p-5 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1"
+                  style={{ animationDelay: `${(groupIdx * 4 + idx) * 50}ms` }}
                 >
-                  <div className="flex items-center gap-2">
-                    {stateIcons[state as keyof typeof stateIcons]}
-                    <span className="text-sm font-medium capitalize">{state}</span>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+                      {stateIcons[state as keyof typeof stateIcons]}
+                      <span className="text-xs font-bold uppercase tracking-widest">{state}</span>
+                    </div>
                   </div>
+
                   <div
-                    className="h-10 rounded-md border border-border/50"
+                    className="h-16 rounded-xl border border-white/10 shadow-inner relative overflow-hidden mb-3"
                     style={{ background: color }}
-                  />
-                  <div className="text-xs text-muted-foreground font-mono truncate">
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" />
+                  </div>
+
+                  <div className="text-xs font-mono text-muted-foreground/80 bg-black/20 px-2 py-1 rounded inline-block">
                     {color}
+                  </div>
+
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div
+                      className="h-2 w-2 rounded-full animate-ping"
+                      style={{ backgroundColor: color }}
+                    />
                   </div>
                 </div>
               ))}
             </div>
           </div>
         ))}
+      </div>
 
-        {/* Border & Overlay Colors */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg border border-border/50 bg-muted/20 space-y-2">
-            <h4 className="font-medium text-sm">Overlay</h4>
+      {/* Surface & Semantic Tokens */}
+      <div className="space-y-6 pt-6 border-t border-white/5">
+        <h3 className="text-lg font-bold flex items-center gap-2">
+          <Focus className="h-5 w-5 text-primary" />
+          Surface & Semantic Tokens
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Overlay */}
+          <div className="p-6 rounded-2xl border border-white/5 bg-white/5 space-y-4 group">
+            <div className="flex justify-between items-center">
+              <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Overlay</h4>
+              <span className="text-xs font-mono text-muted-foreground">{colors.overlay}</span>
+            </div>
             <div
-              className="h-12 rounded-md border border-border/50 relative overflow-hidden"
-              style={{ background: `linear-gradient(45deg, #888 25%, transparent 25%), linear-gradient(-45deg, #888 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #888 75%), linear-gradient(-45deg, transparent 75%, #888 75%)`, backgroundSize: '10px 10px', backgroundPosition: '0 0, 0 5px, 5px -5px, -5px 0px' }}
+              className="h-24 rounded-xl border border-white/10 relative overflow-hidden"
+              style={{ background: `linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%)`, backgroundSize: '12px 12px' }}
             >
               <div
-                className="absolute inset-0"
+                className="absolute inset-0 transition-opacity group-hover:opacity-80"
                 style={{ background: colors.overlay }}
               />
             </div>
-            <div className="text-xs text-muted-foreground font-mono">{colors.overlay}</div>
           </div>
 
-          <div className="p-4 rounded-lg border border-border/50 bg-muted/20 space-y-2">
-            <h4 className="font-medium text-sm">Border</h4>
-            <div
-              className="h-12 rounded-md"
-              style={{ border: `3px solid ${colors.border}`, background: colors.background }}
-            />
-            <div className="text-xs text-muted-foreground font-mono">{colors.border}</div>
-          </div>
-
-          <div className="p-4 rounded-lg border border-border/50 bg-muted/20 space-y-2">
-            <h4 className="font-medium text-sm">Border Light</h4>
-            <div
-              className="h-12 rounded-md"
-              style={{ border: `3px solid ${colors.borderLight}`, background: colors.background }}
-            />
-            <div className="text-xs text-muted-foreground font-mono">{colors.borderLight}</div>
-          </div>
-        </div>
-
-        {/* Interactive Demo */}
-        <div className="p-4 rounded-lg bg-muted/30 border border-border/50">
-          <h4 className="font-medium text-sm mb-3">Interactive Demo</h4>
-          <div className="flex flex-wrap gap-3">
-            {colorGroups.map((group) => (
-              <button
-                key={group.name}
-                className="px-4 py-2 rounded-md font-medium text-white transition-all"
-                style={{
-                  background: group.base,
-                  ["--hover-bg" as string]: group.states.hover,
-                  ["--active-bg" as string]: group.states.active,
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = group.states.hover)}
-                onMouseLeave={(e) => (e.currentTarget.style.background = group.base)}
-                onMouseDown={(e) => (e.currentTarget.style.background = group.states.active)}
-                onMouseUp={(e) => (e.currentTarget.style.background = group.states.hover)}
+          {/* Border Tokens */}
+          <div className="p-6 rounded-2xl border border-white/5 bg-white/5 space-y-4 group">
+            <div className="flex justify-between items-center">
+              <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Borders</h4>
+              <span className="text-xs font-mono text-muted-foreground">{colors.border}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div
+                className="h-24 rounded-xl flex items-center justify-center transition-all group-hover:scale-105"
+                style={{ border: `2px solid ${colors.border}`, background: colors.background }}
               >
-                {group.name}
-              </button>
-            ))}
-            <button
-              className="px-4 py-2 rounded-md font-medium transition-all cursor-not-allowed"
-              style={{
-                background: interactive.primary.disabled,
-                color: colors.textSecondary,
-              }}
-              disabled
-            >
-              Disabled
-            </button>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50">Standard</span>
+              </div>
+              <div
+                className="h-24 rounded-xl flex items-center justify-center transition-all group-hover:scale-105"
+                style={{ border: `2px solid ${colors.borderLight}`, background: colors.background }}
+              >
+                <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50">Light</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Backgrounds */}
+          <div className="p-6 rounded-2xl border border-white/5 bg-white/5 space-y-4 group">
+            <div className="flex justify-between items-center">
+              <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Backgrounds</h4>
+              <span className="text-xs font-mono text-muted-foreground">{colors.background}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div
+                className="h-24 rounded-xl shadow-lg transition-all group-hover:scale-105"
+                style={{ background: colors.background }}
+              />
+              <div
+                className="h-24 rounded-xl shadow-lg transition-all group-hover:scale-105"
+                style={{ background: colors.surface }}
+              />
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Real-world Preview Buttons */}
+      <div className="p-8 rounded-3xl bg-primary/5 border border-primary/10 mt-10">
+        <h4 className="text-sm font-bold text-primary uppercase tracking-widest mb-6 text-center">Interactive Playground</h4>
+        <div className="flex flex-wrap items-center justify-center gap-6">
+          {colorGroups.map((group) => (
+            <button
+              key={group.name}
+              className="px-8 py-4 rounded-2xl font-bold text-white shadow-lg transition-all transform active:scale-95 hover:-translate-y-1 hover:shadow-2xl"
+              style={{
+                background: group.base,
+                ["--hover-bg" as string]: group.states.hover,
+                ["--active-bg" as string]: group.states.active,
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = group.states.hover)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = group.base)}
+              onMouseDown={(e) => (e.currentTarget.style.background = group.states.active)}
+              onMouseUp={(e) => (e.currentTarget.style.background = group.states.hover)}
+            >
+              {group.name} Action
+            </button>
+          ))}
+          <button
+            className="px-8 py-4 rounded-2xl font-bold transition-all cursor-not-allowed opacity-50 grayscale"
+            style={{
+              background: interactive.primary.disabled,
+              color: colors.textSecondary,
+              border: `1px solid ${colors.border}`
+            }}
+            disabled
+          >
+            Disabled State
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

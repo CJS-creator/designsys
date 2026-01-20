@@ -1,11 +1,13 @@
 import { GeneratedDesignSystem } from "@/types/designSystem";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { getContrastRatio, getWCAGCompliance, optimizeColorForContrast, WCAGLevel } from "@/lib/colorUtils";
+import { getContrastRatio, getWCAGCompliance, optimizeColorForContrast } from "@/lib/colorUtils";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { CheckCircle2, AlertCircle, Info, Activity, ShieldCheck, Zap, Sparkles } from "lucide-react";
+import {
+    CheckCircle2, AlertCircle, Info, Activity, ShieldCheck, Zap, Sparkles,
+    Palette, Type, Maximize2
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface DesignInsightsProps {
@@ -62,10 +64,10 @@ export const DesignInsights = ({ designSystem, onUpdate }: DesignInsightsProps) 
 
     // 2. Token Statistics
     const tokenStats = [
-        { label: "Colors", count: Object.keys(colors).length + Object.keys(colors.interactive).length * 4 },
-        { label: "Typography", count: Object.keys(typography.sizes).length },
-        { label: "Spacing", count: Object.keys(spacing.scale).length },
-        { label: "Effects", count: Object.keys(shadows).length + Object.keys(borderRadius).length },
+        { label: "Colors", count: Object.keys(colors).length + Object.keys(colors.interactive).length * 4, icon: Palette },
+        { label: "Typography", count: Object.keys(typography.sizes).length, icon: Type },
+        { label: "Spacing", count: Object.keys(spacing.scale).length, icon: Maximize2 },
+        { label: "Effects", count: Object.keys(shadows).length + Object.keys(borderRadius).length, icon: Sparkles },
     ];
 
     // 3. DNA Data (Simplified visualization of design intent)
@@ -76,162 +78,174 @@ export const DesignInsights = ({ designSystem, onUpdate }: DesignInsightsProps) 
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-6">
+        <div className="space-y-10 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Overall Health */}
-                <Card className="glass-card">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4 text-primary" />
-                            Design Health
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold mb-2">{Math.round(accessibilityScore)}%</div>
-                        <Progress value={accessibilityScore} className="h-2" />
-                        <p className="text-xs text-muted-foreground mt-2">
-                            Based on WCAG contrast compliance and token completeness.
+                <div className="p-6 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-md relative overflow-hidden group transition-all hover:bg-white/10">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <ShieldCheck className="h-12 w-12 text-primary" />
+                    </div>
+                    <div className="relative z-10">
+                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Design Health</p>
+                        <div className="flex items-baseline gap-2">
+                            <div className="text-4xl font-black tracking-tighter text-white">{Math.round(accessibilityScore)}%</div>
+                            <span className="text-xs font-bold text-success">Optimized</span>
+                        </div>
+                        <Progress value={accessibilityScore} className="h-1.5 mt-4 bg-white/10" />
+                        <p className="text-[10px] text-muted-foreground mt-3 leading-relaxed">
+                            Calculated via WCAG 2.1 contrast compliance and token completeness mapping.
                         </p>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
 
                 {/* Token Count */}
-                <Card className="glass-card">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <Activity className="h-4 w-4 text-primary" />
-                            Total Tokens
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold mb-2">
+                <div className="p-6 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-md relative overflow-hidden group transition-all hover:bg-white/10">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Activity className="h-12 w-12 text-primary" />
+                    </div>
+                    <div className="relative z-10">
+                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">System Entropy</p>
+                        <div className="text-4xl font-black tracking-tighter text-white">
                             {tokenStats.reduce((acc, curr) => acc + curr.count, 0)}
                         </div>
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex gap-1.5 mt-4 flex-wrap">
                             {tokenStats.map(stat => (
-                                <Badge key={stat.label} variant="secondary" className="text-[10px]">
-                                    {stat.label}: {stat.count}
-                                </Badge>
+                                <div key={stat.label} className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-[9px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                    <stat.icon className="h-2.5 w-2.5" />
+                                    {stat.count}
+                                </div>
                             ))}
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
 
                 {/* DNA Composition */}
-                <Card className="glass-card">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <Zap className="h-4 w-4 text-primary" />
-                            Style DNA
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-[80px] pt-0">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={dnaData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={20}
-                                    outerRadius={35}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {dnaData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
+                <div className="p-6 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-md relative overflow-hidden group transition-all hover:bg-white/10">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Zap className="h-12 w-12 text-primary" />
+                    </div>
+                    <div className="relative z-10">
+                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Style DNA</p>
+                        <div className="h-[75px] w-full -mt-2">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={dnaData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={22}
+                                        outerRadius={32}
+                                        paddingAngle={8}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {dnaData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '12px', fontSize: '10px' }}
+                                        itemStyle={{ color: '#fff' }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Accessibility Details */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="text-lg">Contrast Audit</CardTitle>
-                            <CardDescription>WCAG 2.1 compliance for core brand colors</CardDescription>
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Accessibility Details */}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <h3 className="text-xl font-bold flex items-center gap-2">
+                            Contrast Analytics
+                        </h3>
                         <Button
-                            variant="outline"
+                            variant="default"
                             size="sm"
-                            className="gap-2 border-primary/20 hover:bg-primary/5"
+                            className="h-8 gap-2 bg-primary/20 hover:bg-primary/30 text-primary border-none font-bold text-xs rounded-full px-4"
                             onClick={handleSmartFix}
                         >
-                            <Sparkles className="h-4 w-4 text-primary" />
+                            <Sparkles className="h-3 w-3" />
                             Smart Fix
                         </Button>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
+
+                    <div className="grid gap-3">
                         {[
-                            { label: "Primary on Background", result: primaryContrast, color: colors.primary },
-                            { label: "Secondary on Background", result: secondaryContrast, color: colors.secondary },
-                            { label: "Text on Background", result: textContrast, color: colors.text },
+                            { label: "Primary / BG", result: primaryContrast, color: colors.primary },
+                            { label: "Secondary / BG", result: secondaryContrast, color: colors.secondary },
+                            { label: "Text / BG", result: textContrast, color: colors.text },
                         ].map((item, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-                                <div className="flex items-center gap-3">
+                            <div key={i} className="group flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all">
+                                <div className="flex items-center gap-4">
                                     <div
-                                        className="w-4 h-4 rounded-full border"
+                                        className="w-10 h-10 rounded-full border-2 border-white/10 shadow-lg"
                                         style={{ backgroundColor: item.color }}
                                     />
-                                    <span className="text-sm font-medium">{item.label}</span>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="text-right">
-                                        <p className="text-xs text-muted-foreground">Ratio</p>
-                                        <p className="text-sm font-mono">{item.result.ratio}:1</p>
+                                    <div>
+                                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{item.label}</p>
+                                        <p className="text-sm font-mono text-white/90">{item.result.ratio}:1 Ratio</p>
                                     </div>
+                                </div>
+                                <div className="flex items-center gap-3">
                                     <Badge
-                                        variant={item.result.status === "Fail" ? "destructive" : "default"}
-                                        className={item.result.status === "AAA" ? "bg-success hover:bg-success/80" : ""}
+                                        variant={item.result.status === "Fail" ? "destructive" : "outline"}
+                                        className={`rounded-full px-3 py-1 font-bold text-[10px] tracking-widest ${item.result.status === "AAA" ? "bg-primary/20 text-primary border-primary/20" : ""}`}
                                     >
-                                        {item.result.status === "Fail" ? (
-                                            <AlertCircle className="h-3 w-3 mr-1" />
-                                        ) : (
-                                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                                        )}
                                         {item.result.status}
                                     </Badge>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </CardContent>
-            </Card>
+                </div>
 
-            {/* Design Recommendations */}
-            <Card className="border-primary/20 bg-primary/5">
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <Info className="h-5 w-5 text-primary" />
-                        AI Design Recommendations
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm space-y-2 text-muted-foreground">
-                    {accessibilityScore < 70 && (
-                        <p className="flex items-start gap-2">
-                            <span className="text-primary">•</span>
-                            Your primary or secondary color has low contrast against the background. Consider darkening the primary color for better accessibility.
-                        </p>
-                    )}
-                    {Object.keys(spacing.scale).length < 10 && (
-                        <p className="flex items-start gap-2">
-                            <span className="text-primary">•</span>
-                            Your spacing scale is quite tight. Adding a few more large values (e.g., 48, 64) could improve layout flexibility.
-                        </p>
-                    )}
-                    <p className="flex items-start gap-2">
-                        <span className="text-primary">•</span>
-                        The "{typography.fontFamily.heading}" font pairs well with "{typography.fontFamily.body}", providing a professional and clean look.
-                    </p>
-                </CardContent>
-            </Card>
+                {/* Design Recommendations */}
+                <div className="space-y-6">
+                    <h3 className="text-xl font-bold px-2">AI Optimization Feed</h3>
+                    <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10 relative overflow-hidden group min-h-[250px]">
+                        <div className="absolute -top-10 -right-10 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <Info className="h-40 w-40 text-primary" />
+                        </div>
+
+                        <div className="relative z-10 space-y-6">
+                            {accessibilityScore < 70 && (
+                                <div className="flex items-start gap-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                                    <AlertCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-red-200/80 leading-relaxed font-medium">
+                                        Contrast levels are below enterprise standards. <span className="text-red-400 underline cursor-pointer" onClick={handleSmartFix}>Apply Smart Fix</span> to automatically adjust saturation for WCAG compliance.
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="space-y-4">
+                                {Object.keys(spacing.scale).length < 10 && (
+                                    <div className="flex items-start gap-4">
+                                        <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0 shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            The spacing scale is constrained. Expanding to include hyper-scale values (48px+) would enhance layout hierarchy.
+                                        </p>
+                                    </div>
+                                )}
+                                <div className="flex items-start gap-4">
+                                    <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0 shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                        Heading typeface "<span className="text-white font-bold">{typography.fontFamily.heading.split(',')[0]}</span>" demonstrates excellent geometric balance with your primary brand font.
+                                    </p>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0 shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                        Shadow definitions are consistent. The "<span className="text-white font-bold">large</span>" preset provides optimal elevation for modal depth.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

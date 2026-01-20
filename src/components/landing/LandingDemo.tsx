@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Wand2, RefreshCw, Layers, Type, Palette } from "lucide-react";
+import { Wand2, RefreshCw, Layers, Type, Palette, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const themes = [
     {
@@ -34,6 +35,31 @@ const themes = [
     },
 ];
 
+const TypewriterCode = ({ code }: { code: string }) => {
+    const [displayCode, setDisplayCode] = useState("");
+
+    useEffect(() => {
+        let i = 0;
+        setDisplayCode("");
+        const interval = setInterval(() => {
+            if (i < code.length) {
+                setDisplayCode(prev => prev + code.charAt(i));
+                i++;
+            } else {
+                clearInterval(interval);
+            }
+        }, 20); // Typing speed
+        return () => clearInterval(interval);
+    }, [code]);
+
+    return (
+        <pre className="font-mono text-xs text-blue-300 overflow-x-auto whitespace-pre-wrap break-all">
+            {displayCode}
+            <span className="animate-pulse inline-block w-2 H-4 bg-primary ml-1">|</span>
+        </pre>
+    );
+};
+
 export const LandingDemo = () => {
     const [currentTheme, setCurrentTheme] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -47,172 +73,189 @@ export const LandingDemo = () => {
 
     const theme = themes[currentTheme];
 
+    // Dynamic particle explosion effect on theme change
+    const Particles = () => (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {[...Array(12)].map((_, i) => (
+                <motion.div
+                    key={i}
+                    initial={{ opacity: 1, scale: 0, x: 0, y: 0 }}
+                    animate={{ opacity: 0, scale: Math.random() * 2, x: (Math.random() - 0.5) * 400, y: (Math.random() - 0.5) * 400 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="absolute top-1/2 left-1/2 w-4 h-4 rounded-full"
+                    style={{ backgroundColor: i % 2 === 0 ? theme.primary : theme.secondary }}
+                />
+            ))}
+        </div>
+    );
+
     return (
-        <section className="py-24 bg-background relative overflow-hidden">
+        <section className="py-32 bg-background relative overflow-hidden">
             <div className="container mx-auto px-4">
-                <div className="flex flex-col lg:flex-row items-center gap-16">
+                <div className="flex flex-col lg:flex-row items-center gap-20">
 
                     {/* Left Side: Controls */}
-                    <div className="flex-1 max-w-xl">
+                    <div className="flex-1 max-w-xl relative">
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-6"
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-8"
                         >
                             <Wand2 className="h-3 w-3" />
                             Live Preview
                         </motion.div>
 
-                        <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                            Experience the Magic of <br />
-                            <span className="text-primary">Instant Generation</span>
+                        <h2 className="text-4xl md:text-6xl font-black mb-8 leading-tight tracking-tight">
+                            One Click, <br />
+                            <span className="text-primary">Infinite Possibilities</span>
                         </h2>
 
-                        <p className="text-lg text-muted-foreground mb-8">
+                        <p className="text-xl text-muted-foreground mb-10 leading-relaxed font-medium">
                             Don't just take our word for it. Click the button to see how DesignForge instantly reimagines an entire interface with semantic consistency.
                         </p>
 
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 mb-12 relative z-10">
                             <Button
                                 size="lg"
                                 onClick={generateTheme}
                                 disabled={isAnimating}
-                                className="h-14 px-8 text-lg rounded-full shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-1"
+                                className="h-16 px-10 text-lg rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all hover:scale-105 active:scale-95 font-bold uppercase tracking-wide"
                             >
-                                <RefreshCw className={`mr-2 h-5 w-5 ${isAnimating ? "animate-spin" : ""}`} />
-                                {isAnimating ? "Generating..." : "Generate New System"}
+                                <RefreshCw className={cn("mr-3 h-5 w-5", isAnimating && "animate-spin")} />
+                                {isAnimating ? "Generating..." : "Generate System"}
                             </Button>
                         </div>
 
-                        <div className="mt-12 grid grid-cols-3 gap-6">
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-primary font-semibold">
-                                    <Palette className="h-4 w-4" /> Colors
+                        {/* Interactive particles container */}
+                        <AnimatePresence>
+                            {isAnimating && <Particles />}
+                        </AnimatePresence>
+
+                        <div className="grid grid-cols-3 gap-8 border-t border-border/50 pt-8">
+                            {[
+                                { icon: Palette, label: "Colors", desc: "Semantic HSL palettes" },
+                                { icon: Type, label: "Typography", desc: "Fluid type scales" },
+                                { icon: Layers, label: "Tokens", desc: "W3C standard export" },
+                            ].map((item, i) => (
+                                <div key={i} className="flex flex-col gap-3 group cursor-default">
+                                    <div className="flex items-center gap-2 text-foreground font-bold group-hover:text-primary transition-colors">
+                                        <item.icon className="h-5 w-5" /> {item.label}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground font-medium leading-relaxed">{item.desc}</div>
                                 </div>
-                                <div className="text-sm text-muted-foreground">Semantic HSL palettes generated automatically.</div>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-primary font-semibold">
-                                    <Type className="h-4 w-4" /> Typography
-                                </div>
-                                <div className="text-sm text-muted-foreground">Perfectly scaled type ramps and pairings.</div>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-primary font-semibold">
-                                    <Layers className="h-4 w-4" /> Tokens
-                                </div>
-                                <div className="text-sm text-muted-foreground">W3C standard tokens ready for export.</div>
-                            </div>
+                            ))}
                         </div>
                     </div>
 
                     {/* Right Side: Preview Card */}
-                    <div className="flex-1 w-full relative perspective-1000">
+                    <div className="flex-1 w-full relative perspective-[2000px]">
                         {/* Background Decorations */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-full blur-[100px] -z-10" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 to-secondary/30 rounded-full blur-[120px] -z-10 animate-pulse-soft" />
 
                         <motion.div
                             layout
-                            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                            className="bg-card border border-border/50 rounded-2xl shadow-2xl overflow-hidden p-6 md:p-8"
+                            key={currentTheme} // Force re-render for clean transition
+                            initial={{ rotateY: -5, opacity: 0, scale: 0.9 }}
+                            animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+                            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                            className="bg-zinc-950/90 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden p-8 md:p-10 relative ring-1 ring-white/20"
                             style={{
                                 fontFamily: theme.font,
                             }}
                         >
+                            {/* Window Chrome */}
+                            <div className="flex items-center gap-2 mb-8 opacity-50">
+                                <div className="w-3 h-3 rounded-full bg-red-500" />
+                                <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                                <div className="w-3 h-3 rounded-full bg-green-500" />
+                            </div>
+
                             {/* Mini App Header */}
                             <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-8 w-8 rounded-lg" style={{ backgroundColor: theme.primary, borderRadius: theme.radius }} />
-                                    <div className="font-bold text-lg">App UI</div>
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 shadow-lg" style={{ backgroundColor: theme.primary, borderRadius: theme.radius }} />
+                                    <div>
+                                        <div className="font-bold text-lg leading-none">Dashboard</div>
+                                        <div className="text-xs opacity-50 mt-1">v2.4.0</div>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                    <span>Dashboard</span>
-                                    <span>Settings</span>
-                                    <div className="h-8 w-8 rounded-full bg-muted" />
+                                <div className="flex items-center gap-2 bg-white/5 rounded-full p-1 pr-4 border border-white/5">
+                                    <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">JD</div>
+                                    <span className="text-xs font-medium opacity-70">John Doe</span>
+                                    <ChevronRight className="h-3 w-3 opacity-50 ml-auto" />
                                 </div>
                             </div>
 
                             {/* Mini App Content */}
-                            <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="grid grid-cols-2 gap-4 mb-8">
                                 <div
-                                    className="p-4 rounded-xl border transition-colors duration-500"
+                                    className="p-5 border transition-all duration-500 shadow-lg relative overflow-hidden group"
                                     style={{
-                                        borderColor: `${theme.primary}40`,
+                                        borderColor: `${theme.primary}30`,
                                         backgroundColor: `${theme.primary}10`,
                                         borderRadius: theme.radius
                                     }}
                                 >
-                                    <div className="text-sm text-muted-foreground mb-1">Total Revenue</div>
-                                    <div className="text-2xl font-bold" style={{ color: theme.primary }}>$45,231</div>
+                                    <div className="text-xs font-bold opacity-60 mb-1 uppercase tracking-wider">Revenue</div>
+                                    <div className="text-3xl font-black tracking-tight" style={{ color: theme.primary }}>$84k</div>
+                                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-current to-transparent opacity-30" style={{ color: theme.primary }} />
                                 </div>
                                 <div
-                                    className="p-4 rounded-xl border transition-colors duration-500"
+                                    className="p-5 border transition-all duration-500 shadow-lg"
                                     style={{
-                                        borderColor: `${theme.secondary}40`,
+                                        borderColor: `${theme.secondary}30`,
                                         backgroundColor: `${theme.secondary}10`,
                                         borderRadius: theme.radius
                                     }}
                                 >
-                                    <div className="text-sm text-muted-foreground mb-1">Active Users</div>
-                                    <div className="text-2xl font-bold" style={{ color: theme.secondary }}>+2,543</div>
+                                    <div className="text-xs font-bold opacity-60 mb-1 uppercase tracking-wider">Growth</div>
+                                    <div className="text-3xl font-black tracking-tight" style={{ color: theme.secondary }}>+24%</div>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <div className="h-32 rounded-xl bg-muted/50 w-full animate-pulse" style={{ borderRadius: theme.radius }} />
-                                <div className="flex gap-4">
+                                <div className="h-28 bg-white/5 w-full animate-pulse border border-white/5" style={{ borderRadius: theme.radius }} />
+                                <div className="flex gap-4 pt-4">
                                     <Button
-                                        className="flex-1 transition-all duration-500"
+                                        className="flex-1 h-12 font-bold shadow-lg transition-all duration-500 hover:brightness-110"
                                         style={{
                                             backgroundColor: theme.primary,
                                             borderRadius: theme.radius
                                         }}
                                     >
-                                        Primary Action
+                                        Edit Profile
                                     </Button>
                                     <Button
                                         variant="outline"
-                                        className="flex-1 transition-all duration-500"
+                                        className="flex-1 h-12 font-bold bg-transparent transition-all duration-500 hover:bg-white/5"
                                         style={{
                                             borderColor: theme.primary,
                                             color: theme.primary,
                                             borderRadius: theme.radius
                                         }}
                                     >
-                                        Secondary
+                                        Settings
                                     </Button>
                                 </div>
                             </div>
 
                         </motion.div>
 
-                        {/* Floating Code Snippet */}
+                        {/* Floating Live Code Snippet */}
                         <motion.div
-                            key={currentTheme}
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            key={`code-${currentTheme}`}
+                            initial={{ opacity: 0, y: 10, scale: 0.9 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             transition={{ delay: 0.2 }}
-                            className="absolute -bottom-6 -right-6 md:right-0 bg-zinc-900 text-zinc-100 p-4 rounded-xl shadow-xl text-xs font-mono border border-zinc-700 hidden sm:block"
+                            className="absolute -bottom-8 -right-8 md:-right-12 bg-zinc-950 p-6 rounded-2xl shadow-2xl border border-zinc-800 hidden sm:block w-72"
                         >
-                            <div className="flex gap-1.5 mb-3">
-                                <div className="w-2 h-2 rounded-full bg-red-500" />
-                                <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                                <div className="w-2 h-2 rounded-full bg-green-500" />
+                            <div className="text-[10px] uppercase text-zinc-500 font-bold mb-2 tracking-widest flex items-center gap-2">
+                                <Wand2 className="h-3 w-3" /> Generated Output
                             </div>
-                            <div>
-                                <span className="text-purple-400">const</span> <span className="text-blue-400">theme</span> = {"{"}
-                            </div>
-                            <div className="pl-4">
-                                <span className="text-blue-300">primary</span>: <span className="text-orange-300">"{theme.primary}"</span>,
-                            </div>
-                            <div className="pl-4">
-                                <span className="text-blue-300">fontFamily</span>: <span className="text-orange-300">"{theme.font}"</span>,
-                            </div>
-                            <div className="pl-4">
-                                <span className="text-blue-300">radius</span>: <span className="text-orange-300">"{theme.radius}"</span>
-                            </div>
-                            <div>{"}"};</div>
+                            <TypewriterCode
+                                code={`const theme = {\n  primary: "${theme.primary}",\n  radius: "${theme.radius}",\n  font: "${theme.font}"\n};`}
+                            />
                         </motion.div>
                     </div>
                 </div>

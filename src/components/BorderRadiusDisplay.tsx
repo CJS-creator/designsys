@@ -14,33 +14,23 @@ export function BorderRadiusDisplay({ borderRadius }: BorderRadiusDisplayProps) 
   };
 
   return (
-    <Card className="border-border/50 bg-card/80 backdrop-blur-sm shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Circle className="h-5 w-5 text-primary" />
-          Border Radius
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-4 md:grid-cols-7 gap-4">
-          {Object.entries(borderRadius).map(([name, value]) => (
-            <button
-              key={name}
-              onClick={() => copyValue(value)}
-              className="flex flex-col items-center gap-2 group"
-            >
-              <div
-                className="h-16 w-16 bg-primary/80 transition-transform group-hover:scale-105"
-                style={{ borderRadius: value }}
-              />
-              <div className="text-center">
-                <p className="text-xs font-medium">{name}</p>
-                <p className="text-xs text-muted-foreground font-mono">{value}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+      {Object.entries(borderRadius).map(([name, value], index) => (
+        <button
+          key={name}
+          onClick={() => copyValue(value)}
+          className="flex flex-col items-center gap-3 group transition-all"
+        >
+          <div
+            className="h-16 w-full border border-border bg-background shadow-sm transition-all duration-300 group-hover:border-primary/50 group-hover:bg-primary/5"
+            style={{ borderRadius: value }}
+          />
+          <div className="text-center w-full">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">{name}</p>
+            <p className="text-[10px] font-mono text-muted-foreground/60">{value}</p>
+          </div>
+        </button>
+      ))}
+    </div>
   );
 }
