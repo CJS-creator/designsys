@@ -4,7 +4,54 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Palette, Sparkles, Layers, Building, CreditCard, Leaf, Briefcase, Zap, Heart, Music, Code, Search } from "lucide-react";
-import { GeneratedDesignSystem } from "@/types/designSystem";
+import { GeneratedDesignSystem, ColorPalette, DarkModeColors } from "@/types/designSystem";
+
+// Helper to determine if a color is light or dark
+const isLightColor = (hex: string): boolean => {
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5;
+};
+
+// Helper to lighten/darken a color
+const adjustColor = (hex: string, amount: number): string => {
+  const c = hex.replace('#', '');
+  const r = Math.min(255, Math.max(0, parseInt(c.substring(0, 2), 16) + amount));
+  const g = Math.min(255, Math.max(0, parseInt(c.substring(2, 4), 16) + amount));
+  const b = Math.min(255, Math.max(0, parseInt(c.substring(4, 6), 16) + amount));
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+};
+
+// Helper to create full color palette with all required properties
+const createColorPalette = (base: Omit<ColorPalette, 'onPrimary' | 'onSecondary' | 'onAccent' | 'onBackground' | 'onSurface' | 'primaryContainer' | 'onPrimaryContainer' | 'secondaryContainer' | 'onSecondaryContainer'>): ColorPalette => ({
+  ...base,
+  onPrimary: isLightColor(base.primary) ? '#000000' : '#FFFFFF',
+  onSecondary: isLightColor(base.secondary) ? '#000000' : '#FFFFFF',
+  onAccent: isLightColor(base.accent) ? '#000000' : '#FFFFFF',
+  onBackground: isLightColor(base.background) ? '#000000' : '#FFFFFF',
+  onSurface: isLightColor(base.surface) ? '#000000' : '#FFFFFF',
+  primaryContainer: adjustColor(base.primary, isLightColor(base.primary) ? -40 : 60),
+  onPrimaryContainer: isLightColor(base.primary) ? '#000000' : '#FFFFFF',
+  secondaryContainer: adjustColor(base.secondary, isLightColor(base.secondary) ? -40 : 60),
+  onSecondaryContainer: isLightColor(base.secondary) ? '#000000' : '#FFFFFF',
+});
+
+// Helper to create dark mode colors with all required properties
+const createDarkColors = (base: Omit<DarkModeColors, 'onPrimary' | 'onSecondary' | 'onAccent' | 'onBackground' | 'onSurface' | 'primaryContainer' | 'onPrimaryContainer' | 'secondaryContainer' | 'onSecondaryContainer'>): DarkModeColors => ({
+  ...base,
+  onPrimary: isLightColor(base.primary) ? '#000000' : '#FFFFFF',
+  onSecondary: isLightColor(base.secondary) ? '#000000' : '#FFFFFF',
+  onAccent: isLightColor(base.accent) ? '#000000' : '#FFFFFF',
+  onBackground: isLightColor(base.background) ? '#FFFFFF' : '#000000',
+  onSurface: isLightColor(base.surface) ? '#FFFFFF' : '#000000',
+  primaryContainer: adjustColor(base.primary, isLightColor(base.primary) ? -40 : 60),
+  onPrimaryContainer: isLightColor(base.primary) ? '#000000' : '#FFFFFF',
+  secondaryContainer: adjustColor(base.secondary, isLightColor(base.secondary) ? -40 : 60),
+  onSecondaryContainer: isLightColor(base.secondary) ? '#000000' : '#FFFFFF',
+});
 
 interface DesignSystemPresetsProps {
   onApplyPreset: (preset: GeneratedDesignSystem) => void;
@@ -19,7 +66,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Framework",
     system: {
       name: "Material Design 3",
-      colors: {
+      colors: createColorPalette({
         primary: "#6750A4",
         secondary: "#625B71",
         accent: "#7D5260",
@@ -38,8 +85,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#7A7289", active: "#4A4458", disabled: "#E8E0EB", focus: "#625B71" },
           accent: { hover: "#986A78", active: "#633B48", disabled: "#F2DEE4", focus: "#7D5260" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#D0BCFF",
         secondary: "#CCC2DC",
         accent: "#EFB8C8",
@@ -58,7 +105,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#DED4EE", active: "#B5ABCA", disabled: "#49454F", focus: "#CCC2DC" },
           accent: { hover: "#FFCBD8", active: "#D49AAC", disabled: "#4A4458", focus: "#EFB8C8" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "Roboto, sans-serif", body: "Roboto, sans-serif", mono: "Roboto Mono, monospace" },
         sizes: { xs: "11px", sm: "12px", base: "14px", lg: "16px", xl: "22px", "2xl": "28px", "3xl": "36px", "4xl": "45px", "5xl": "57px" },
@@ -80,7 +127,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Framework",
     system: {
       name: "Tailwind UI",
-      colors: {
+      colors: createColorPalette({
         primary: "#4F46E5",
         secondary: "#7C3AED",
         accent: "#0EA5E9",
@@ -99,8 +146,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#6D28D9", active: "#5B21B6", disabled: "#DDD6FE", focus: "#7C3AED" },
           accent: { hover: "#0284C7", active: "#0369A1", disabled: "#BAE6FD", focus: "#0EA5E9" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#818CF8",
         secondary: "#A78BFA",
         accent: "#38BDF8",
@@ -119,7 +166,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#C4B5FD", active: "#8B5CF6", disabled: "#5B21B6", focus: "#A78BFA" },
           accent: { hover: "#7DD3FC", active: "#0EA5E9", disabled: "#0369A1", focus: "#38BDF8" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "Inter, sans-serif", body: "Inter, sans-serif", mono: "JetBrains Mono, monospace" },
         sizes: { xs: "0.75rem", sm: "0.875rem", base: "1rem", lg: "1.125rem", xl: "1.25rem", "2xl": "1.5rem", "3xl": "1.875rem", "4xl": "2.25rem", "5xl": "3rem" },
@@ -141,7 +188,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Framework",
     system: {
       name: "Chakra UI",
-      colors: {
+      colors: createColorPalette({
         primary: "#319795",
         secondary: "#805AD5",
         accent: "#DD6B20",
@@ -160,8 +207,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#6B46C1", active: "#553C9A", disabled: "#E9D8FD", focus: "#805AD5" },
           accent: { hover: "#C05621", active: "#9C4221", disabled: "#FEEBC8", focus: "#DD6B20" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#4FD1C5",
         secondary: "#B794F4",
         accent: "#ED8936",
@@ -180,7 +227,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#D6BCFA", active: "#9F7AEA", disabled: "#44337A", focus: "#B794F4" },
           accent: { hover: "#F6AD55", active: "#DD6B20", disabled: "#7B341E", focus: "#ED8936" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", mono: "SFMono-Regular, Menlo, Monaco, Consolas, monospace" },
         sizes: { xs: "0.75rem", sm: "0.875rem", base: "1rem", lg: "1.125rem", xl: "1.25rem", "2xl": "1.5rem", "3xl": "1.875rem", "4xl": "2.25rem", "5xl": "3rem" },
@@ -202,7 +249,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Framework",
     system: {
       name: "Ant Design",
-      colors: {
+      colors: createColorPalette({
         primary: "#1677FF",
         secondary: "#722ED1",
         accent: "#13C2C2",
@@ -221,8 +268,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#9254DE", active: "#531DAB", disabled: "#EFDBFF", focus: "#722ED1" },
           accent: { hover: "#36CFC9", active: "#08979C", disabled: "#B5F5EC", focus: "#13C2C2" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#1668DC",
         secondary: "#9254DE",
         accent: "#13A8A8",
@@ -241,7 +288,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#AB7AE0", active: "#642AB5", disabled: "#1A1325", focus: "#9254DE" },
           accent: { hover: "#33BCB7", active: "#138585", disabled: "#112123", focus: "#13A8A8" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif", body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif", mono: "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace" },
         sizes: { xs: "12px", sm: "14px", base: "14px", lg: "16px", xl: "20px", "2xl": "24px", "3xl": "30px", "4xl": "38px", "5xl": "46px" },
@@ -263,7 +310,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Framework",
     system: {
       name: "Bootstrap",
-      colors: {
+      colors: createColorPalette({
         primary: "#0D6EFD",
         secondary: "#6C757D",
         accent: "#0DCAF0",
@@ -282,8 +329,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#5C636A", active: "#565E64", disabled: "#C4C8CB", focus: "#6C757D" },
           accent: { hover: "#31D2F2", active: "#25CFE5", disabled: "#A6E9F5", focus: "#0DCAF0" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#6EA8FE",
         secondary: "#A7ACB1",
         accent: "#6EDFF6",
@@ -302,7 +349,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#B8BCC0", active: "#8F959A", disabled: "#343A40", focus: "#A7ACB1" },
           accent: { hover: "#8BE5F8", active: "#50D8F3", disabled: "#032830", focus: "#6EDFF6" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif", body: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif", mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace" },
         sizes: { xs: "0.75rem", sm: "0.875rem", base: "1rem", lg: "1.25rem", xl: "1.5rem", "2xl": "2rem", "3xl": "2.5rem", "4xl": "3rem", "5xl": "4rem" },
@@ -324,7 +371,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Inspired",
     system: {
       name: "Stripe",
-      colors: {
+      colors: createColorPalette({
         primary: "#635BFF",
         secondary: "#0A2540",
         accent: "#00D4FF",
@@ -343,8 +390,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#1A3550", active: "#081E30", disabled: "#A3ACB9", focus: "#0A2540" },
           accent: { hover: "#33DDFF", active: "#00B8E6", disabled: "#99EFFF", focus: "#00D4FF" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#7A73FF",
         secondary: "#ADBDCC",
         accent: "#00D4FF",
@@ -363,7 +410,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#C4D1DD", active: "#8FA3B5", disabled: "#1E3A57", focus: "#ADBDCC" },
           accent: { hover: "#33DDFF", active: "#00B8E6", disabled: "#003D4D", focus: "#00D4FF" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, sans-serif", body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, sans-serif", mono: "'Söhne Mono', Monaco, 'Andale Mono', monospace" },
         sizes: { xs: "12px", sm: "13px", base: "15px", lg: "17px", xl: "21px", "2xl": "28px", "3xl": "36px", "4xl": "48px", "5xl": "60px" },
@@ -385,7 +432,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Inspired",
     system: {
       name: "Linear",
-      colors: {
+      colors: createColorPalette({
         primary: "#5E6AD2",
         secondary: "#26B5CE",
         accent: "#F2C94C",
@@ -404,8 +451,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#3DC3D8", active: "#1EA1B9", disabled: "#B8E8EF", focus: "#26B5CE" },
           accent: { hover: "#F5D56E", active: "#E8BC2E", disabled: "#FAECC1", focus: "#F2C94C" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#8D93E4",
         secondary: "#4DCDE3",
         accent: "#F5D56E",
@@ -424,7 +471,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#6DD8EB", active: "#33C2D8", disabled: "#1A3A40", focus: "#4DCDE3" },
           accent: { hover: "#F8DE8E", active: "#F2C94C", disabled: "#3D3520", focus: "#F5D56E" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", body: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", mono: "'JetBrains Mono', 'Fira Code', monospace" },
         sizes: { xs: "11px", sm: "12px", base: "14px", lg: "16px", xl: "20px", "2xl": "24px", "3xl": "32px", "4xl": "40px", "5xl": "48px" },
@@ -446,7 +493,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Inspired",
     system: {
       name: "Notion",
-      colors: {
+      colors: createColorPalette({
         primary: "#2F3437",
         secondary: "#0077D4",
         accent: "#EB5757",
@@ -465,8 +512,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#1A8FE3", active: "#0066B8", disabled: "#99CCEE", focus: "#0077D4" },
           accent: { hover: "#EF7070", active: "#D94040", disabled: "#F5BBBB", focus: "#EB5757" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#FFFFFF",
         secondary: "#529CCA",
         accent: "#EB5757",
@@ -485,7 +532,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#6DB0D9", active: "#3F89BE", disabled: "#2A4A5F", focus: "#529CCA" },
           accent: { hover: "#EF7070", active: "#D94040", disabled: "#4D2222", focus: "#EB5757" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI', Helvetica, sans-serif", body: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI', Helvetica, sans-serif", mono: "iawriter-mono, Nitti, Menlo, Courier, monospace" },
         sizes: { xs: "11px", sm: "12px", base: "14px", lg: "16px", xl: "18px", "2xl": "24px", "3xl": "30px", "4xl": "40px", "5xl": "48px" },
@@ -507,7 +554,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Industry",
     system: {
       name: "Healthcare",
-      colors: {
+      colors: createColorPalette({
         primary: "#0077B6",
         secondary: "#00B4D8",
         accent: "#48CAE4",
@@ -526,8 +573,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#23C8E6", active: "#009FB8", disabled: "#B8EFF5", focus: "#00B4D8" },
           accent: { hover: "#63D4E9", active: "#2EBDD5", disabled: "#C2EEF5", focus: "#48CAE4" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#48CAE4",
         secondary: "#90E0EF",
         accent: "#ADE8F4",
@@ -546,7 +593,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#A6E7F3", active: "#76D7EB", disabled: "#0C3552", focus: "#90E0EF" },
           accent: { hover: "#BEF0F8", active: "#9CE3F1", disabled: "#0C3552", focus: "#ADE8F4" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif", body: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif", mono: "'IBM Plex Mono', monospace" },
         sizes: { xs: "12px", sm: "14px", base: "16px", lg: "18px", xl: "20px", "2xl": "24px", "3xl": "32px", "4xl": "40px", "5xl": "48px" },
@@ -568,7 +615,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Industry",
     system: {
       name: "Eco Friendly",
-      colors: {
+      colors: createColorPalette({
         primary: "#16A34A",
         secondary: "#65A30D",
         accent: "#0D9488",
@@ -587,8 +634,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#84CC16", active: "#4D7C0F", disabled: "#D9F99D", focus: "#65A30D" },
           accent: { hover: "#14B8A6", active: "#0F766E", disabled: "#99F6E4", focus: "#0D9488" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#4ADE80",
         secondary: "#A3E635",
         accent: "#2DD4BF",
@@ -607,7 +654,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#BEF264", active: "#84CC16", disabled: "#1A3309", focus: "#A3E635" },
           accent: { hover: "#5EEAD4", active: "#14B8A6", disabled: "#134E4A", focus: "#2DD4BF" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif", body: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif", mono: "'Fira Code', monospace" },
         sizes: { xs: "12px", sm: "14px", base: "16px", lg: "18px", xl: "20px", "2xl": "24px", "3xl": "32px", "4xl": "40px", "5xl": "48px" },
@@ -629,7 +676,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Industry",
     system: {
       name: "Creative Studio",
-      colors: {
+      colors: createColorPalette({
         primary: "#8B5CF6",
         secondary: "#EC4899",
         accent: "#F59E0B",
@@ -648,8 +695,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#F472B6", active: "#DB2777", disabled: "#FBCFE8", focus: "#EC4899" },
           accent: { hover: "#FCD34D", active: "#D97706", disabled: "#FEF3C7", focus: "#F59E0B" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#A78BFA",
         secondary: "#F472B6",
         accent: "#FBBF24",
@@ -668,7 +715,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#F9A8D4", active: "#EC4899", disabled: "#5C1F40", focus: "#F472B6" },
           accent: { hover: "#FDE68A", active: "#F59E0B", disabled: "#4D3B12", focus: "#FBBF24" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif", body: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", mono: "'Space Mono', monospace" },
         sizes: { xs: "12px", sm: "14px", base: "16px", lg: "18px", xl: "24px", "2xl": "32px", "3xl": "40px", "4xl": "56px", "5xl": "72px" },
@@ -690,7 +737,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Industry",
     system: {
       name: "Finance Pro",
-      colors: {
+      colors: createColorPalette({
         primary: "#0F172A",
         secondary: "#B45309",
         accent: "#F59E0B",
@@ -709,8 +756,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#D97706", active: "#92400E", disabled: "#FCD34D", focus: "#B45309" },
           accent: { hover: "#FBBF24", active: "#D97706", disabled: "#FDE68A", focus: "#F59E0B" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#F8FAFC",
         secondary: "#F59E0B",
         accent: "#FCD34D",
@@ -729,7 +776,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#FBBF24", active: "#D97706", disabled: "#78350F", focus: "#F59E0B" },
           accent: { hover: "#FDE68A", active: "#F59E0B", disabled: "#92400E", focus: "#FCD34D" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif", mono: "'Fira Code', monospace" },
         sizes: { xs: "12px", sm: "14px", base: "16px", lg: "18px", xl: "20px", "2xl": "24px", "3xl": "30px", "4xl": "36px", "5xl": "48px" },
@@ -751,7 +798,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Inspired",
     system: {
       name: "Neo Brutalism",
-      colors: {
+      colors: createColorPalette({
         primary: "#000000",
         secondary: "#FF6B6B",
         accent: "#4ECDC4",
@@ -770,8 +817,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#FF8787", active: "#FA5252", disabled: "#FFC9C9", focus: "#FF6B6B" },
           accent: { hover: "#70E0D8", active: "#22B8CF", disabled: "#99E9F2", focus: "#4ECDC4" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#FFFFFF",
         secondary: "#FF6B6B",
         accent: "#4ECDC4",
@@ -790,7 +837,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#FF8787", active: "#FA5252", disabled: "#FFC9C9", focus: "#FF6B6B" },
           accent: { hover: "#70E0D8", active: "#22B8CF", disabled: "#99E9F2", focus: "#4ECDC4" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "'Archivo Black', sans-serif", body: "'Space Mono', monospace", mono: "'Space Mono', monospace" },
         sizes: { xs: "14px", sm: "16px", base: "18px", lg: "20px", xl: "24px", "2xl": "32px", "3xl": "48px", "4xl": "64px", "5xl": "96px" },
@@ -812,7 +859,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
     category: "Inspired",
     system: {
       name: "Cyberpunk",
-      colors: {
+      colors: createColorPalette({
         primary: "#FDE047", // Neon Yellow
         secondary: "#DB2777", // Neon Pink
         accent: "#06B6D4", // Neon Cyan
@@ -831,8 +878,8 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#F472B6", active: "#BE185D", disabled: "#831843", focus: "#DB2777" },
           accent: { hover: "#67E8F9", active: "#0891B2", disabled: "#155E75", focus: "#06B6D4" },
         },
-      },
-      darkColors: {
+      }),
+      darkColors: createDarkColors({
         primary: "#FDE047",
         secondary: "#DB2777",
         accent: "#06B6D4",
@@ -851,7 +898,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
           secondary: { hover: "#F472B6", active: "#BE185D", disabled: "#831843", focus: "#DB2777" },
           accent: { hover: "#67E8F9", active: "#0891B2", disabled: "#155E75", focus: "#06B6D4" },
         },
-      },
+      }),
       typography: {
         fontFamily: { heading: "'Orbitron', sans-serif", body: "'Rajdhani', sans-serif", mono: "'Share Tech Mono', monospace" },
         sizes: { xs: "12px", sm: "14px", base: "16px", lg: "18px", xl: "24px", "2xl": "32px", "3xl": "40px", "4xl": "56px", "5xl": "72px" },

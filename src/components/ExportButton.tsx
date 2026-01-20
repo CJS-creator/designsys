@@ -29,7 +29,8 @@ import {
   User,
   Smartphone,
   Component,
-  FileText
+  FileText,
+  BookOpen
 } from "lucide-react";
 import { toast } from "sonner";
 import { convertToW3CTokens } from "@/lib/token-utils";

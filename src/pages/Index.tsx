@@ -60,7 +60,6 @@ import {
   Lock,
   Layout,
   GitCompare,
-  History,
   Shield,
   BookOpen,
   ExternalLink
