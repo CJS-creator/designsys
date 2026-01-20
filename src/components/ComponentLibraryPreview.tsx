@@ -164,7 +164,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
                     </div>
                   </div>
                   <div className="mt-4">
-                    <CodeViewer code={spotlightCode} title="Spotlight.tsx" />
+                    <CodeViewer code={spotlightCode} />
                   </div>
                 </motion.div>
 
@@ -187,7 +187,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
                     </MovingBorderButton>
                   </div>
                   <div className="mt-4">
-                    <CodeViewer code={movingBorderCode} title="MovingBorderButton.tsx" />
+                    <CodeViewer code={movingBorderCode} />
                   </div>
                 </motion.div>
 
@@ -229,7 +229,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
                     ))}
                   </BentoGrid>
                   <div className="mt-4">
-                    <CodeViewer code={bentoGridCode} title="BentoGrid.tsx" />
+                    <CodeViewer code={bentoGridCode} />
                   </div>
                 </motion.div>
 
@@ -264,7 +264,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
                     </CardBody>
                   </CardContainer>
                   <div className="mt-4">
-                    <CodeViewer code={card3dCode} title="ThreeDCard.tsx" />
+                    <CodeViewer code={card3dCode} />
                   </div>
                 </motion.div>
 
@@ -284,7 +284,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
                     </p>
                   </div>
                   <div className="mt-4">
-                    <CodeViewer code={numberTickerCode} title="NumberTicker.tsx" />
+                    <CodeViewer code={numberTickerCode} />
                   </div>
                 </motion.div>
               </motion.div>

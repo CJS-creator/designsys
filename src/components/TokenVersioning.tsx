@@ -68,8 +68,9 @@ export const TokenVersioning = ({ currentSystem, onRestore }: TokenVersioningPro
     setIsLoading(true);
 
     const { data, error } = await supabase
-      .from('design_system_versions')
+      .from('design_systems')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -79,9 +80,8 @@ export const TokenVersioning = ({ currentSystem, onRestore }: TokenVersioningPro
         id: v.id,
         created_at: v.created_at,
         name: v.name,
-        // Cast JSON back to typed object
-        system_data: v.system_data as unknown as GeneratedDesignSystem,
-        changes: (v.changes as string[]) || []
+        system_data: v.design_system_data as unknown as GeneratedDesignSystem,
+        changes: []
       })));
     }
     setIsLoading(false);
@@ -108,11 +108,11 @@ export const TokenVersioning = ({ currentSystem, onRestore }: TokenVersioningPro
 
     const versionName = `v${versions.length + 1}`;
 
-    const { error } = await supabase.from('design_system_versions').insert({
+    const { error } = await supabase.from('design_systems').insert({
       user_id: user.id,
       name: versionName,
-      system_data: currentSystem as unknown as Json,
-      changes: changes
+      description: changes.join(', '),
+      design_system_data: currentSystem as unknown as Json,
     });
 
     if (error) {
