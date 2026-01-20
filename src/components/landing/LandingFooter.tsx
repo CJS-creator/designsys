@@ -1,74 +1,122 @@
-import { Wand2, Twitter, Github, Linkedin, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Twitter, Github, Linkedin, Slack } from "lucide-react";
+
+const links = {
+    product: [
+        { label: "Features", href: "#features" },
+        { label: "Pricing", href: "#pricing" },
+        { label: "Integrations", href: "#" },
+        { label: "Changelog", href: "#" },
+        { label: "Roadmap", href: "#" },
+    ],
+    company: [
+        { label: "About Us", href: "#" },
+        { label: "Careers", href: "#" },
+        { label: "Blog", href: "#" },
+        { label: "Contact", href: "#" },
+    ],
+    resources: [
+        { label: "Documentation", href: "#" },
+        { label: "API Reference", href: "#" },
+        { label: "Community", href: "#" },
+        { label: "Help Center", href: "#" },
+    ],
+    legal: [
+        { label: "Privacy Policy", href: "#" },
+        { label: "Terms of Service", href: "#" },
+        { label: "Cookie Policy", href: "#" },
+    ],
+};
+
+const SocialLink = ({ icon: Icon, href }: { icon: any, href: string }) => (
+    <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="h-10 w-10 rounded-full flex items-center justify-center bg-muted hover:bg-primary/10 hover:text-primary transition-all duration-300"
+    >
+        <Icon className="h-5 w-5" />
+    </a>
+);
 
 export const LandingFooter = () => {
     return (
-        <footer className="py-16 border-t border-border/50">
+        <footer className="bg-background border-t border-border pt-20 pb-10">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
-                    <div className="col-span-2">
-                        <Link to="/" className="flex items-center gap-2 mb-6 group w-fit">
-                            <Wand2 className="h-8 w-8 text-primary transition-transform duration-300 group-hover:rotate-12" />
-                            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">DesignForge</span>
+                <div className="grid md:grid-cols-6 gap-12 mb-16">
+
+                    {/* Brand Column */}
+                    <div className="md:col-span-2 space-y-6">
+                        <Link to="/" className="flex items-center gap-2 font-bold text-2xl">
+                            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
+                                D
+                            </div>
+                            <span className="tracking-tighter">DesignForge</span>
                         </Link>
-                        <p className="text-muted-foreground text-sm max-w-xs mb-8">
-                            The AI-powered design system engine for modern product teams. Build better interfaces, faster.
+                        <p className="text-muted-foreground leading-relaxed max-w-sm">
+                            The AI-powered design system engine that bridges the gap between design and engineering. Built for teams who ship fast.
                         </p>
-                        <div className="flex items-center gap-4">
-                            <a href="#" className="h-10 w-10 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300">
-                                <Twitter className="h-4 w-4" />
-                            </a>
-                            <a href="#" className="h-10 w-10 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300">
-                                <Github className="h-4 w-4" />
-                            </a>
-                            <a href="#" className="h-10 w-10 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300">
-                                <Linkedin className="h-4 w-4" />
-                            </a>
-                            <a href="#" className="h-10 w-10 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300">
-                                <Mail className="h-4 w-4" />
-                            </a>
+                        <div className="flex gap-4">
+                            <SocialLink icon={Twitter} href="#" />
+                            <SocialLink icon={Github} href="#" />
+                            <SocialLink icon={Linkedin} href="#" />
+                            <SocialLink icon={Slack} href="#" />
                         </div>
                     </div>
 
+                    {/* Links Columns */}
                     <div>
                         <h4 className="font-bold mb-6">Product</h4>
-                        <ul className="space-y-4">
-                            <li><Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">Generator</Link></li>
-                            <li><Link to="/auth" className="text-sm text-muted-foreground hover:text-primary transition-colors">Pricing</Link></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Roadmap</a></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Changelog</a></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="font-bold mb-6">Resources</h4>
-                        <ul className="space-y-4">
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Documentation</a></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Token Standards</a></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Community</a></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">API Reference</a></li>
+                        <ul className="space-y-4 text-sm text-muted-foreground">
+                            {links.product.map((link, i) => (
+                                <li key={i}>
+                                    <a href={link.href} className="hover:text-primary transition-colors">{link.label}</a>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-bold mb-6">Company</h4>
-                        <ul className="space-y-4">
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">About Us</a></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Careers</a></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Legal</a></li>
-                            <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Contact</a></li>
+                        <ul className="space-y-4 text-sm text-muted-foreground">
+                            {links.company.map((link, i) => (
+                                <li key={i}>
+                                    <a href={link.href} className="hover:text-primary transition-colors">{link.label}</a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 className="font-bold mb-6">Resources</h4>
+                        <ul className="space-y-4 text-sm text-muted-foreground">
+                            {links.resources.map((link, i) => (
+                                <li key={i}>
+                                    <a href={link.href} className="hover:text-primary transition-colors">{link.label}</a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 className="font-bold mb-6">Legal</h4>
+                        <ul className="space-y-4 text-sm text-muted-foreground">
+                            {links.legal.map((link, i) => (
+                                <li key={i}>
+                                    <a href={link.href} className="hover:text-primary transition-colors">{link.label}</a>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border/50 gap-4">
-                    <p className="text-xs text-muted-foreground">
-                        © {new Date().getFullYear()} DesignForge AI. All rights reserved.
+                <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p className="text-sm text-muted-foreground">
+                        © {new Date().getFullYear()} DesignForge Inc. All rights reserved.
                     </p>
-                    <div className="flex items-center gap-6 text-xs text-muted-foreground">
-                        <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
-                        <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
-                        <a href="#" className="hover:text-primary transition-colors">Cookie Policy</a>
+                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                        {/* Can add extra bottom links here if needed */}
                     </div>
                 </div>
             </div>

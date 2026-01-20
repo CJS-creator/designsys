@@ -148,9 +148,23 @@ export const SavedDesigns = ({ onLoad, currentSystem }: SavedDesignsProps) => {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : designs.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No saved designs yet.</p>
+          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground bg-muted/10 rounded-xl border border-dashed border-border/50">
+            <div className="h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center mb-4">
+              <FolderOpen className="h-8 w-8 opacity-50" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-1">No saved designs yet</h3>
+            <p className="text-sm text-muted-foreground max-w-[250px] mb-6">
+              Generate your first design system to see it safely stored here.
+            </p>
+            {!currentSystem && (
+              <Button
+                variant="outline"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="hover-lift"
+              >
+                Create New System
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-3">

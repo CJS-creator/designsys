@@ -11,6 +11,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    scroll-behavior: smooth;
     --background: 240 4% 95%;
     --foreground: 240 5% 10%;
 
@@ -158,9 +159,13 @@ All colors MUST be HSL.
     @apply bg-background text-foreground antialiased;
   }
 }
-
 @layer utilities {
-  /* Smooth transitions for interactive elements */
+  .animate-gpu {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
   .transition-base {
     @apply transition-all duration-300 ease-out;
   }
@@ -176,6 +181,7 @@ All colors MUST be HSL.
   /* Hover effects */
   .hover-lift {
     @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg;
+    will-change: transform, opacity;
   }
 
   .hover-scale {
@@ -188,6 +194,7 @@ All colors MUST be HSL.
 
   .hover-glow {
     @apply transition-shadow duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)];
+    will-change: box-shadow;
   }
 
   .hover-brightness {
@@ -207,6 +214,7 @@ All colors MUST be HSL.
   /* Card interactions */
   .card-interactive {
     @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl;
+    will-change: transform, opacity, box-shadow;
   }
 
   /* Link underline animation */
@@ -215,11 +223,25 @@ All colors MUST be HSL.
   }
 
   /* Staggered animation delays */
-  .stagger-1 { animation-delay: 0.1s; }
-  .stagger-2 { animation-delay: 0.2s; }
-  .stagger-3 { animation-delay: 0.3s; }
-  .stagger-4 { animation-delay: 0.4s; }
-  .stagger-5 { animation-delay: 0.5s; }
+  .stagger-1 {
+    animation-delay: 0.1s;
+  }
+
+  .stagger-2 {
+    animation-delay: 0.2s;
+  }
+
+  .stagger-3 {
+    animation-delay: 0.3s;
+  }
+
+  .stagger-4 {
+    animation-delay: 0.4s;
+  }
+
+  .stagger-5 {
+    animation-delay: 0.5s;
+  }
 
   /* Shimmer effect for loading states */
   .shimmer {
@@ -242,6 +264,7 @@ All colors MUST be HSL.
 
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
+
     .transition-base,
     .transition-fast,
     .transition-slow,
@@ -251,10 +274,31 @@ All colors MUST be HSL.
     .card-interactive {
       @apply transition-none !important;
     }
-    
+
     * {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
     }
+  }
+
+  /* Aceternity / 21st.dev Patterns */
+  .bg-grid-white\/\[0\.02\] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(255 255 255 / 0.02)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+  }
+
+  .bg-grid-black\/\[0\.02\] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(0 0 0 / 0.02)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+  }
+
+  .bg-dot-white\/\[0\.2\] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='16' height='16' fill='rgb(255 255 255 / 0.2)'%3e%3ccircle cx='1' cy='1' r='1'/%3e%3c/svg%3e");
+  }
+
+  .bg-dot-black\/\[0\.2\] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='16' height='16' fill='rgb(0 0 0 / 0.2)'%3e%3ccircle cx='1' cy='1' r='1'/%3e%3c/svg%3e");
+  }
+
+  .inter-var {
+    font-feature-settings: 'cv11', 'ss01';
   }
 }

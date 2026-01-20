@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Palette, Sparkles, Layers, Building, CreditCard, Leaf, Briefcase, Zap, Heart, Music, Code, Search } from "lucide-react";
 import { GeneratedDesignSystem, ColorPalette, DarkModeColors } from "@/types/designSystem";
+import { BentoGrid } from "@/components/ui/bento-grid";
+import { CardContainer, CardBody, CardItem } from "@/components/ui/card-3d";
 
 // Helper to determine if a color is light or dark
 const isLightColor = (hex: string): boolean => {
@@ -932,83 +934,125 @@ export const DesignSystemPresets = ({ onApplyPreset }: DesignSystemPresetsProps)
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Palette className="h-5 w-5" />
-          Design System Presets
-        </CardTitle>
-        <CardDescription>Start from popular design systems and customize to your needs</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-8 animate-fade-in">
+      {/* Header & Search */}
+      <div className="flex flex-col xl:flex-row gap-6 items-center justify-between bg-black/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-blue-500/10 pointer-events-none" />
+        <div className="space-y-2 relative z-10 text-center xl:text-left">
+          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+            Design System Presets
+          </h2>
+          <p className="text-neutral-400 max-w-md">
+            Jumpstart your project with professionally crafted design systems. Select a preset and customize it to perfection.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto relative z-10">
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500 group-focus-within:text-white transition-colors" />
             <Input
-              placeholder="Search presets..."
+              placeholder="Search styles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-10 h-12 bg-white/5 border-white/10 text-white w-full sm:w-72 focus:ring-primary/50 focus:bg-white/10 transition-all rounded-xl"
             />
           </div>
-          <div className="flex gap-2 flex-wrap">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-              >
-                {category}
-              </Button>
-            ))}
-          </div>
         </div>
+      </div>
 
-        {/* Presets Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredPresets.map((preset) => (
-            <Card key={preset.name} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-              <CardContent className="p-4 space-y-4">
+      {/* Categories */}
+      <div className="flex flex-wrap justify-center gap-2 pb-2">
+        {categories.map((category) => (
+          <button
+            key={category}
+            onClick={() => setSelectedCategory(category)}
+            className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${selectedCategory === category
+              ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105"
+              : "bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white border border-white/5"
+              }`}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+
+      {/* Presets Bento Grid */}
+      <BentoGrid className="max-w-7xl mx-auto md:auto-rows-auto">
+        {filteredPresets.map((preset, i) => (
+          <CardContainer key={preset.name} className="inter-var h-full">
+            <CardBody className="bg-black/40 relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] dark:bg-black/40 dark:border-white/[0.1] border-black/[0.1] w-full h-auto rounded-xl p-6 border backdrop-blur-md transition-colors hover:bg-black/60">
+
+              <CardItem translateZ="50" className="w-full flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg" style={{ background: preset.system.colors.primary + "20" }}>
-                    <preset.icon className="h-5 w-5" style={{ color: preset.system.colors.primary }} />
+                  <div className="p-3 rounded-xl bg-neutral-900/50 border border-white/10 shadow-inner">
+                    <preset.icon className="h-6 w-6" style={{ color: preset.system.colors.primary }} />
                   </div>
                   <div>
-                    <h3 className="font-semibold">{preset.name}</h3>
-                    <Badge variant="outline" className="text-xs mt-1">{preset.category}</Badge>
+                    <h3 className="text-xl font-bold text-neutral-200 group-hover/card:text-white transition-colors">
+                      {preset.name}
+                    </h3>
+                    <p className="text-xs text-neutral-500 font-mono mt-0.5">{preset.category}</p>
                   </div>
                 </div>
-
-                <p className="text-sm text-muted-foreground">{preset.description}</p>
-
-                <div className="flex flex-wrap gap-1">
-                  {preset.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                {/* Color Bubbles */}
+                <div className="flex -space-x-2">
+                  {[preset.system.colors.primary, preset.system.colors.secondary].map((color, idx) => (
+                    <div
+                      key={idx}
+                      className="w-6 h-6 rounded-full border border-white/10 shadow-lg"
+                      style={{ backgroundColor: color }}
+                    />
                   ))}
                 </div>
+              </CardItem>
 
-                <div className="flex gap-1">
-                  {[preset.system.colors.primary, preset.system.colors.secondary, preset.system.colors.accent, preset.system.colors.success].map((color, i) => (
-                    <div key={i} className="w-6 h-6 rounded-full border-2 border-background shadow-sm" style={{ background: color }} />
+              <CardItem
+                as="p"
+                translateZ="60"
+                className="text-neutral-400 text-sm max-w-sm mt-4 leading-relaxed h-[60px]"
+              >
+                {preset.description}
+              </CardItem>
+
+              <div className="flex items-center justify-between mt-8 pt-4 border-t border-white/5">
+                <CardItem
+                  translateZ={40}
+                  as="div"
+                  className="flex gap-2"
+                >
+                  {preset.tags.slice(0, 2).map((tag) => (
+                    <span key={tag} className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] uppercase tracking-wider text-neutral-400">
+                      {tag}
+                    </span>
                   ))}
-                </div>
+                </CardItem>
 
-                <Button className="w-full" onClick={() => onApplyPreset(preset.system)}>
-                  Use This Preset
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                <CardItem
+                  translateZ={20}
+                  as="button"
+                  onClick={() => onApplyPreset(preset.system)}
+                  className="px-6 py-2 rounded-xl bg-white/10 hover:bg-white hover:text-black border border-white/10 text-white text-xs font-bold transition-all duration-300"
+                >
+                  Apply &rarr;
+                </CardItem>
+              </div>
+            </CardBody>
+          </CardContainer>
+        ))}
+      </BentoGrid>
+
+      {filteredPresets.length === 0 && (
+        <div className="text-center py-20 text-muted-foreground bg-black/20 rounded-xl border border-white/5 backdrop-blur-sm">
+          <p className="text-lg">No presets found matching "{searchQuery}"</p>
+          <Button
+            variant="link"
+            onClick={() => { setSearchQuery(""); setSelectedCategory("All"); }}
+            className="text-primary mt-2"
+          >
+            Clear filters
+          </Button>
         </div>
-
-        {filteredPresets.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            No presets found matching your search.
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };

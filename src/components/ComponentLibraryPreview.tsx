@@ -23,6 +23,13 @@ import {
 } from "lucide-react";
 import { CodeViewer } from "@/components/ui/CodeViewer";
 import { fadeUp, scale, staggerContainer, staggerItem } from "@/lib/animations/variants";
+import { Spotlight } from "@/components/ui/spotlight";
+import { MovingBorderButton } from "@/components/ui/moving-border";
+import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
+import { CardContainer, CardBody, CardItem } from "@/components/ui/card-3d";
+import { NumberTicker } from "@/components/ui/number-ticker";
+import { BackgroundBeams } from "@/components/ui/background-beams";
+import { spotlightCode, movingBorderCode, bentoGridCode, card3dCode, numberTickerCode, backgroundBeamsCode } from "@/data/component-codes";
 
 // Placeholder code snippets for component preview
 const buttonCode = `<button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -70,7 +77,7 @@ interface ComponentLibraryPreviewProps {
 
 export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPreviewProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [activeSection, setActiveSection] = useState("buttons");
+  const [activeSection, setActiveSection] = useState("showcase");
   const [sliderValue, setSliderValue] = useState([50]);
   const [isLoading, setIsLoading] = useState(false);
   const [showCode, setShowCode] = useState(false);
@@ -81,6 +88,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
   };
 
   const sections = [
+    { id: "showcase", label: "✨ Showcase (New)" },
     { id: "buttons", label: "Buttons" },
     { id: "forms", label: "Forms" },
     { id: "cards", label: "Cards" },
@@ -132,6 +140,156 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
             exit="hidden"
             variants={fadeUp}
           >
+            {/* Showcase Section */}
+            {activeSection === "showcase" && (
+              <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-12">
+
+                {/* 1. Spotlight */}
+                <motion.div variants={staggerItem}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-yellow-500" />
+                        Spotlight Effect
+                      </h3>
+                      <p className="text-muted-foreground">Dynamic cone of light for hero sections.</p>
+                    </div>
+                  </div>
+                  <div className="relative h-[20rem] w-full overflow-hidden rounded-md flex md:items-center md:justify-center bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden">
+                    <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />
+                    <div className=" p-4 max-w-7xl  mx-auto relative z-10  w-full pt-20 md:pt-0">
+                      <h1 className="text-4xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50">
+                        Spotlight <br /> is here.
+                      </h1>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <CodeViewer code={spotlightCode} title="Spotlight.tsx" />
+                  </div>
+                </motion.div>
+
+                <Separator />
+
+                {/* 2. Moving Border Button */}
+                <motion.div variants={staggerItem}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold">Moving Border Button</h3>
+                      <p className="text-muted-foreground">Button with a continuously rotating gradient border.</p>
+                    </div>
+                  </div>
+                  <div className="p-10 flex items-center justify-center bg-zinc-950 rounded-lg">
+                    <MovingBorderButton
+                      borderRadius="1.75rem"
+                      className="bg-zinc-900 text-white border-neutral-200 dark:border-slate-800"
+                    >
+                      Click me
+                    </MovingBorderButton>
+                  </div>
+                  <div className="mt-4">
+                    <CodeViewer code={movingBorderCode} title="MovingBorderButton.tsx" />
+                  </div>
+                </motion.div>
+
+                <Separator />
+
+                {/* 3. Bento Grid */}
+                <motion.div variants={staggerItem}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold">Bento Grid</h3>
+                      <p className="text-muted-foreground">A highly flexible grid layout component.</p>
+                    </div>
+                  </div>
+                  <BentoGrid className="max-w-4xl mx-auto">
+                    {[
+                      {
+                        title: "Drag & Drop",
+                        description: "Intuitive drag and drop interface for your components.",
+                        header: <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100" />,
+                        icon: <FileText className="h-4 w-4 text-neutral-500" />,
+                        className: "md:col-span-2",
+                      },
+                      {
+                        title: "Automated",
+                        description: "Everything is automated for your convenience.",
+                        header: <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100" />,
+                        icon: <Zap className="h-4 w-4 text-neutral-500" />,
+                        className: "md:col-span-1",
+                      },
+                    ].map((item, i) => (
+                      <BentoGridItem
+                        key={i}
+                        title={item.title}
+                        description={item.description}
+                        header={item.header}
+                        icon={item.icon}
+                        className={item.className}
+                      />
+                    ))}
+                  </BentoGrid>
+                  <div className="mt-4">
+                    <CodeViewer code={bentoGridCode} title="BentoGrid.tsx" />
+                  </div>
+                </motion.div>
+
+                <Separator />
+
+                {/* 4. 3D Card */}
+                <motion.div variants={staggerItem}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold">3D Perspective Card</h3>
+                      <p className="text-muted-foreground">Hover over the card to see the 3D effect.</p>
+                    </div>
+                  </div>
+                  <CardContainer className="inter-var">
+                    <CardBody className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border  ">
+                      <CardItem
+                        translateZ="50"
+                        className="text-xl font-bold text-neutral-600 dark:text-white"
+                      >
+                        Make things float in air
+                      </CardItem>
+                      <CardItem
+                        as="p"
+                        translateZ="60"
+                        className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
+                      >
+                        Hover over this card to unleash the power of CSS perspective
+                      </CardItem>
+                      <CardItem translateZ="100" className="w-full mt-4">
+                        <div className="h-60 w-full object-cover rounded-xl group-hover/card:shadow-xl bg-gradient-to-br from-violet-500 to-fuchsia-500" />
+                      </CardItem>
+                    </CardBody>
+                  </CardContainer>
+                  <div className="mt-4">
+                    <CodeViewer code={card3dCode} title="ThreeDCard.tsx" />
+                  </div>
+                </motion.div>
+
+                <Separator />
+
+                {/* 5. Number Ticker */}
+                <motion.div variants={staggerItem}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold">Number Ticker</h3>
+                      <p className="text-muted-foreground">Smoothly animating numbers.</p>
+                    </div>
+                  </div>
+                  <div className="p-10 flex items-center justify-center bg-card border rounded-lg">
+                    <p className="whitespace-pre-wrap text-8xl font-medium tracking-tighter text-black dark:text-white">
+                      <NumberTicker value={100} />
+                    </p>
+                  </div>
+                  <div className="mt-4">
+                    <CodeViewer code={numberTickerCode} title="NumberTicker.tsx" />
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+
             {/* Buttons Section */}
             {activeSection === "buttons" && (
               <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">

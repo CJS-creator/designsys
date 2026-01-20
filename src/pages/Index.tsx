@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, lazy, Suspense } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { DesignSystemForm } from "@/components/DesignSystemForm";
@@ -10,28 +10,17 @@ import { ShadowDisplay } from "@/components/ShadowDisplay";
 import { GridDisplay } from "@/components/GridDisplay";
 import { BorderRadiusDisplay } from "@/components/BorderRadiusDisplay";
 import { ExportButton } from "@/components/ExportButton";
-import { LivePreview } from "@/components/LivePreview";
-import { ComparisonView } from "@/components/ComparisonView";
+import { Button } from "@/components/ui/button";
+import { AuthRequiredWrapper } from "@/components/AuthRequiredWrapper";
+import { Tabs, TabsContent, TabsList, AnimatedTabsTrigger } from "@/components/ui/animated-tabs";
+import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
+import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
 import { SavedDesigns } from "@/components/SavedDesigns";
-import { AccessibilityChecker } from "@/components/AccessibilityChecker";
 import { AnimationDisplay } from "@/components/AnimationDisplay";
 import { InteractiveColorsDisplay } from "@/components/InteractiveColorsDisplay";
 import { DesignSystemPresets } from "@/components/DesignSystemPresets";
-import { ResponsivePreview } from "@/components/ResponsivePreview";
-import { TokenVersioning } from "@/components/TokenVersioning";
-import { BrandGuidelinesPDF } from "@/components/BrandGuidelinesPDF";
-import { ColorBlindnessSimulator } from "@/components/ColorBlindnessSimulator";
-import { TokenSearch } from "@/components/TokenSearch";
-import { ImageColorExtractor } from "@/components/ImageColorExtractor";
-import { MultiPaletteGenerator } from "@/components/MultiPaletteGenerator";
-import { AdvancedTypographyScale } from "@/components/AdvancedTypographyScale";
-import { SpacingGridEditor } from "@/components/SpacingGridEditor";
-import { RealTimePreview } from "@/components/RealTimePreview";
-import { Button } from "@/components/ui/button";
-import { AuthRequiredWrapper } from "@/components/AuthRequiredWrapper";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
-import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
+import { useOnboarding } from "@/contexts/OnboardingContext";
+import { UserRole } from "@/components/TeamSettings";
 import {
   Sparkles,
   ArrowLeft,
@@ -40,7 +29,6 @@ import {
   FileText,
   LogOut,
   User,
-  Plus,
   Brain,
   Activity,
   Layers,
@@ -49,10 +37,7 @@ import {
   Palette,
   Eye,
   Smartphone,
-  FileJson,
   Code2,
-  Component,
-  Share2,
   HelpCircle,
   Zap,
   X,
@@ -62,42 +47,50 @@ import {
   GitCompare,
   Shield,
   BookOpen,
-  ExternalLink
+  ExternalLink,
+  Ruler,
+  Maximize,
+  Cast,
+  Menu
 } from "lucide-react";
+import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ModeToggle } from "@/components/mode-toggle";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
-import { AnimationSystemDocs } from "@/components/AnimationSystemDocs";
-import { ComponentLibraryPreview } from "@/components/ComponentLibraryPreview";
-import { DesignInsights } from "@/components/DesignInsights";
-import { MotionGallery } from "@/components/MotionGallery";
-import { CollaborationOverlay } from "@/components/CollaborationOverlay";
-import { LiveFeedback } from "@/components/LiveFeedback";
-import { VisionGenerator } from "@/components/VisionGenerator";
-import { FigmaSync } from "@/components/FigmaSync";
-import { ComponentBlueprints } from "@/components/ComponentBlueprints";
-import { VersionDiff } from "@/components/VersionDiff";
-import { AuditLogViewer } from "@/components/AuditLogViewer";
-import { TeamSettings, UserRole } from "@/components/TeamSettings";
-import { useOnboarding } from "@/contexts/OnboardingContext";
+import { Spotlight } from "@/components/ui/spotlight";
+import { BackgroundBeams } from "@/components/ui/background-beams";
 import { useDesignSystemShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { ShortcutOverlay } from "@/components/ShortcutOverlay";
-import { useSearchParams } from "react-router-dom";
+import { FeatureTour } from "@/components/FeatureTour";
+import { DesignSystemSkeleton } from "@/components/DesignSystemSkeleton";
+
+// Lazy-loaded heavy components
+const AnimationSystemDocs = lazy(() => import("@/components/AnimationSystemDocs").then(m => ({ default: m.AnimationSystemDocs })));
+const ComponentLibraryPreview = lazy(() => import("@/components/ComponentLibraryPreview").then(m => ({ default: m.ComponentLibraryPreview })));
+const DesignInsights = lazy(() => import("@/components/DesignInsights").then(m => ({ default: m.DesignInsights })));
+const MotionGallery = lazy(() => import("@/components/MotionGallery").then(m => ({ default: m.MotionGallery })));
+const VisionGenerator = lazy(() => import("@/components/VisionGenerator").then(m => ({ default: m.VisionGenerator })));
+const FigmaSync = lazy(() => import("@/components/FigmaSync").then(m => ({ default: m.FigmaSync })));
+const ComponentBlueprints = lazy(() => import("@/components/ComponentBlueprints").then(m => ({ default: m.ComponentBlueprints })));
+const VersionDiff = lazy(() => import("@/components/VersionDiff").then(m => ({ default: m.VersionDiff })));
+const AuditLogViewer = lazy(() => import("@/components/AuditLogViewer").then(m => ({ default: m.AuditLogViewer })));
+const TeamSettings = lazy(() => import("@/components/TeamSettings").then(m => ({ default: m.TeamSettings })));
+const AccessibilityChecker = lazy(() => import("@/components/AccessibilityChecker").then(m => ({ default: m.AccessibilityChecker })));
+const ColorBlindnessSimulator = lazy(() => import("@/components/ColorBlindnessSimulator").then(m => ({ default: m.ColorBlindnessSimulator })));
+
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
   const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole>("admin");
-  const [isProjectLocked, setIsProjectLocked] = useState(false);
-  const [showGuestBanner, setShowGuestBanner] = useState(true);
+  const [showGuestBanner, setShowGuestBanner] = useState(() => {
+    return !sessionStorage.getItem("guest_banner_dismissed");
+  });
   const { user, signOut } = useAuth();
   const { resetOnboarding, selectedTemplate } = useOnboarding();
   const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get("session") || "default-workspace";
-
-
-
 
   const handleGenerate = async (input: DesignSystemInput) => {
     setIsLoading(true);
@@ -125,12 +118,6 @@ const Index = () => {
     setDesignSystem(null);
     setCurrentInput(null);
   };
-
-  // Initialize keyboard shortcuts
-  useDesignSystemShortcuts({
-    onReset: handleReset,
-    hasDesignSystem: !!designSystem,
-  });
 
   const handleLoadDesign = (system: GeneratedDesignSystem) => {
     setDesignSystem(system);
@@ -163,7 +150,6 @@ const Index = () => {
     });
   };
 
-
   const handleSave = async () => {
     if (!user) {
       toast.error("Sign in to save your design system");
@@ -186,72 +172,74 @@ const Index = () => {
     }
   };
 
-  // Initialize keyboard shortcuts
   useDesignSystemShortcuts({
     onReset: handleReset,
     hasDesignSystem: !!designSystem,
     onSave: handleSave,
   });
 
-  if (designSystem && currentInput) {
+  // Result View
+  if ((designSystem || isLoading) && currentInput) {
     return (
-      <div className="min-h-screen bg-background">
-        {/* Header */}
-        <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl animate-slide-in-down">
+      <div className="min-h-screen bg-background dark:bg-black/[0.96] antialiased bg-grid-black/[0.02] dark:bg-grid-white/[0.02] relative overflow-hidden transition-colors duration-300">
+        <Spotlight className="-top-40 left-0 md:left-60 md:-top-20 hidden dark:block" fill="white" />
+        <BackgroundBeams className="opacity-40 hidden dark:block" />
+
+        <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 dark:bg-black/75 backdrop-blur-xl animate-slide-in-down">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={handleReset} className="hover:rotate-[-10deg] transition-transform duration-300">
+              <Button variant="ghost" size="icon" onClick={handleReset} aria-label="Go back" className="hover:rotate-[-10deg] transition-transform duration-300 text-muted-foreground hover:text-foreground hover:bg-muted/50">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-xl font-bold">{designSystem.name}</h1>
-                <p className="text-sm text-muted-foreground">AI-Generated Design System</p>
+                <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-neutral-600 to-neutral-900 dark:from-neutral-50 dark:to-neutral-400 animate-fade-in">
+                  {designSystem?.name || "Generating System..."}
+                </h1>
+                <p className="text-sm text-muted-foreground animate-fade-in">
+                  {designSystem ? "AI-Generated Design System" : "Creating your custom design language..."}
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={resetOnboarding} title="Restart tour" className="hover-scale">
+
+            <div className="hidden md:flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={resetOnboarding} aria-label="Restart tour" title="Restart tour" className="hover-scale text-muted-foreground hover:text-foreground hover:bg-muted/50" disabled={isLoading}>
                 <HelpCircle className="h-4 w-4" />
               </Button>
               {user ? (
-                <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift">
+                <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift text-muted-foreground hover:text-foreground">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
               ) : (
-                <Button variant="ghost" size="sm" asChild className="hover-lift">
+                <Button variant="ghost" size="sm" asChild className="hover-lift text-muted-foreground hover:text-foreground">
                   <Link to="/auth">
                     <User className="h-4 w-4 mr-2" />
                     Sign In
                   </Link>
                 </Button>
               )}
-              <Button variant="ghost" size="sm" asChild className="mr-2 hover-lift">
-                <Link to="/landing">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View Landing
-                </Link>
-              </Button>
-              <ExportButton designSystem={designSystem} />
+              <ModeToggle />
+              <div id="tour-export">
+                {designSystem && <ExportButton designSystem={designSystem} />}
+              </div>
             </div>
           </div>
         </header>
 
-
-        {/* Guest Sign-in Banner */}
         {!user && showGuestBanner && (
-          <div className="bg-primary/10 border-b border-primary/20 animate-fade-in">
+          <div className="bg-primary/20 border-b border-primary/30 animate-fade-in backdrop-blur-sm">
             <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
-                  <Lock className="h-4 w-4 text-primary" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/30">
+                  <Lock className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <p className="text-sm">
+                <p className="text-sm text-foreground">
                   <span className="font-medium">You are previewing as a guest.</span>{" "}
                   <span className="text-muted-foreground">Sign in to export, save, and access all features.</span>
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" asChild>
+                <Button size="sm" asChild variant="secondary">
                   <Link to="/auth">
                     <User className="h-4 w-4 mr-2" />
                     Sign In Free
@@ -260,8 +248,11 @@ const Index = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setShowGuestBanner(false)}
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  onClick={() => {
+                    setShowGuestBanner(false);
+                    sessionStorage.setItem("guest_banner_dismissed", "true");
+                  }}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -270,218 +261,215 @@ const Index = () => {
           </div>
         )}
 
-        {/* Design System Display */}
-        <main className="container mx-auto px-4 py-8 animate-fade-in">
-          <Tabs defaultValue="overview" className="space-y-8">
-            <TabsList className="flex-wrap transition-all duration-300">
-              <TabsTrigger value="overview" className="transition-all duration-200 data-[state=active]:scale-105">Overview</TabsTrigger>
-              <TabsTrigger value="insights" className="transition-all duration-200 data-[state=active]:scale-105"><Activity className="h-4 w-4 mr-1" />Insights</TabsTrigger>
-              <TabsTrigger value="motion" className="transition-all duration-200 data-[state=active]:scale-105"><Zap className="h-4 w-4 mr-1" />Motion</TabsTrigger>
-              <TabsTrigger value="vision" className="transition-all duration-200 data-[state=active]:scale-105"><Sparkles className="h-4 w-4 mr-1" />AI Visualizer</TabsTrigger>
-              <TabsTrigger value="figma" className="transition-all duration-200 data-[state=active]:scale-105"><Layout className="h-4 w-4 mr-1" />Figma Sync</TabsTrigger>
-              <TabsTrigger value="blueprints" className="transition-all duration-200 data-[state=active]:scale-105"><Code2 className="h-4 w-4 mr-1" />Blueprints</TabsTrigger>
-              <TabsTrigger value="diff" className="transition-all duration-200 data-[state=active]:scale-105"><GitCompare className="h-4 w-4 mr-1" />Compare</TabsTrigger>
-              <TabsTrigger value="audit" className="transition-all duration-200 data-[state=active]:scale-105"><History className="h-4 w-4 mr-1" />Logs</TabsTrigger>
-              <TabsTrigger value="team" className="transition-all duration-200 data-[state=active]:scale-105"><Shield className="h-4 w-4 mr-1" />Team</TabsTrigger>
-              <TabsTrigger value="palettes" className="transition-all duration-200 data-[state=active]:scale-105"><Layers className="h-4 w-4 mr-1" />Palettes</TabsTrigger>
-              <TabsTrigger value="typography-editor" className="transition-all duration-200 data-[state=active]:scale-105"><Type className="h-4 w-4 mr-1" />Type Scale</TabsTrigger>
-              <TabsTrigger value="spacing-grid" className="transition-all duration-200 data-[state=active]:scale-105"><Grid3X3 className="h-4 w-4 mr-1" />Spacing & Grid</TabsTrigger>
-              <TabsTrigger value="interactive" className="transition-all duration-200 data-[state=active]:scale-105">Interactive</TabsTrigger>
-              <TabsTrigger value="animations" className="transition-all duration-200 data-[state=active]:scale-105">Animations</TabsTrigger>
-              <TabsTrigger value="animation-system" className="transition-all duration-200 data-[state=active]:scale-105"><Zap className="h-4 w-4 mr-1" />Animation System</TabsTrigger>
-              <TabsTrigger value="components" className="transition-all duration-200 data-[state=active]:scale-105">Components</TabsTrigger>
-              <TabsTrigger value="responsive" className="transition-all duration-200 data-[state=active]:scale-105"><Smartphone className="h-4 w-4 mr-1" />Responsive</TabsTrigger>
-              <TabsTrigger value="accessibility" className="transition-all duration-200 data-[state=active]:scale-105">Accessibility</TabsTrigger>
-              <TabsTrigger value="color-blindness" className="transition-all duration-200 data-[state=active]:scale-105"><Eye className="h-4 w-4 mr-1" />Color Blindness</TabsTrigger>
-              <TabsTrigger value="token-search" className="transition-all duration-200 data-[state=active]:scale-105"><Search className="h-4 w-4 mr-1" />Token Search</TabsTrigger>
-              <TabsTrigger value="preview" className="transition-all duration-200 data-[state=active]:scale-105">Live Preview</TabsTrigger>
-              <TabsTrigger value="realtime-preview" className="transition-all duration-200 data-[state=active]:scale-105"><Eye className="h-4 w-4 mr-1" />Real-Time</TabsTrigger>
-              <TabsTrigger value="versioning" className="transition-all duration-200 data-[state=active]:scale-105"><History className="h-4 w-4 mr-1" />Versions</TabsTrigger>
-              <TabsTrigger value="export" className="transition-all duration-200 data-[state=active]:scale-105"><FileText className="h-4 w-4 mr-1" />Guidelines</TabsTrigger>
-              <TabsTrigger value="compare" className="transition-all duration-200 data-[state=active]:scale-105">Compare</TabsTrigger>
-              <TabsTrigger value="saved" className="transition-all duration-200 data-[state=active]:scale-105">Saved</TabsTrigger>
-            </TabsList>
+        <main className="container mx-auto px-4 py-8 animate-fade-in relative z-10">
+          {isLoading && !designSystem ? (
+            <DesignSystemSkeleton />
+          ) : (
+            designSystem && (
+              <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
+                <div className="sticky top-[72px] z-40 bg-background/80 backdrop-blur-md border-b border-border/40 py-2 mb-6 -mx-4 px-4 overflow-x-auto no-scrollbar" id="tour-tabs">
+                  <TabsList className="bg-muted/50 p-1 h-auto flex-nowrap w-max md:w-full md:justify-start">
+                    <AnimatedTabsTrigger value="overview" className="gap-2 py-2">
+                      <Palette className="h-4 w-4" /> Overview
+                    </AnimatedTabsTrigger>
+                    <AnimatedTabsTrigger value="preview" className="gap-2 py-2">
+                      <Eye className="h-4 w-4" /> Preview
+                    </AnimatedTabsTrigger>
+                    <AnimatedTabsTrigger value="components" className="gap-2 py-2">
+                      <Layers className="h-4 w-4" /> Components
+                    </AnimatedTabsTrigger>
+                    <AnimatedTabsTrigger value="motion" className="gap-2 py-2">
+                      <Activity className="h-4 w-4" /> Motion
+                    </AnimatedTabsTrigger>
+                    <AnimatedTabsTrigger value="vision" className="gap-2 py-2">
+                      <Sparkles className="h-4 w-4" /> Vision
+                    </AnimatedTabsTrigger>
+                    <AnimatedTabsTrigger value="insights" className="gap-2 py-2">
+                      <Brain className="h-4 w-4" /> Insights
+                    </AnimatedTabsTrigger>
+                    <AnimatedTabsTrigger value="accessibility" className="gap-2 py-2">
+                      <Shield className="h-4 w-4" /> Accessibility
+                    </AnimatedTabsTrigger>
+                    <AnimatedTabsTrigger value="figma" className="gap-2 py-2">
+                      <ExternalLink className="h-4 w-4" /> Figma
+                    </AnimatedTabsTrigger>
+                    <AnimatedTabsTrigger value="saved" className="gap-2 py-2">
+                      <History className="h-4 w-4" /> Saved
+                    </AnimatedTabsTrigger>
+                  </TabsList>
+                </div>
 
-            <TabsContent value="overview" className="space-y-8">
-              <ColorPaletteDisplay colors={designSystem.colors} />
-              <div className="grid lg:grid-cols-2 gap-8">
-                <TypographyDisplay typography={designSystem.typography} />
-                <SpacingDisplay spacing={designSystem.spacing} />
-              </div>
-              <div className="grid lg:grid-cols-2 gap-8">
-                <ShadowDisplay shadows={designSystem.shadows} />
-                <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
-              </div>
-              <GridDisplay grid={designSystem.grid} />
-            </TabsContent>
+                <TabsContent value="overview" className="space-y-12 animate-fade-in">
+                  <BentoGrid className="max-w-7xl mx-auto">
+                    <BentoGridItem
+                      className="md:col-span-3"
+                      header={<ColorPaletteDisplay colors={designSystem.colors} />}
+                      title="Brand Color Palette"
+                      description="Primary, secondary, and accent colors with semantic variants."
+                      icon={<Palette className="h-4 w-4 text-neutral-500" />}
+                    />
+                    <BentoGridItem
+                      className="md:col-span-1"
+                      header={<TypographyDisplay typography={designSystem.typography} />}
+                      title="Typography System"
+                      description="Heading and body scales using modern pairings."
+                      icon={<Type className="h-4 w-4 text-neutral-500" />}
+                    />
+                    <div className="md:col-span-1 grid grid-cols-1 gap-4">
+                      <BentoGridItem
+                        className="h-auto min-h-[180px]"
+                        header={<SpacingDisplay spacing={designSystem.spacing} />}
+                        title="Spacing Scale"
+                        description={`${designSystem.spacing.unit}px base unit`}
+                        icon={<Ruler className="h-4 w-4 text-neutral-500" />}
+                      />
+                      <BentoGridItem
+                        className="h-auto min-h-[180px]"
+                        header={<BorderRadiusDisplay borderRadius={designSystem.borderRadius} />}
+                        title="Border Radius"
+                        description={`${designSystem.borderRadius.md} standard radius`}
+                        icon={<Maximize className="h-4 w-4 text-neutral-500" />}
+                      />
+                    </div>
+                    <BentoGridItem
+                      className="md:col-span-1"
+                      header={<ShadowDisplay shadows={designSystem.shadows} />}
+                      title="Elevation & Shadows"
+                      description="Light and dark mode compatible shadows"
+                      icon={<Cast className="h-4 w-4 text-neutral-500" />}
+                    />
+                    <BentoGridItem
+                      className="md:col-span-2"
+                      header={<GridDisplay grid={designSystem.grid} />}
+                      title="Layout Grid"
+                      description="Responsive 12-column grid system"
+                      icon={<Grid3X3 className="h-4 w-4 text-neutral-500" />}
+                    />
+                  </BentoGrid>
+                </TabsContent>
 
-            <TabsContent value="insights">
-              <DesignInsights designSystem={designSystem} onUpdate={setDesignSystem} />
-            </TabsContent>
+                <TabsContent value="preview" className="animate-fade-in">
+                  <Suspense fallback={<DesignSystemSkeleton />}>
+                    <InteractiveColorsDisplay colors={designSystem.colors} />
+                  </Suspense>
+                </TabsContent>
 
-            <TabsContent value="motion">
-              <MotionGallery designSystem={designSystem} />
-            </TabsContent>
+                <TabsContent value="components" className="animate-fade-in space-y-8">
+                  <Suspense fallback={<DesignSystemSkeleton />}>
+                    <ComponentLibraryPreview designSystem={designSystem} />
+                    <ComponentBlueprints designSystem={designSystem} />
+                  </Suspense>
+                </TabsContent>
 
-            <TabsContent value="vision">
-              <VisionGenerator
-                onDesignGenerated={(color) => handleVisionGenerate(color)}
-                isGenerating={isLoading}
-              />
-            </TabsContent>
+                <TabsContent value="motion" className="space-y-8 animate-fade-in">
+                  <Suspense fallback={<DesignSystemSkeleton />}>
+                    <AnimationDisplay animations={designSystem.animations} />
+                    <MotionGallery designSystem={designSystem} />
+                    <AnimationSystemDocs />
+                  </Suspense>
+                </TabsContent>
 
-            <TabsContent value="figma">
-              <FigmaSync designSystemId={searchParams.get("id") || undefined} />
-            </TabsContent>
+                <TabsContent value="vision" className="animate-fade-in">
+                  <Suspense fallback={<DesignSystemSkeleton />}>
+                    <VisionGenerator onDesignGenerated={handleVisionGenerate} isGenerating={isLoading} />
+                  </Suspense>
+                </TabsContent>
 
-            <TabsContent value="blueprints">
-              <ComponentBlueprints designSystem={designSystem} />
-            </TabsContent>
+                <TabsContent value="insights" className="animate-fade-in">
+                  <Suspense fallback={<DesignSystemSkeleton />}>
+                    <DesignInsights designSystem={designSystem} onUpdate={setDesignSystem} />
+                  </Suspense>
+                </TabsContent>
 
-            <TabsContent value="diff">
-              <VersionDiff
-                currentSystem={designSystem}
-                previousSystem={undefined} // TODO: Connect to actual previous version from history
-              />
-            </TabsContent>
+                <TabsContent value="accessibility" className="animate-fade-in space-y-8">
+                  <Suspense fallback={<DesignSystemSkeleton />}>
+                    <AccessibilityChecker colors={designSystem.colors} darkColors={designSystem.darkColors} />
+                    <ColorBlindnessSimulator colors={designSystem.colors} />
+                  </Suspense>
+                </TabsContent>
 
-            <TabsContent value="audit">
-              <AuditLogViewer designSystemId={searchParams.get("id") || undefined} />
-            </TabsContent>
+                <TabsContent value="figma" className="animate-fade-in">
+                  <Suspense fallback={<DesignSystemSkeleton />}>
+                    <FigmaSync designSystemId={searchParams.get("id") || undefined} />
+                  </Suspense>
+                </TabsContent>
 
-            <TabsContent value="team">
-              <TeamSettings
-                currentRole={userRole}
-                onRoleChange={setUserRole}
-              />
-            </TabsContent>
-
-
-            <TabsContent value="palettes" className="space-y-8">
-              <MultiPaletteGenerator
-                primaryColor={designSystem.colors.primary}
-                secondaryColor={designSystem.colors.secondary}
-                accentColor={designSystem.colors.accent}
-              />
-            </TabsContent>
-
-            <TabsContent value="typography-editor" className="space-y-8">
-              <AdvancedTypographyScale typography={designSystem.typography} />
-            </TabsContent>
-
-            <TabsContent value="spacing-grid" className="space-y-8">
-              <SpacingGridEditor
-                spacing={designSystem.spacing}
-                grid={designSystem.grid}
-              />
-            </TabsContent>
-
-            <TabsContent value="interactive">
-              <InteractiveColorsDisplay colors={designSystem.colors} />
-            </TabsContent>
-
-            <TabsContent value="animations">
-              <AnimationDisplay animations={designSystem.animations} />
-            </TabsContent>
-
-            <TabsContent value="animation-system">
-              <AnimationSystemDocs />
-            </TabsContent>
-
-            <TabsContent value="components">
-              <ComponentLibraryPreview designSystem={designSystem} />
-            </TabsContent>
-
-            <TabsContent value="accessibility">
-              <AccessibilityChecker colors={designSystem.colors} darkColors={designSystem.darkColors} />
-            </TabsContent>
-
-            <TabsContent value="color-blindness">
-              <ColorBlindnessSimulator colors={designSystem.colors} />
-            </TabsContent>
-
-            <TabsContent value="token-search">
-              <TokenSearch designSystem={designSystem} />
-            </TabsContent>
-
-            <TabsContent value="responsive">
-              <ResponsivePreview designSystem={designSystem} />
-            </TabsContent>
-
-            <TabsContent value="preview">
-              <LivePreview designSystem={designSystem} />
-            </TabsContent>
-
-            <TabsContent value="realtime-preview">
-              <RealTimePreview designSystem={designSystem} />
-            </TabsContent>
-
-            <TabsContent value="versioning">
-              <AuthRequiredWrapper
-                title="Version History"
-                description="Sign in to track changes and restore previous versions of your design system."
-                icon={<History className="h-6 w-6 text-primary" />}
-              >
-                <TokenVersioning currentSystem={designSystem} onRestore={handleRestoreVersion} />
-              </AuthRequiredWrapper>
-            </TabsContent>
-
-            <TabsContent value="export">
-              <AuthRequiredWrapper
-                title="Brand Guidelines PDF"
-                description="Sign in to generate and download professional brand guidelines."
-                icon={<FileText className="h-6 w-6 text-primary" />}
-              >
-                <BrandGuidelinesPDF designSystem={designSystem} />
-              </AuthRequiredWrapper>
-            </TabsContent>
-
-            <TabsContent value="compare">
-              <ComparisonView baseInput={currentInput} initialSystem={designSystem} />
-            </TabsContent>
-
-            <TabsContent value="saved">
-              <SavedDesigns onLoad={handleLoadDesign} currentSystem={designSystem} />
-            </TabsContent>
-          </Tabs>
+                <TabsContent value="saved" className="animate-fade-in">
+                  <Suspense fallback={<DesignSystemSkeleton />}>
+                    <SavedDesigns onLoad={handleLoadDesign} currentSystem={designSystem} />
+                  </Suspense>
+                </TabsContent>
+              </Tabs>
+            )
+          )}
         </main>
+        <ShortcutOverlay />
       </div>
     );
   }
 
+  // Home / Initial View
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-primary/10 via-transparent to-transparent rounded-full blur-3xl animate-pulse-soft" />
-        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-accent/20 via-transparent to-transparent rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />
-      </div>
+    <div className="min-h-screen bg-background dark:bg-black/[0.96] antialiased bg-grid-black/[0.02] dark:bg-grid-white/[0.02] relative overflow-hidden transition-colors duration-300">
+      <Spotlight className="-top-40 left-0 md:left-60 md:-top-20 hidden dark:block" fill="white" />
+      <BackgroundBeams className="opacity-40 hidden dark:block" />
 
       <div className="relative z-10">
-        {/* Header */}
-        <header className="py-6 animate-fade-in">
+        <header className="py-6 animate-fade-in border-b border-border/40 bg-background/80 dark:bg-black/75 backdrop-blur-xl sticky top-0 z-50">
           <div className="container mx-auto px-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 group">
-              <Wand2 className="h-8 w-8 text-primary transition-transform duration-300 group-hover:rotate-12" />
-              <span className="text-2xl font-bold">DesignForge</span>
+            <Link to="/" className="flex items-center gap-2 group">
+              <Wand2 className="h-8 w-8 text-primary dark:text-white transition-transform duration-300 group-hover:rotate-12" />
+              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-600 to-neutral-900 dark:from-neutral-50 dark:to-neutral-400">DesignForge</span>
+            </Link>
+
+            <div className="hidden md:flex items-center gap-2">
+              <ModeToggle />
+              {user ? (
+                <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift text-muted-foreground hover:text-foreground">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              ) : (
+                <Button variant="ghost" size="sm" asChild className="hover-lift text-muted-foreground hover:text-foreground">
+                  <Link to="/auth">
+                    <User className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Link>
+                </Button>
+              )}
             </div>
-            {user ? (
-              <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
-            ) : (
-              <Button variant="ghost" size="sm" asChild className="hover-lift">
-                <Link to="/auth">
-                  <User className="h-4 w-4 mr-2" />
-                  Sign In
-                </Link>
-              </Button>
-            )}
+
+            <div className="md:hidden flex items-center gap-2">
+              <ModeToggle />
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Open menu">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-4 mt-6">
+                    {user ? (
+                      <Button variant="ghost" onClick={signOut} className="justify-start">
+                        <LogOut className="h-4 w-4 mr-2" /> Sign Out
+                      </Button>
+                    ) : (
+                      <Button variant="ghost" asChild className="justify-start">
+                        <Link to="/auth">
+                          <User className="h-4 w-4 mr-2" /> Sign In
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </header>
 
-        {/* Hero Section */}
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
@@ -503,7 +491,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }} id="tour-input-section">
               <DesignSystemForm
                 onGenerate={handleGenerate}
                 isLoading={isLoading}
@@ -518,8 +506,7 @@ const Index = () => {
               />
             </div>
 
-            {/* Design System Presets */}
-            <div className="mt-12 animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
+            <div className="mt-12 animate-fade-in-up" style={{ animationDelay: '0.35s' }} id="tour-presets">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
                   <Palette className="h-6 w-6 text-primary" />
@@ -530,7 +517,6 @@ const Index = () => {
               <DesignSystemPresets onApplyPreset={handleApplyPreset} />
             </div>
 
-            {/* Features */}
             <div className="mt-16 grid md:grid-cols-3 gap-6">
               {[
                 {
@@ -564,6 +550,7 @@ const Index = () => {
         </main>
       </div>
       <ShortcutOverlay />
+      <FeatureTour />
     </div>
   );
 };
