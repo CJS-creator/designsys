@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Folder, Trash2, Download, Loader2, FolderOpen } from "lucide-react";
+import { Folder, Trash2, Download, Loader2, FolderOpen, Share2 } from "lucide-react";
 
 interface SavedDesign {
   id: string;
@@ -20,33 +21,18 @@ interface SavedDesignsProps {
   currentSystem?: GeneratedDesignSystem | null;
 }
 
-// Type for the design_systems table until types are regenerated
-interface DesignSystemRow {
-  id: string;
-  user_id: string;
-  name: string;
-  description: string | null;
-  design_system_data: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
-}
-
 export const SavedDesigns = ({ onLoad, currentSystem }: SavedDesignsProps) => {
   const { user } = useAuth();
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchDesigns = async () => {
+  const fetchDesigns = useCallback(async () => {
     if (!user) return;
-    
+
     setIsLoading(true);
-    const { data, error } = await (supabase
-      .from("design_systems" as never) as unknown as { 
-        select: (columns: string) => { 
-          order: (column: string, options: { ascending: boolean }) => Promise<{ data: DesignSystemRow[] | null; error: Error | null }> 
-        } 
-      })
+    const { data, error } = await supabase
+      .from("design_systems")
       .select("*")
       .order("created_at", { ascending: false });
 
@@ -62,25 +48,23 @@ export const SavedDesigns = ({ onLoad, currentSystem }: SavedDesignsProps) => {
       })));
     }
     setIsLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchDesigns();
     }
-  }, [user]);
+  }, [user, fetchDesigns]);
 
   const saveCurrentDesign = async () => {
     if (!user || !currentSystem) return;
 
     setIsSaving(true);
-    const { error } = await (supabase.from("design_systems" as never) as unknown as {
-      insert: (data: Record<string, unknown>) => Promise<{ error: Error | null }>
-    }).insert({
+    const { error } = await supabase.from("design_systems").insert({
       user_id: user.id,
       name: currentSystem.name,
       description: `Generated design system`,
-      design_system_data: currentSystem as unknown as Record<string, unknown>,
+      design_system_data: currentSystem as unknown as Json,
     });
 
     if (error) {
@@ -93,16 +77,25 @@ export const SavedDesigns = ({ onLoad, currentSystem }: SavedDesignsProps) => {
   };
 
   const deleteDesign = async (id: string) => {
-    const { error } = await (supabase.from("design_systems" as never) as unknown as {
-      delete: () => { eq: (column: string, value: string) => Promise<{ error: Error | null }> }
-    }).delete().eq("id", id);
-    
+    const { error } = await supabase
+      .from("design_systems")
+      .delete()
+      .eq("id", id);
+
     if (error) {
       toast.error("Failed to delete", { description: error.message });
     } else {
       toast.success("Design deleted");
       setDesigns((prev) => prev.filter((d) => d.id !== id));
     }
+  };
+
+  const handleShare = (id: string) => {
+    const url = `${window.location.origin}/share/${id}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link copied to clipboard!", {
+      description: "Share this link with anyone to show your design system.",
+    });
   };
 
   if (!user) {
@@ -179,6 +172,14 @@ export const SavedDesigns = ({ onLoad, currentSystem }: SavedDesignsProps) => {
                     onClick={() => onLoad(design.design_system_data)}
                   >
                     Load
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Share"
+                    onClick={() => handleShare(design.id)}
+                  >
+                    <Share2 className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"

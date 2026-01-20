@@ -83,10 +83,10 @@ export function AnimationSystemDocs() {
                       <motion.div
                         className="absolute h-full w-4 bg-primary rounded"
                         animate={{ left: ["0%", "100%", "0%"] }}
-                        transition={{ 
-                          duration: 2, 
-                          repeat: Infinity, 
-                          ease: easing[key as keyof typeof easing] as any 
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: easing[key as keyof typeof easing]
                         }}
                       />
                     </div>
@@ -130,7 +130,7 @@ export function AnimationSystemDocs() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {["fade", "fadeUp", "fadeDown", "fadeLeft", "fadeRight", "scale", "scaleUp", "pop"].map((anim) => (
-                  <MotionWrapper key={anim} animation={anim as any} className="p-4 rounded-lg bg-muted/20 border border-border/50">
+                  <MotionWrapper key={anim} animation={anim as "fade" | "fadeUp" | "fadeDown" | "fadeLeft" | "fadeRight" | "scale" | "scaleUp" | "pop"} className="p-4 rounded-lg bg-muted/20 border border-border/50">
                     <span className="font-medium capitalize">{anim}</span>
                   </MotionWrapper>
                 ))}
@@ -143,7 +143,7 @@ export function AnimationSystemDocs() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button onClick={() => setShowModal(true)}>Open Modal Demo</Button>
-                
+
                 <AnimatePresence>
                   {showModal && (
                     <>
@@ -337,14 +337,14 @@ export function AnimationSystemDocs() {
                   </ul>
                 </div>
               </div>
-              
+
               <div className="p-4 rounded-lg bg-muted/30">
                 <h4 className="font-medium mb-2 flex items-center gap-2">
                   <Code className="h-4 w-4" />
                   Usage
                 </h4>
                 <pre className="text-xs bg-background p-3 rounded overflow-x-auto">
-{`import { useReducedMotion } from "@/hooks/useReducedMotion";
+                  {`import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 function MyComponent() {
   const prefersReducedMotion = useReducedMotion();

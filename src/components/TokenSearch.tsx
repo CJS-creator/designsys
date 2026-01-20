@@ -43,7 +43,7 @@ export function TokenSearch({ designSystem }: TokenSearchProps) {
     const flattenObject = (obj: Record<string, unknown>, category: string, prefix = ""): void => {
       for (const [key, value] of Object.entries(obj)) {
         const path = prefix ? `${prefix}.${key}` : key;
-        
+
         if (typeof value === "object" && value !== null && !Array.isArray(value)) {
           flattenObject(value as Record<string, unknown>, category, path);
         } else {
@@ -186,16 +186,26 @@ export function TokenSearch({ designSystem }: TokenSearchProps) {
                         style={{ backgroundColor: token.value }}
                       />
                     )}
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm truncate">{token.path}</span>
+                        <span className="font-mono text-sm truncate">
+                          {searchQuery ? (
+                            token.path.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) =>
+                              part.toLowerCase() === searchQuery.toLowerCase() ? <span key={i} className="bg-yellow-200 dark:bg-yellow-900 text-foreground px-0.5 rounded">{part}</span> : part
+                            )
+                          ) : token.path}
+                        </span>
                         <Badge variant="secondary" className="text-xs shrink-0">
                           {token.category}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground font-mono truncate">
-                        {token.value}
+                        {searchQuery ? (
+                          token.value.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) =>
+                            part.toLowerCase() === searchQuery.toLowerCase() ? <span key={i} className="bg-yellow-200 dark:bg-yellow-900 text-foreground px-0.5 rounded">{part}</span> : part
+                          )
+                        ) : token.value}
                       </p>
                     </div>
 

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { DesignSystemForm } from "@/components/DesignSystemForm";
 import { ColorPaletteDisplay } from "@/components/ColorPaletteDisplay";
 import { TypographyDisplay } from "@/components/TypographyDisplay";
@@ -30,26 +32,78 @@ import { AuthRequiredWrapper } from "@/components/AuthRequiredWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { Sparkles, ArrowLeft, Wand2, Brain, User, LogOut, Zap, HelpCircle, Smartphone, History, FileText, Palette, Search, X, Lock, Eye, Type, Grid3X3, Layers } from "lucide-react";
+import {
+  Sparkles,
+  ArrowLeft,
+  Wand2,
+  History,
+  FileText,
+  LogOut,
+  User,
+  Plus,
+  Brain,
+  Activity,
+  Layers,
+  Type,
+  Grid3X3,
+  Palette,
+  Eye,
+  Smartphone,
+  FileJson,
+  Code2,
+  Component,
+  Share2,
+  HelpCircle,
+  Zap,
+  X,
+  Search,
+  Lock,
+  Layout,
+  GitCompare,
+  History,
+  Shield,
+  BookOpen,
+  ExternalLink
+} from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnimationSystemDocs } from "@/components/AnimationSystemDocs";
 import { ComponentLibraryPreview } from "@/components/ComponentLibraryPreview";
+import { DesignInsights } from "@/components/DesignInsights";
+import { MotionGallery } from "@/components/MotionGallery";
+import { CollaborationOverlay } from "@/components/CollaborationOverlay";
+import { LiveFeedback } from "@/components/LiveFeedback";
+import { VisionGenerator } from "@/components/VisionGenerator";
+import { FigmaSync } from "@/components/FigmaSync";
+import { ComponentBlueprints } from "@/components/ComponentBlueprints";
+import { VersionDiff } from "@/components/VersionDiff";
+import { AuditLogViewer } from "@/components/AuditLogViewer";
+import { TeamSettings, UserRole } from "@/components/TeamSettings";
 import { useOnboarding } from "@/contexts/OnboardingContext";
 import { useDesignSystemShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { ShortcutOverlay } from "@/components/ShortcutOverlay";
+import { useSearchParams } from "react-router-dom";
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
   const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<UserRole>("admin");
+  const [isProjectLocked, setIsProjectLocked] = useState(false);
   const [showGuestBanner, setShowGuestBanner] = useState(true);
   const { user, signOut } = useAuth();
   const { resetOnboarding, selectedTemplate } = useOnboarding();
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session") || "default-workspace";
+
+
+
 
   const handleGenerate = async (input: DesignSystemInput) => {
     setIsLoading(true);
     setCurrentInput(input);
-    
+
     try {
       const generated = await generateDesignSystemWithAI(input);
       setDesignSystem(generated);
@@ -73,6 +127,12 @@ const Index = () => {
     setCurrentInput(null);
   };
 
+  // Initialize keyboard shortcuts
+  useDesignSystemShortcuts({
+    onReset: handleReset,
+    hasDesignSystem: !!designSystem,
+  });
+
   const handleLoadDesign = (system: GeneratedDesignSystem) => {
     setDesignSystem(system);
     toast.success("Design system loaded!");
@@ -93,6 +153,47 @@ const Index = () => {
   const handleRestoreVersion = (system: GeneratedDesignSystem) => {
     setDesignSystem(system);
   };
+
+  const handleVisionGenerate = (color: string) => {
+    handleGenerate({
+      appType: "web",
+      industry: "Modern",
+      brandMood: ["Modern", "Creative"],
+      primaryColor: color,
+      description: "Design system generated from visual inspiration",
+    });
+  };
+
+
+  const handleSave = async () => {
+    if (!user) {
+      toast.error("Sign in to save your design system");
+      return;
+    }
+    if (!designSystem) return;
+
+    const toastId = toast.loading("Saving design...");
+    const { error } = await supabase.from("design_systems").insert({
+      user_id: user.id,
+      name: designSystem.name,
+      description: `Generated styles`,
+      design_system_data: designSystem as unknown as Json,
+    });
+
+    if (error) {
+      toast.error("Failed to save", { id: toastId, description: error.message });
+    } else {
+      toast.success("Design saved!", { id: toastId });
+    }
+  };
+
+  // Initialize keyboard shortcuts
+  useDesignSystemShortcuts({
+    onReset: handleReset,
+    hasDesignSystem: !!designSystem,
+    onSave: handleSave,
+  });
+
   if (designSystem && currentInput) {
     return (
       <div className="min-h-screen bg-background">
@@ -125,16 +226,23 @@ const Index = () => {
                   </Link>
                 </Button>
               )}
+              <Button variant="ghost" size="sm" asChild className="mr-2 hover-lift">
+                <Link to="/landing">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View Landing
+                </Link>
+              </Button>
               <ExportButton designSystem={designSystem} />
             </div>
           </div>
         </header>
 
+
         {/* Guest Sign-in Banner */}
         {!user && showGuestBanner && (
           <div className="bg-primary/10 border-b border-primary/20 animate-fade-in">
             <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-1">
+              <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
                   <Lock className="h-4 w-4 text-primary" />
                 </div>
@@ -150,10 +258,10 @@ const Index = () => {
                     Sign In Free
                   </Link>
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8" 
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
                   onClick={() => setShowGuestBanner(false)}
                 >
                   <X className="h-4 w-4" />
@@ -168,6 +276,14 @@ const Index = () => {
           <Tabs defaultValue="overview" className="space-y-8">
             <TabsList className="flex-wrap transition-all duration-300">
               <TabsTrigger value="overview" className="transition-all duration-200 data-[state=active]:scale-105">Overview</TabsTrigger>
+              <TabsTrigger value="insights" className="transition-all duration-200 data-[state=active]:scale-105"><Activity className="h-4 w-4 mr-1" />Insights</TabsTrigger>
+              <TabsTrigger value="motion" className="transition-all duration-200 data-[state=active]:scale-105"><Zap className="h-4 w-4 mr-1" />Motion</TabsTrigger>
+              <TabsTrigger value="vision" className="transition-all duration-200 data-[state=active]:scale-105"><Sparkles className="h-4 w-4 mr-1" />AI Visualizer</TabsTrigger>
+              <TabsTrigger value="figma" className="transition-all duration-200 data-[state=active]:scale-105"><Layout className="h-4 w-4 mr-1" />Figma Sync</TabsTrigger>
+              <TabsTrigger value="blueprints" className="transition-all duration-200 data-[state=active]:scale-105"><Code2 className="h-4 w-4 mr-1" />Blueprints</TabsTrigger>
+              <TabsTrigger value="diff" className="transition-all duration-200 data-[state=active]:scale-105"><GitCompare className="h-4 w-4 mr-1" />Compare</TabsTrigger>
+              <TabsTrigger value="audit" className="transition-all duration-200 data-[state=active]:scale-105"><History className="h-4 w-4 mr-1" />Logs</TabsTrigger>
+              <TabsTrigger value="team" className="transition-all duration-200 data-[state=active]:scale-105"><Shield className="h-4 w-4 mr-1" />Team</TabsTrigger>
               <TabsTrigger value="palettes" className="transition-all duration-200 data-[state=active]:scale-105"><Layers className="h-4 w-4 mr-1" />Palettes</TabsTrigger>
               <TabsTrigger value="typography-editor" className="transition-all duration-200 data-[state=active]:scale-105"><Type className="h-4 w-4 mr-1" />Type Scale</TabsTrigger>
               <TabsTrigger value="spacing-grid" className="transition-all duration-200 data-[state=active]:scale-105"><Grid3X3 className="h-4 w-4 mr-1" />Spacing & Grid</TabsTrigger>
@@ -200,8 +316,50 @@ const Index = () => {
               <GridDisplay grid={designSystem.grid} />
             </TabsContent>
 
+            <TabsContent value="insights">
+              <DesignInsights designSystem={designSystem} onUpdate={setDesignSystem} />
+            </TabsContent>
+
+            <TabsContent value="motion">
+              <MotionGallery designSystem={designSystem} />
+            </TabsContent>
+
+            <TabsContent value="vision">
+              <VisionGenerator
+                onDesignGenerated={(color) => handleVisionGenerate(color)}
+                isGenerating={isLoading}
+              />
+            </TabsContent>
+
+            <TabsContent value="figma">
+              <FigmaSync designSystemId={searchParams.get("id") || undefined} />
+            </TabsContent>
+
+            <TabsContent value="blueprints">
+              <ComponentBlueprints designSystem={designSystem} />
+            </TabsContent>
+
+            <TabsContent value="diff">
+              <VersionDiff
+                currentSystem={designSystem}
+                previousSystem={undefined} // TODO: Connect to actual previous version from history
+              />
+            </TabsContent>
+
+            <TabsContent value="audit">
+              <AuditLogViewer designSystemId={searchParams.get("id") || undefined} />
+            </TabsContent>
+
+            <TabsContent value="team">
+              <TeamSettings
+                currentRole={userRole}
+                onRoleChange={setUserRole}
+              />
+            </TabsContent>
+
+
             <TabsContent value="palettes" className="space-y-8">
-              <MultiPaletteGenerator 
+              <MultiPaletteGenerator
                 primaryColor={designSystem.colors.primary}
                 secondaryColor={designSystem.colors.secondary}
                 accentColor={designSystem.colors.accent}
@@ -213,9 +371,9 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="spacing-grid" className="space-y-8">
-              <SpacingGridEditor 
-                spacing={designSystem.spacing} 
-                grid={designSystem.grid} 
+              <SpacingGridEditor
+                spacing={designSystem.spacing}
+                grid={designSystem.grid}
               />
             </TabsContent>
 
@@ -341,14 +499,14 @@ const Index = () => {
                 in Seconds
               </h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                Our AI analyzes your project requirements and generates a comprehensive, 
+                Our AI analyzes your project requirements and generates a comprehensive,
                 context-aware design system with colors, typography, spacing, shadows, and grid.
               </p>
             </div>
 
             <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-              <DesignSystemForm 
-                onGenerate={handleGenerate} 
+              <DesignSystemForm
+                onGenerate={handleGenerate}
                 isLoading={isLoading}
                 initialValues={
                   selectedTemplate ? {
@@ -406,6 +564,7 @@ const Index = () => {
           </div>
         </main>
       </div>
+      <ShortcutOverlay />
     </div>
   );
 };

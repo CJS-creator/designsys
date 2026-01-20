@@ -34,6 +34,15 @@ export interface ColorPalette {
   overlay: string;
   border: string;
   borderLight: string;
+  onPrimary: string;
+  onSecondary: string;
+  onAccent: string;
+  onBackground: string;
+  onSurface: string;
+  primaryContainer: string;
+  onPrimaryContainer: string;
+  secondaryContainer: string;
+  onSecondaryContainer: string;
   interactive: SemanticColors;
 }
 
@@ -51,6 +60,15 @@ export interface DarkModeColors {
   overlay: string;
   border: string;
   borderLight: string;
+  onPrimary: string;
+  onSecondary: string;
+  onAccent: string;
+  onBackground: string;
+  onSurface: string;
+  primaryContainer: string;
+  onPrimaryContainer: string;
+  secondaryContainer: string;
+  onSecondaryContainer: string;
   interactive: SemanticColors;
 }
 

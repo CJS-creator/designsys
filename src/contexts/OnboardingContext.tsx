@@ -110,7 +110,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         setState(prev => ({ ...prev, isActive: true }));
       }
     }
-  }, []);
+  }, [state.hasCompletedOnboarding, state.isActive]);
 
   // Persist state
   useEffect(() => {
@@ -125,7 +125,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       data,
     });
     localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analytics));
-    
+
     // Log for debugging - in production this would send to analytics service
     console.log("[Onboarding Analytics]", event, data);
   };
@@ -137,21 +137,21 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const skipOnboarding = () => {
     trackAnalytics("onboarding_skipped", { atStep: state.currentStep });
-    setState(prev => ({ 
-      ...prev, 
-      isActive: false, 
-      hasCompletedOnboarding: true 
+    setState(prev => ({
+      ...prev,
+      isActive: false,
+      hasCompletedOnboarding: true
     }));
   };
 
   const completeOnboarding = () => {
-    trackAnalytics("onboarding_completed", { 
+    trackAnalytics("onboarding_completed", {
       selectedTemplate: state.selectedTemplate?.id || null,
-      preferences: state.preferences 
+      preferences: state.preferences
     });
-    setState(prev => ({ 
-      ...prev, 
-      isActive: false, 
+    setState(prev => ({
+      ...prev,
+      isActive: false,
       hasCompletedOnboarding: true,
       completedSteps: Array.from({ length: TOTAL_STEPS }, (_, i) => i)
     }));
@@ -161,11 +161,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setState(prev => {
       const next = Math.min(prev.currentStep + 1, prev.totalSteps - 1);
       trackAnalytics("step_completed", { fromStep: prev.currentStep, toStep: next });
-      return { 
-        ...prev, 
+      return {
+        ...prev,
         currentStep: next,
-        completedSteps: prev.completedSteps.includes(prev.currentStep) 
-          ? prev.completedSteps 
+        completedSteps: prev.completedSteps.includes(prev.currentStep)
+          ? prev.completedSteps
           : [...prev.completedSteps, prev.currentStep]
       };
     });
@@ -173,25 +173,25 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const prevStep = () => {
     trackAnalytics("step_back", { fromStep: state.currentStep });
-    setState(prev => ({ 
-      ...prev, 
-      currentStep: Math.max(prev.currentStep - 1, 0) 
+    setState(prev => ({
+      ...prev,
+      currentStep: Math.max(prev.currentStep - 1, 0)
     }));
   };
 
   const goToStep = (step: number) => {
     trackAnalytics("step_jumped", { fromStep: state.currentStep, toStep: step });
-    setState(prev => ({ 
-      ...prev, 
-      currentStep: Math.max(0, Math.min(step, prev.totalSteps - 1)) 
+    setState(prev => ({
+      ...prev,
+      currentStep: Math.max(0, Math.min(step, prev.totalSteps - 1))
     }));
   };
 
   const markStepComplete = (step: number) => {
     setState(prev => ({
       ...prev,
-      completedSteps: prev.completedSteps.includes(step) 
-        ? prev.completedSteps 
+      completedSteps: prev.completedSteps.includes(step)
+        ? prev.completedSteps
         : [...prev.completedSteps, step]
     }));
   };
@@ -209,8 +209,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const markTooltipShown = (tooltipId: string) => {
     setState(prev => ({
       ...prev,
-      tooltipsShown: prev.tooltipsShown.includes(tooltipId) 
-        ? prev.tooltipsShown 
+      tooltipsShown: prev.tooltipsShown.includes(tooltipId)
+        ? prev.tooltipsShown
         : [...prev.tooltipsShown, tooltipId]
     }));
   };

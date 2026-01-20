@@ -9,6 +9,9 @@ import { OnboardingModal } from "@/components/onboarding";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import SharedDesign from "./pages/SharedDesign";
+import Landing from "./pages/Landing";
+
 
 const queryClient = new QueryClient();
 
@@ -24,7 +27,10 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/share/:id" element={<SharedDesign />} />
+              <Route path="/landing" element={<Landing />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

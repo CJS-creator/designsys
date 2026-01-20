@@ -682,6 +682,189 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
       animations: { duration: { instant: "0ms", fast: "100ms", normal: "200ms", slow: "400ms", slower: "600ms" }, easing: { linear: "linear", easeIn: "cubic-bezier(0.4, 0, 1, 1)", easeOut: "cubic-bezier(0, 0, 0.2, 1)", easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)", spring: "cubic-bezier(0.175, 0.885, 0.32, 1.275)", bounce: "cubic-bezier(0.68, -0.55, 0.27, 1.55)" }, transitions: { fade: "opacity 200ms ease", scale: "transform 200ms ease", slide: "transform 400ms ease", all: "all 200ms ease", colors: "background-color 200ms, color 200ms", transform: "transform 200ms ease" } },
     },
   },
+  {
+    name: "Finance Pro",
+    description: "Trustworthy navy and gold palette for fintech and banking",
+    icon: Building,
+    tags: ["Trust", "Professional", "Finance"],
+    category: "Industry",
+    system: {
+      name: "Finance Pro",
+      colors: {
+        primary: "#0F172A",
+        secondary: "#B45309",
+        accent: "#F59E0B",
+        background: "#F8FAFC",
+        surface: "#FFFFFF",
+        text: "#0F172A",
+        textSecondary: "#475569",
+        success: "#15803D",
+        warning: "#B45309",
+        error: "#B91C1C",
+        overlay: "rgba(15, 23, 42, 0.5)",
+        border: "#E2E8F0",
+        borderLight: "#F1F5F9",
+        interactive: {
+          primary: { hover: "#1E293B", active: "#020617", disabled: "#94A3B8", focus: "#0F172A" },
+          secondary: { hover: "#D97706", active: "#92400E", disabled: "#FCD34D", focus: "#B45309" },
+          accent: { hover: "#FBBF24", active: "#D97706", disabled: "#FDE68A", focus: "#F59E0B" },
+        },
+      },
+      darkColors: {
+        primary: "#F8FAFC",
+        secondary: "#F59E0B",
+        accent: "#FCD34D",
+        background: "#0F172A",
+        surface: "#1E293B",
+        text: "#F1F5F9",
+        textSecondary: "#94A3B8",
+        success: "#22C55E",
+        warning: "#F59E0B",
+        error: "#EF4444",
+        overlay: "rgba(0, 0, 0, 0.7)",
+        border: "#334155",
+        borderLight: "#1E293B",
+        interactive: {
+          primary: { hover: "#E2E8F0", active: "#FFFFFF", disabled: "#475569", focus: "#F8FAFC" },
+          secondary: { hover: "#FBBF24", active: "#D97706", disabled: "#78350F", focus: "#F59E0B" },
+          accent: { hover: "#FDE68A", active: "#F59E0B", disabled: "#92400E", focus: "#FCD34D" },
+        },
+      },
+      typography: {
+        fontFamily: { heading: "'Playfair Display', serif", body: "'Lato', sans-serif", mono: "'Fira Code', monospace" },
+        sizes: { xs: "12px", sm: "14px", base: "16px", lg: "18px", xl: "20px", "2xl": "24px", "3xl": "30px", "4xl": "36px", "5xl": "48px" },
+        weights: { normal: 400, medium: 500, semibold: 600, bold: 700 },
+        lineHeights: { tight: "1.2", normal: "1.5", relaxed: "1.6" },
+      },
+      spacing: { unit: 4, scale: { "0": "0", "1": "4px", "2": "8px", "3": "12px", "4": "16px", "5": "20px", "6": "24px", "8": "32px", "10": "40px", "12": "48px", "16": "64px", "20": "80px", "24": "96px" } },
+      shadows: { none: "none", sm: "0 1px 2px rgba(0, 0, 0, 0.05)", md: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1)", "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)", inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)" },
+      grid: { columns: 12, gutter: "24px", margin: "24px", maxWidth: "1280px", breakpoints: { sm: "640px", md: "768px", lg: "1024px", xl: "1280px", "2xl": "1536px" } },
+      borderRadius: { none: "0", sm: "2px", md: "4px", lg: "6px", xl: "8px", "2xl": "12px", full: "9999px" },
+      animations: null,
+    },
+  },
+  {
+    name: "Neo Brutalism",
+    description: "Bold, raw, and high-contrast aesthetic with sharp edges",
+    icon: Zap,
+    tags: ["Trendy", "Bold", "High Contrast"],
+    category: "Inspired",
+    system: {
+      name: "Neo Brutalism",
+      colors: {
+        primary: "#000000",
+        secondary: "#FF6B6B",
+        accent: "#4ECDC4",
+        background: "#FFF9C4",
+        surface: "#FFFFFF",
+        text: "#000000",
+        textSecondary: "#000000",
+        success: "#45B7D1",
+        warning: "#FFEEAD",
+        error: "#FF6B6B",
+        overlay: "rgba(0, 0, 0, 0.9)",
+        border: "#000000",
+        borderLight: "#000000",
+        interactive: {
+          primary: { hover: "#333333", active: "#000000", disabled: "#666666", focus: "#000000" },
+          secondary: { hover: "#FF8787", active: "#FA5252", disabled: "#FFC9C9", focus: "#FF6B6B" },
+          accent: { hover: "#70E0D8", active: "#22B8CF", disabled: "#99E9F2", focus: "#4ECDC4" },
+        },
+      },
+      darkColors: {
+        primary: "#FFFFFF",
+        secondary: "#FF6B6B",
+        accent: "#4ECDC4",
+        background: "#1A1A1A",
+        surface: "#000000",
+        text: "#FFFFFF",
+        textSecondary: "#EEEEEE",
+        success: "#45B7D1",
+        warning: "#FFEEAD",
+        error: "#FF6B6B",
+        overlay: "rgba(255, 255, 255, 0.9)",
+        border: "#FFFFFF",
+        borderLight: "#FFFFFF",
+        interactive: {
+          primary: { hover: "#E0E0E0", active: "#FFFFFF", disabled: "#999999", focus: "#FFFFFF" },
+          secondary: { hover: "#FF8787", active: "#FA5252", disabled: "#FFC9C9", focus: "#FF6B6B" },
+          accent: { hover: "#70E0D8", active: "#22B8CF", disabled: "#99E9F2", focus: "#4ECDC4" },
+        },
+      },
+      typography: {
+        fontFamily: { heading: "'Archivo Black', sans-serif", body: "'Space Mono', monospace", mono: "'Space Mono', monospace" },
+        sizes: { xs: "14px", sm: "16px", base: "18px", lg: "20px", xl: "24px", "2xl": "32px", "3xl": "48px", "4xl": "64px", "5xl": "96px" },
+        weights: { normal: 400, medium: 700, semibold: 700, bold: 900 },
+        lineHeights: { tight: "1.1", normal: "1.4", relaxed: "1.6" },
+      },
+      spacing: { unit: 4, scale: { "0": "0", "1": "4px", "2": "8px", "3": "12px", "4": "16px", "5": "20px", "6": "24px", "8": "32px", "10": "40px", "12": "48px", "16": "64px", "20": "80px", "24": "96px" } },
+      shadows: { none: "none", sm: "2px 2px 0px #000000", md: "4px 4px 0px #000000", lg: "6px 6px 0px #000000", xl: "8px 8px 0px #000000", "2xl": "12px 12px 0px #000000", inner: "inset 2px 2px 0px #000000" },
+      grid: { columns: 12, gutter: "24px", margin: "24px", maxWidth: "1400px", breakpoints: { sm: "640px", md: "768px", lg: "1024px", xl: "1280px", "2xl": "1536px" } },
+      borderRadius: { none: "0", sm: "0", md: "0", lg: "0", xl: "0", "2xl": "0", full: "9999px" },
+      animations: null,
+    },
+  },
+  {
+    name: "Cyberpunk",
+    description: "Futuristic, neon-drenched aesthetic with glowing effects",
+    icon: Zap, // Using Zap as placeholder for now
+    tags: ["Futuristic", "Neon", "Dark"],
+    category: "Inspired",
+    system: {
+      name: "Cyberpunk",
+      colors: {
+        primary: "#FDE047", // Neon Yellow
+        secondary: "#DB2777", // Neon Pink
+        accent: "#06B6D4", // Neon Cyan
+        background: "#0F172A",
+        surface: "#1E293B",
+        text: "#E2E8F0",
+        textSecondary: "#94A3B8",
+        success: "#4ADE80",
+        warning: "#FACC15",
+        error: "#F43F5E",
+        overlay: "rgba(255, 0, 128, 0.2)",
+        border: "#334155",
+        borderLight: "#475569",
+        interactive: {
+          primary: { hover: "#FEF08A", active: "#FACC15", disabled: "#854D0E", focus: "#FDE047" },
+          secondary: { hover: "#F472B6", active: "#BE185D", disabled: "#831843", focus: "#DB2777" },
+          accent: { hover: "#67E8F9", active: "#0891B2", disabled: "#155E75", focus: "#06B6D4" },
+        },
+      },
+      darkColors: {
+        primary: "#FDE047",
+        secondary: "#DB2777",
+        accent: "#06B6D4",
+        background: "#020617",
+        surface: "#0F172A",
+        text: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        success: "#4ADE80",
+        warning: "#FACC15",
+        error: "#F43F5E",
+        overlay: "rgba(0, 0, 0, 0.8)",
+        border: "#DB2777",
+        borderLight: "#06B6D4",
+        interactive: {
+          primary: { hover: "#FEF08A", active: "#FACC15", disabled: "#854D0E", focus: "#FDE047" },
+          secondary: { hover: "#F472B6", active: "#BE185D", disabled: "#831843", focus: "#DB2777" },
+          accent: { hover: "#67E8F9", active: "#0891B2", disabled: "#155E75", focus: "#06B6D4" },
+        },
+      },
+      typography: {
+        fontFamily: { heading: "'Orbitron', sans-serif", body: "'Rajdhani', sans-serif", mono: "'Share Tech Mono', monospace" },
+        sizes: { xs: "12px", sm: "14px", base: "16px", lg: "18px", xl: "24px", "2xl": "32px", "3xl": "40px", "4xl": "56px", "5xl": "72px" },
+        weights: { normal: 400, medium: 500, semibold: 600, bold: 700 },
+        lineHeights: { tight: "1.1", normal: "1.4", relaxed: "1.6" },
+      },
+      spacing: { unit: 4, scale: { "0": "0", "1": "4px", "2": "8px", "3": "12px", "4": "16px", "5": "20px", "6": "24px", "8": "32px", "10": "40px", "12": "48px", "16": "64px", "20": "80px", "24": "96px" } },
+      shadows: { none: "none", sm: "0 0 5px #FDE047", md: "0 0 10px #FDE047", lg: "0 0 20px #DB2777", xl: "0 0 40px #06B6D4", "2xl": "0 0 60px #06B6D4", inner: "inset 0 0 10px #DB2777" },
+      grid: { columns: 12, gutter: "16px", margin: "16px", maxWidth: "1600px", breakpoints: { sm: "640px", md: "768px", lg: "1024px", xl: "1280px", "2xl": "1536px" } },
+      borderRadius: { none: "0", sm: "0", md: "2px", lg: "4px", xl: "8px", "2xl": "16px", full: "24px" },
+      animations: null,
+    },
+  },
 ];
 
 const categories = ["All", "Framework", "Inspired", "Industry"];
@@ -691,13 +874,13 @@ export const DesignSystemPresets = ({ onApplyPreset }: DesignSystemPresetsProps)
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   const filteredPresets = presets.filter((preset) => {
-    const matchesSearch = 
+    const matchesSearch =
       preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       preset.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       preset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+
     const matchesCategory = selectedCategory === "All" || preset.category === selectedCategory;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -750,21 +933,21 @@ export const DesignSystemPresets = ({ onApplyPreset }: DesignSystemPresetsProps)
                     <Badge variant="outline" className="text-xs mt-1">{preset.category}</Badge>
                   </div>
                 </div>
-                
+
                 <p className="text-sm text-muted-foreground">{preset.description}</p>
-                
+
                 <div className="flex flex-wrap gap-1">
                   {preset.tags.map((tag) => (
                     <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
                   ))}
                 </div>
-                
+
                 <div className="flex gap-1">
                   {[preset.system.colors.primary, preset.system.colors.secondary, preset.system.colors.accent, preset.system.colors.success].map((color, i) => (
                     <div key={i} className="w-6 h-6 rounded-full border-2 border-background shadow-sm" style={{ background: color }} />
                   ))}
                 </div>
-                
+
                 <Button className="w-full" onClick={() => onApplyPreset(preset.system)}>
                   Use This Preset
                 </Button>

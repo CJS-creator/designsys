@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+import { useAuth } from "@/contexts/AuthContext";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { History, GitCompare, RotateCcw, Plus, Check, X } from "lucide-react";
+import { History, GitCompare, RotateCcw, Plus, Check, X, Loader2, Cloud } from "lucide-react";
 import { toast } from "sonner";
 
 interface TokenVersioningProps {
@@ -14,9 +17,9 @@ interface TokenVersioningProps {
 
 interface VersionEntry {
   id: string;
-  timestamp: Date;
+  created_at: string;
   name: string;
-  system: GeneratedDesignSystem;
+  system_data: GeneratedDesignSystem; // Mapped from DB 'system_data'
   changes: string[];
 }
 
@@ -53,58 +56,104 @@ const getObjectDiff = (oldObj: Record<string, unknown>, newObj: Record<string, u
 };
 
 export const TokenVersioning = ({ currentSystem, onRestore }: TokenVersioningProps) => {
+  const { user } = useAuth();
   const [versions, setVersions] = useState<VersionEntry[]>([]);
   const [selectedVersion, setSelectedVersion] = useState<VersionEntry | null>(null);
   const [diffs, setDiffs] = useState<DiffResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Load versions from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("designSystemVersions");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setVersions(parsed.map((v: VersionEntry) => ({ ...v, timestamp: new Date(v.timestamp) })));
+  const fetchVersions = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+
+    const { data, error } = await supabase
+      .from('design_system_versions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast.error("Failed to load versions", { description: error.message });
+    } else {
+      setVersions((data || []).map(v => ({
+        id: v.id,
+        created_at: v.created_at,
+        name: v.name,
+        // Cast JSON back to typed object
+        system_data: v.system_data as unknown as GeneratedDesignSystem,
+        changes: (v.changes as string[]) || []
+      })));
     }
-  }, []);
+    setIsLoading(false);
+  }, [user]);
 
-  // Save versions to localStorage
   useEffect(() => {
-    if (versions.length > 0) {
-      localStorage.setItem("designSystemVersions", JSON.stringify(versions));
+    if (user) {
+      fetchVersions();
     }
-  }, [versions]);
+  }, [user, fetchVersions]);
 
-  const saveVersion = () => {
+  const saveVersion = async () => {
+    if (!user) return;
+    setIsSaving(true);
+
     const changes: string[] = [];
     if (versions.length > 0) {
       const lastVersion = versions[0];
-      const newDiffs = getObjectDiff(lastVersion.system as unknown as Record<string, unknown>, currentSystem as unknown as Record<string, unknown>);
+      const newDiffs = getObjectDiff(lastVersion.system_data as unknown as Record<string, unknown>, currentSystem as unknown as Record<string, unknown>);
       changes.push(...newDiffs.slice(0, 5).map((d) => `${d.type}: ${d.path}`));
     } else {
       changes.push("Initial version");
     }
 
-    const newVersion: VersionEntry = {
-      id: Date.now().toString(),
-      timestamp: new Date(),
-      name: `v${versions.length + 1}`,
-      system: JSON.parse(JSON.stringify(currentSystem)),
-      changes,
-    };
+    const versionName = `v${versions.length + 1}`;
 
-    setVersions([newVersion, ...versions.slice(0, 19)]); // Keep last 20 versions
-    toast.success("Version saved!", { description: `Saved as ${newVersion.name}` });
+    const { error } = await supabase.from('design_system_versions').insert({
+      user_id: user.id,
+      name: versionName,
+      system_data: currentSystem as unknown as Json,
+      changes: changes
+    });
+
+    if (error) {
+      toast.error("Failed to save version", { description: error.message });
+    } else {
+      toast.success("Version saved to cloud!", { description: `Saved as ${versionName}` });
+      fetchVersions();
+    }
+    setIsSaving(false);
   };
 
   const selectVersion = (version: VersionEntry) => {
     setSelectedVersion(version);
-    const currentDiffs = getObjectDiff(version.system as unknown as Record<string, unknown>, currentSystem as unknown as Record<string, unknown>);
+    const currentDiffs = getObjectDiff(version.system_data as unknown as Record<string, unknown>, currentSystem as unknown as Record<string, unknown>);
     setDiffs(currentDiffs);
   };
 
   const restoreVersion = (version: VersionEntry) => {
-    onRestore(version.system);
+    onRestore(version.system_data);
     toast.success("Version restored!", { description: `Restored to ${version.name}` });
   };
+
+  if (!user) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="h-5 w-5" />
+            Version History
+          </CardTitle>
+          <CardDescription>Sign in to track changes and restore previous versions.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+            <Cloud className="h-12 w-12 mb-4 opacity-50" />
+            <p>Cloud versioning requires an account.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -114,11 +163,12 @@ export const TokenVersioning = ({ currentSystem, onRestore }: TokenVersioningPro
             <CardTitle className="flex items-center gap-2">
               <History className="h-5 w-5" />
               Token Versioning
+              <Badge variant="secondary" className="ml-2 text-xs font-normal">Cloud</Badge>
             </CardTitle>
             <CardDescription>Track changes to your design system over time</CardDescription>
           </div>
-          <Button onClick={saveVersion} className="gap-2">
-            <Plus className="h-4 w-4" />
+          <Button onClick={saveVersion} disabled={isSaving} className="gap-2">
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             Save Version
           </Button>
         </div>
@@ -129,7 +179,9 @@ export const TokenVersioning = ({ currentSystem, onRestore }: TokenVersioningPro
           <div className="space-y-4">
             <h3 className="font-semibold text-sm">Version History</h3>
             <ScrollArea className="h-[400px] pr-4">
-              {versions.length === 0 ? (
+              {isLoading ? (
+                <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : versions.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <History className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>No versions saved yet</p>
@@ -140,18 +192,17 @@ export const TokenVersioning = ({ currentSystem, onRestore }: TokenVersioningPro
                   {versions.map((version) => (
                     <div
                       key={version.id}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                        selectedVersion?.id === version.id
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                      }`}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedVersion?.id === version.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                        }`}
                       onClick={() => selectVersion(version)}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">{version.name}</Badge>
                           <span className="text-xs text-muted-foreground">
-                            {version.timestamp.toLocaleDateString()} {version.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            {new Date(version.created_at).toLocaleDateString()}
                           </span>
                         </div>
                         <Button

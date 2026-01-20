@@ -16,12 +16,53 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  AlertCircle, Bell, Check, ChevronRight, Heart, Loader2, Mail, 
+import {
+  AlertCircle, Bell, Check, ChevronRight, Heart, Loader2, Mail,
   Moon, Search, Settings, ShoppingCart, Star, Sun, User, X, Zap,
-  Home, FileText, BarChart, Users, Calendar
+  Home, FileText, BarChart, Users, Calendar, Code,
 } from "lucide-react";
+import { CodeViewer } from "@/components/ui/CodeViewer";
 import { fadeUp, scale, staggerContainer, staggerItem } from "@/lib/animations/variants";
+
+// Placeholder code snippets for component preview
+const buttonCode = `<button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+  Button
+</button>`;
+
+const formsCode = `<input
+  type="text"
+  placeholder="Enter text..."
+  className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+/>`;
+
+const cardsCode = `<div className="bg-white p-6 rounded-lg shadow-md">
+  <h3 className="text-lg font-semibold mb-2">Card Title</h3>
+  <p className="text-gray-600">Card content goes here.</p>
+</div>`;
+
+const feedbackCode = `<div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+  Success message
+</div>`;
+
+const navigationCode = `<nav className="flex space-x-4">
+  <a href="#" className="text-blue-500 hover:text-blue-700">Home</a>
+  <a href="#" className="text-blue-500 hover:text-blue-700">About</a>
+</nav>`;
+
+const dataCode = `<table className="min-w-full divide-y divide-gray-200">
+  <thead>
+    <tr>
+      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
+    </tr>
+  </thead>
+  <tbody className="bg-white divide-y divide-gray-200">
+    <tr>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Item 1</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Value 1</td>
+    </tr>
+  </tbody>
+</table>`;
 
 interface ComponentLibraryPreviewProps {
   designSystem: GeneratedDesignSystem;
@@ -32,6 +73,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
   const [activeSection, setActiveSection] = useState("buttons");
   const [sliderValue, setSliderValue] = useState([50]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showCode, setShowCode] = useState(false);
 
   const handleLoadingDemo = () => {
     setIsLoading(true);
@@ -56,12 +98,17 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
             <CardDescription>All UI components styled with your design system</CardDescription>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mr-4 border-r pr-4">
+              <Code className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="show-code" className="text-sm font-medium cursor-pointer">Code</Label>
+              <Switch id="show-code" checked={showCode} onCheckedChange={setShowCode} />
+            </div>
             <Sun className="h-4 w-4" />
             <Switch checked={isDarkMode} onCheckedChange={setIsDarkMode} />
             <Moon className="h-4 w-4" />
           </div>
         </div>
-        
+
         <div className="flex flex-wrap gap-2 mt-4">
           {sections.map((section) => (
             <Button
@@ -88,6 +135,11 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
             {/* Buttons Section */}
             {activeSection === "buttons" && (
               <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
+                {showCode && (
+                  <motion.div variants={staggerItem}>
+                    <CodeViewer code={buttonCode} className="mb-6" />
+                  </motion.div>
+                )}
                 <motion.div variants={staggerItem}>
                   <h3 className="text-lg font-semibold mb-4">Button Variants</h3>
                   <div className="flex flex-wrap gap-3">
@@ -129,6 +181,11 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
             {/* Forms Section */}
             {activeSection === "forms" && (
               <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
+                {showCode && (
+                  <motion.div variants={staggerItem}>
+                    <CodeViewer code={formsCode} className="mb-6" />
+                  </motion.div>
+                )}
                 <motion.div variants={staggerItem} className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
@@ -188,6 +245,11 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
             {/* Cards Section */}
             {activeSection === "cards" && (
               <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {showCode && (
+                  <motion.div variants={staggerItem} className="md:col-span-2 lg:col-span-3">
+                    <CodeViewer code={cardsCode} className="mb-6" />
+                  </motion.div>
+                )}
                 <motion.div variants={staggerItem}>
                   <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader>
@@ -261,6 +323,11 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
             {/* Feedback Section */}
             {activeSection === "feedback" && (
               <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
+                {showCode && (
+                  <motion.div variants={staggerItem}>
+                    <CodeViewer code={feedbackCode} className="mb-6" />
+                  </motion.div>
+                )}
                 <motion.div variants={staggerItem}>
                   <h3 className="text-lg font-semibold mb-4">Alerts</h3>
                   <div className="space-y-4">
@@ -335,6 +402,11 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
             {/* Navigation Section */}
             {activeSection === "navigation" && (
               <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
+                {showCode && (
+                  <motion.div variants={staggerItem}>
+                    <CodeViewer code={navigationCode} className="mb-6" />
+                  </motion.div>
+                )}
                 <motion.div variants={staggerItem}>
                   <h3 className="text-lg font-semibold mb-4">Sidebar Navigation</h3>
                   <Card className="max-w-xs">
@@ -351,11 +423,10 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
                           <motion.button
                             key={item.label}
                             whileHover={{ x: 4 }}
-                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-                              item.active
-                                ? "bg-primary text-primary-foreground"
-                                : "hover:bg-muted"
-                            }`}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${item.active
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-muted"
+                              }`}
                           >
                             <item.icon className="h-4 w-4" />
                             {item.label}
@@ -402,6 +473,11 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
             {/* Data Display Section */}
             {activeSection === "data" && (
               <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
+                {showCode && (
+                  <motion.div variants={staggerItem}>
+                    <CodeViewer code={dataCode} className="mb-6" />
+                  </motion.div>
+                )}
                 <motion.div variants={staggerItem}>
                   <h3 className="text-lg font-semibold mb-4">Avatars</h3>
                   <div className="flex items-center gap-4">
