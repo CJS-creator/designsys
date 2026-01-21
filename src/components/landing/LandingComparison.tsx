@@ -6,27 +6,27 @@ const comparisonData = [
     {
         feature: "Token Creation",
         oldWay: "Manual spreadsheet entry",
-        newWay: "AI-generated in seconds",
+        newWay: "AI-generated semantic scaling",
     },
     {
-        feature: "Accessibility",
-        oldWay: "Checked manually (often forgotten)",
-        newWay: "WCAG compliance built-in",
+        feature: "Design Quality",
+        oldWay: "Subjective manual audits",
+        newWay: "Automated AI Health Scores",
     },
     {
-        feature: "Documentation",
+        feature: "Handoff",
         oldWay: "Static PDF or Wiki updates",
-        newWay: "Live, interactive docs",
+        newWay: "Live Docs & VS Code Snippets",
     },
     {
-        feature: "Code Sync",
+        feature: "Deployment",
         oldWay: "Copy-paste hex codes",
-        newWay: "Direct export to CSS/iOS/Android",
+        newWay: "CI/CD & Local CLI Sync",
     },
     {
-        feature: "Updates",
+        feature: "Maintenance",
         oldWay: "Weeks of refactoring",
-        newWay: "One-click regeneration",
+        newWay: "Real-time AI Refinement",
     },
 ];
 
@@ -83,7 +83,7 @@ export const LandingComparison = () => {
                     >
                         THE EVOLUTION OF DESIGN OPS
                     </motion.div>
-                    <h2 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">Stop Building Systems Manually</h2>
+                    <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter">Stop Building Systems Manually</h2>
                     <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
                         See why modern product teams are switching from manual maintenance to automated design systems.
                     </p>
@@ -95,8 +95,7 @@ export const LandingComparison = () => {
                         initial={{ opacity: 0, x: -40 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.8, type: "spring" }}
-                        className="p-10 rounded-[2.5rem] border border-border/50 bg-muted/20 relative overflow-hidden flex flex-col"
+                        className="p-10 rounded-[2.5rem] border border-border/50 glass hover:bg-muted/10 transition-colors relative overflow-hidden flex flex-col"
                     >
                         <div className="absolute -top-10 -right-10 opacity-[0.03] rotate-12">
                             <FileSpreadsheet className="w-64 h-64" />
@@ -137,7 +136,7 @@ export const LandingComparison = () => {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, type: "spring" }}
-                        className="p-10 rounded-[2.5rem] border border-primary/20 bg-card shadow-[0_32px_80px_-20px_rgba(124,58,237,0.2)] relative overflow-hidden flex flex-col ring-1 ring-primary/20"
+                        className="p-10 rounded-[2.5rem] border border-primary/20 glass-card shadow-[0_32px_80px_-20px_rgba(124,58,237,0.2)] hover-glow transition-all duration-500 relative overflow-hidden flex flex-col ring-1 ring-primary/20"
                     >
                         <div className="absolute -top-10 -right-10 opacity-[0.03] -rotate-12 text-primary">
                             <Sparkles className="w-64 h-64" />

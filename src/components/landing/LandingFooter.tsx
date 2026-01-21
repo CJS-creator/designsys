@@ -75,7 +75,7 @@ export const LandingFooter = () => {
                         <p className="text-muted-foreground leading-relaxed max-w-sm font-medium">
                             The AI-powered design system engine that bridges the gap between design and engineering. Built for teams who ship fast.
                         </p>
-                        <div className="flex gap-4 pt-2">
+                        <div className="flex gap-3 pt-4">
                             <SocialLink icon={Twitter} href="#" />
                             <SocialLink icon={Github} href="#" />
                             <SocialLink icon={Linkedin} href="#" />
@@ -85,7 +85,7 @@ export const LandingFooter = () => {
 
                     {/* Links Columns */}
                     <div>
-                        <h4 className="font-bold mb-6 text-foreground">Product</h4>
+                        <h4 className="font-black text-xs uppercase tracking-[0.2em] text-foreground mb-8">Product</h4>
                         <ul className="space-y-4 text-sm font-medium">
                             {links.product.map((link, i) => (
                                 <li key={i}>
@@ -96,7 +96,7 @@ export const LandingFooter = () => {
                     </div>
 
                     <div>
-                        <h4 className="font-bold mb-6 text-foreground">Company</h4>
+                        <h4 className="font-black text-xs uppercase tracking-[0.2em] text-foreground mb-8">Company</h4>
                         <ul className="space-y-4 text-sm font-medium">
                             {links.company.map((link, i) => (
                                 <li key={i}>
@@ -107,7 +107,7 @@ export const LandingFooter = () => {
                     </div>
 
                     <div>
-                        <h4 className="font-bold mb-6 text-foreground">Resources</h4>
+                        <h4 className="font-black text-xs uppercase tracking-[0.2em] text-foreground mb-8">Resources</h4>
                         <ul className="space-y-4 text-sm font-medium">
                             {links.resources.map((link, i) => (
                                 <li key={i}>
@@ -118,7 +118,7 @@ export const LandingFooter = () => {
                     </div>
 
                     <div>
-                        <h4 className="font-bold mb-6 text-foreground">Legal</h4>
+                        <h4 className="font-black text-xs uppercase tracking-[0.2em] text-foreground mb-8">Legal</h4>
                         <ul className="space-y-4 text-sm font-medium">
                             {links.legal.map((link, i) => (
                                 <li key={i}>

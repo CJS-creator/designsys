@@ -5,43 +5,43 @@ import { NumberTicker } from "@/components/ui/number-ticker";
 const stats = [
     {
         icon: Code2,
-        number: 50,
+        number: 1200,
         suffix: "k+",
         label: "Tokens Generated",
-        description: "Powering modern apps",
+        description: "Scale-ready architectures",
         color: "text-blue-500",
         bg: "bg-blue-500/10",
-        progress: 85,
+        progress: 95,
     },
     {
-        icon: Users,
-        number: 200,
-        suffix: "+",
-        label: "Design Teams",
-        description: "Scaling with DesignForge",
+        icon: Rocket,
+        number: 92,
+        suffix: "%",
+        label: "Fewer Code Drifts",
+        description: "Automated CI/CD Sync",
         color: "text-purple-500",
         bg: "bg-purple-500/10",
         progress: 92,
     },
     {
         icon: Zap,
-        number: 98,
+        number: 85,
         suffix: "%",
-        label: "Efficiency Boost",
-        description: "Lower time-to-market",
+        label: "Handoff Automation",
+        description: "Design-to-IDE Velocity",
         color: "text-amber-500",
         bg: "bg-amber-500/10",
-        progress: 98,
+        progress: 85,
     },
     {
-        icon: Clock,
-        number: 2,
-        suffix: "hr",
-        label: "Saved Daily",
-        description: "Per active designer",
+        icon: TrendingUp,
+        number: 90,
+        suffix: "%",
+        label: "Time Reductions",
+        description: "Vs manual creation",
         color: "text-green-500",
         bg: "bg-green-500/10",
-        progress: 75,
+        progress: 90,
     },
 ];
 
@@ -51,7 +51,7 @@ const ProgressRing = ({ progress, color }: { progress: number, color: string }) 
     const offset = circumference - (progress / 100) * circumference;
 
     return (
-        <svg className="absolute inset-0 w-full h-full -rotate-90">
+        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
             <circle
                 className="text-muted/10"
                 strokeWidth="4"
@@ -92,7 +92,7 @@ export const LandingStats = () => {
                             whileInView={{ opacity: 1, scale: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                            className="relative p-8 rounded-[2rem] border border-border/50 bg-card/30 backdrop-blur-sm hover:bg-card/50 hover:border-primary/30 transition-all duration-500 group overflow-hidden"
+                            className="relative p-8 rounded-[2rem] border border-border/50 glass-card hover:bg-card/50 hover:border-primary/30 transition-all duration-500 group overflow-hidden"
                         >
                             {/* Icon & Progress Container */}
                             <div className="relative w-24 h-24 mb-8 mx-auto flex items-center justify-center">
@@ -103,13 +103,13 @@ export const LandingStats = () => {
                             </div>
 
                             <div className="text-center space-y-2">
-                                <h3 className="text-4xl font-bold tracking-tighter flex items-baseline justify-center gap-1">
+                                <h3 className="text-4xl font-bold tracking-tighter flex items-baseline justify-center gap-1 whitespace-nowrap">
                                     <NumberTicker value={stat.number} />
                                     <span className="text-2xl text-muted-foreground">{stat.suffix}</span>
                                 </h3>
                                 <div className="space-y-1">
                                     <p className="font-bold text-foreground text-lg tracking-tight uppercase">{stat.label}</p>
-                                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">{stat.description}</p>
+                                    <p className="text-sm text-muted-foreground font-medium leading-relaxed capitalize">{stat.description}</p>
                                 </div>
                             </div>
 

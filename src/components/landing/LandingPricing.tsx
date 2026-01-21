@@ -15,8 +15,8 @@ const plans = [
             "AI design system generation",
             "Unlimited token exports",
             "Basic component previews",
-            "CSS & JSON exports",
-            "Community support",
+            "CSS & Tailwind exports",
+            "Interactive Sandbox (Basic)",
         ],
         cta: "Get Started",
         popular: false,
@@ -29,10 +29,10 @@ const plans = [
         features: [
             "Everything in Free",
             "Figma variable sync",
-            "Custom component blueprints",
-            "SwiftUI & Android Compose",
+            "Storybook Story generation",
+            "VS Code Snippet export",
             "W3C Design Token support",
-            "Priority email support",
+            "Priority implementation support",
         ],
         cta: "Start Free Trial",
         popular: true,
@@ -44,11 +44,11 @@ const plans = [
         icon: Shield,
         features: [
             "Everything in Pro",
-            "Design audit logs",
-            "RBAC & Team management",
-            "SLA & Dedicated support",
-            "Custom AI training",
-            "On-premise deployment",
+            "AI Design Health Audits",
+            "GitHub CI/CD Sync Actions",
+            "Node.js Sync CLI Utility",
+            "SSO & Team management",
+            "White-label documentation Site",
         ],
         cta: "Contact Sales",
         popular: false,
@@ -70,7 +70,7 @@ export const LandingPricing = () => {
                     >
                         ROI-DRIVEN PRICING
                     </motion.div>
-                    <h2 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">Flexible Plans For Teams</h2>
+                    <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter">Flexible Plans For Teams</h2>
                     <p className="text-lg text-muted-foreground font-medium leading-relaxed mb-10">
                         Choose the plan that fits your team's needs. Save 20% with yearly billing.
                     </p>
@@ -102,14 +102,16 @@ export const LandingPricing = () => {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
                             className={cn(
-                                "relative p-10 rounded-[2.5rem] border bg-card/50 backdrop-blur-xl flex flex-col transition-all duration-500 hover:shadow-2xl",
-                                plan.popular ? "border-primary/40 shadow-xl shadow-primary/10 ring-1 ring-primary/20" : "border-border/50"
+                                "relative p-10 rounded-[2.5rem] border glass-card flex flex-col transition-all duration-500 hover-lift",
+                                plan.popular ? "border-primary/40 shadow-xl shadow-primary/10 ring-1 ring-primary/20 scale-105 z-10" : "border-border/50 scale-100"
                             )}
                         >
                             {plan.popular && (
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 py-2 rounded-full bg-primary text-primary-foreground text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 flex items-center gap-2">
-                                    <Sparkles className="h-3 w-3" />
-                                    MOST POPULAR
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                                    <div className="px-6 py-2 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 flex items-center justify-center gap-2 whitespace-nowrap border border-white/20">
+                                        <Sparkles className="h-3 w-3" />
+                                        MOST POPULAR
+                                    </div>
                                 </div>
                             )}
 
@@ -152,7 +154,7 @@ export const LandingPricing = () => {
                                 <Button
                                     variant={plan.popular ? "default" : "outline"}
                                     className={cn(
-                                        "w-full rounded-2xl h-14 text-md font-black uppercase tracking-widest transition-all duration-300",
+                                        "w-full rounded-2xl h-16 text-md font-black uppercase tracking-widest transition-all duration-300 active-scale",
                                         plan.popular ? "shadow-xl shadow-primary/30" : "border-2 border-muted hover:bg-muted/50"
                                     )}
                                 >

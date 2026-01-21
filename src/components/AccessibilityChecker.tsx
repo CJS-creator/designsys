@@ -1,13 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ColorPalette, DarkModeColors } from "@/types/designSystem";
 import { getContrastRatio, getWCAGCompliance, WCAGLevel } from "@/lib/colorUtils";
-import { CheckCircle, XCircle, AlertCircle, Eye } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, Eye, Sparkles } from "lucide-react";
+import { fixContrast, TextSize } from "@/lib/colorUtils";
 
 interface AccessibilityCheckerProps {
   colors: ColorPalette;
   darkColors?: DarkModeColors;
   isDarkMode?: boolean;
+  onUpdate?: (colors: ColorPalette, darkColors?: DarkModeColors) => void;
 }
 
 interface ContrastCheck {
@@ -40,8 +43,26 @@ function ComplianceBadge({ level, size = "normal" }: { level: WCAGLevel; size?: 
   );
 }
 
-export function AccessibilityChecker({ colors, darkColors, isDarkMode = false }: AccessibilityCheckerProps) {
+export function AccessibilityChecker({ colors, darkColors, isDarkMode = false, onUpdate }: AccessibilityCheckerProps) {
   const activeColors = isDarkMode && darkColors ? darkColors : colors;
+
+  const handleAutoFix = (check: ContrastCheck) => {
+    if (!onUpdate) return;
+
+    // Determine the key in ColorPalette
+    const colorKey = Object.keys(activeColors).find(key => (activeColors as any)[key] === check.foreground);
+    if (!colorKey) return;
+
+    const fixedColor = fixContrast(check.foreground, check.background, "AA", "normal");
+
+    if (isDarkMode && darkColors) {
+      const newDarkColors = { ...darkColors, [colorKey]: fixedColor };
+      onUpdate(colors, newDarkColors);
+    } else {
+      const newColors = { ...colors, [colorKey]: fixedColor };
+      onUpdate(newColors, darkColors);
+    }
+  };
 
   const checks: ContrastCheck[] = [
     {
@@ -184,14 +205,25 @@ export function AccessibilityChecker({ colors, darkColors, isDarkMode = false }:
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                {check.normalText === "Fail" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-primary hover:bg-primary/10 gap-1 animate-pulse-soft"
+                    onClick={() => handleAutoFix(check)}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Magic Fix
+                  </Button>
+                )}
                 <ComplianceBadge level={check.normalText} size="normal" />
                 <ComplianceBadge level={check.largeText} size="large" />
               </div>
             </div>
           ))}
         </div>
-        
+
         <div className="mt-6 p-4 rounded-lg bg-muted/30 border border-border/50">
           <h4 className="font-medium text-sm mb-2">WCAG 2.1 Guidelines</h4>
           <ul className="text-xs text-muted-foreground space-y-1">

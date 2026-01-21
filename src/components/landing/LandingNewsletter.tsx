@@ -89,7 +89,7 @@ export const LandingNewsletter = () => {
                         )}
                         {!isSubscribed && (
                             <p className="text-[10px] text-center text-muted-foreground mt-4 font-bold uppercase tracking-widest opacity-50">
-                                NO SPAM • WEEKLY VALUE • UNSTABLE AI TIPS
+                                NO SPAM • WEEKLY VALUE • ACTIONABLE AI TIPS
                             </p>
                         )}
                     </div>

@@ -182,6 +182,7 @@ export interface AnimationTokens {
 }
 
 export interface GeneratedDesignSystem {
+  id?: string;
   name: string;
   colors: ColorPalette;
   darkColors?: DarkModeColors;

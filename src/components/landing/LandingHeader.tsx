@@ -72,7 +72,7 @@ export const LandingHeader = () => {
                             key={link.name}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href)}
-                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors link-underline pb-1"
                         >
                             {link.name}
                         </a>

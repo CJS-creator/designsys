@@ -197,39 +197,9 @@ export default {
 				'2xl': 'var(--shadow-2xl)'
 			},
 			fontFamily: {
-				sans: [
-					'Poppins',
-					'ui-sans-serif',
-					'system-ui',
-					'-apple-system',
-					'BlinkMacSystemFont',
-					'Segoe UI',
-					'Roboto',
-					'Helvetica Neue',
-					'Arial',
-					'Noto Sans',
-					'sans-serif'
-				],
-				serif: [
-					'Merriweather',
-					'ui-serif',
-					'Georgia',
-					'Cambria',
-					'Times New Roman',
-					'Times',
-					'serif'
-				],
-				mono: [
-					'JetBrains Mono',
-					'ui-monospace',
-					'SFMono-Regular',
-					'Menlo',
-					'Monaco',
-					'Consolas',
-					'Liberation Mono',
-					'Courier New',
-					'monospace'
-				]
+				sans: ['var(--font-sans)', 'sans-serif'],
+				serif: ['var(--font-serif)', 'serif'],
+				mono: ['var(--font-mono)', 'monospace']
 			}
 		}
 	},

@@ -10,25 +10,25 @@ const steps = [
         id: "01",
         title: "AI Generation",
         heading: "Describe your vision, get a system.",
-        description: "Simply tell DesignForge what you need. 'A modern fintech dashboard with dark mode' or 'Playful educational app for kids'. Watch as it generates a comprehensive semantic color palette, typography scale, and spacing system instantly.",
+        description: "Simply tell DesignForge what you need. 'A modern fintech dashboard' or 'Playful educational app'. Our engine generates a comprehensive semantic color palette, typography scale, and spacing system instantly.",
         icon: Sparkles,
         color: "bg-purple-500/10 text-purple-500",
         image: "from-purple-500/20 to-blue-500/20",
     },
     {
         id: "02",
-        title: "Visual Customization",
-        heading: "Fine-tune with precision control.",
-        description: "Don't like the primary blue? Want rounded corners? Adjust global tokens in real-time. Our smart engine automatically recalculates all dependent variables, ensuring accessible contrast ratios are maintained.",
+        title: "AI Design Audit",
+        heading: "refine with precision AI insights.",
+        description: "Our Design Audit Engine automatically scans for accessibility fails, inconsistency, and missed tokens. Apply 'Smart Fixes' to optimize contrast ratios and semantic architecture with one click.",
         icon: Palette,
         color: "bg-blue-500/10 text-blue-500",
         image: "from-blue-500/20 to-cyan-500/20",
     },
     {
         id: "03",
-        title: "Multi-Platform Export",
-        heading: "Deploy to Code in one click.",
-        description: "Export production-ready code for any platform. Get Tailwind config, CSS Variables, JSON for Figma, SwiftUI Color views, or Jetpack Compose themes. Your design tokens are now the single source of truth.",
+        title: "Enterprise Sync",
+        heading: "Deploy to Code and stay in sync.",
+        description: "Export production-ready components and tokens. Use the CLI Sync utility or GitHub Actions to automate design delivery to your IDE and CI/CD pipelines. No more manual handoff friction.",
         icon: Share2,
         color: "bg-orange-500/10 text-orange-500",
         image: "from-orange-500/20 to-red-500/20",
@@ -91,7 +91,7 @@ export const LandingHowItWorks = () => {
                     >
                         THE WORKFLOW
                     </motion.div>
-                    <h2 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">From Logic To Pixels</h2>
+                    <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter">From Logic To Pixels</h2>
                     <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
                         Deploy your design system in record time with our streamlined technical workflow.
                     </p>
@@ -121,17 +121,17 @@ export const LandingHowItWorks = () => {
                                     <step.icon className="h-4 w-4" />
                                     Step {step.id}
                                 </div>
-                                <h3 className="text-4xl md:text-5xl font-bold tracking-tight leading-[1.1]">
+                                <h3 className="text-4xl md:text-5xl font-black tracking-tighter leading-[1.1]">
                                     {step.heading}
                                 </h3>
                                 <p className="text-lg text-muted-foreground leading-relaxed font-medium">
                                     {step.description}
                                 </p>
                                 <div className={cn(
-                                    "flex items-center gap-3 text-sm font-bold cursor-pointer group transition-all",
+                                    "flex items-center gap-3 text-sm font-black cursor-pointer group transition-all link-underline pb-1",
                                     index % 2 === 1 ? "justify-end" : "justify-start"
                                 )}>
-                                    <span className="border-b-2 border-transparent group-hover:border-primary group-hover:text-primary transition-all">
+                                    <span className="uppercase tracking-widest group-hover:text-primary transition-all">
                                         Technical Docs
                                     </span>
                                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-2 text-primary" />

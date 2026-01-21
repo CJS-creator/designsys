@@ -66,12 +66,12 @@ export const LandingFAQ = () => {
                                     value={`item-${index}`}
                                     className="group bg-card/30 backdrop-blur-sm border border-border/50 rounded-[2rem] px-8 transition-all duration-300 hover:border-primary/30 hover:bg-card/50 overflow-hidden data-[state=open]:border-primary/50 data-[state=open]:bg-card/80 shadow-sm data-[state=open]:shadow-xl data-[state=open]:shadow-primary/5"
                                 >
-                                    <AccordionTrigger className="text-left font-black text-lg md:text-xl hover:no-underline py-8 transition-all group-data-[state=open]:text-primary">
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-primary/40 group-data-[state=open]:text-primary font-mono text-sm tracking-tighter">
+                                    <AccordionTrigger className="text-left font-black text-xl md:text-2xl hover:no-underline py-10 transition-all group-data-[state=open]:text-primary gap-6">
+                                        <div className="flex items-center gap-6">
+                                            <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/5 border border-primary/10 text-primary group-data-[state=open]:bg-primary group-data-[state=open]:text-primary-foreground font-mono text-sm tracking-tight transition-all duration-300">
                                                 {String(index + 1).padStart(2, '0')}
                                             </span>
-                                            {faq.question}
+                                            <span className="flex-1">{faq.question}</span>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="text-muted-foreground pb-8 pl-10 text-lg leading-relaxed font-medium">

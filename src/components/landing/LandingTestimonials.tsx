@@ -66,14 +66,18 @@ const TestimonialCard = ({ testimonial, className }: { testimonial: any, classNa
                 "{testimonial.quote}"
             </p>
 
-            <div className="flex items-center gap-4 mt-auto">
-                <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
-                    <AvatarImage src={testimonial.avatar} alt={testimonial.author} />
-                    <AvatarFallback>{testimonial.author[0]}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <h4 className="font-bold text-sm">{testimonial.author}</h4>
-                    <p className="text-xs text-muted-foreground font-medium">{testimonial.role}</p>
+            <div className="flex items-center gap-4 mt-auto pt-8 border-t border-border/10">
+                <div className="shrink-0 h-12 w-12 rounded-full border-2 border-background shadow-md overflow-hidden bg-muted">
+                    <img
+                        src={testimonial.avatar}
+                        alt={testimonial.author}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                    />
+                </div>
+                <div className="flex flex-col justify-center overflow-hidden">
+                    <h4 className="font-bold text-sm text-foreground truncate">{testimonial.author}</h4>
+                    <p className="text-[11px] text-muted-foreground font-medium truncate uppercase tracking-wider">{testimonial.role}</p>
                 </div>
             </div>
         </div>

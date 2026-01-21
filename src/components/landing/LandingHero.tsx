@@ -75,9 +75,9 @@ export const LandingHero = () => {
                 </motion.div>
 
                 {/* Main Title */}
-                <h1 className="text-5xl md:text-8xl font-bold tracking-tight mb-8 max-w-5xl">
+                <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-8 max-w-[90rem] leading-[1.1]">
                     <TextReveal text="Build Design Systems" className="justify-center" />
-                    <span className="block mt-2 bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-shimmer">
+                    <span className="block mt-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-shimmer whitespace-nowrap">
                         <TextReveal text="Faster Than Implementation" className="justify-center" delay={0.3} />
                     </span>
                 </h1>
@@ -103,7 +103,7 @@ export const LandingHero = () => {
                         <Link to="/auth" className="w-full sm:w-auto">
                             <MovingBorderButton
                                 borderRadius="1rem"
-                                className="bg-primary text-primary-foreground border-none font-bold px-10 h-14 text-lg shadow-xl shadow-primary/20"
+                                className="bg-primary text-primary-foreground border-none font-bold px-10 h-16 text-lg shadow-xl shadow-primary/20"
                             >
                                 Create My Design System
                                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -115,7 +115,7 @@ export const LandingHero = () => {
                         <Button
                             size="lg"
                             variant="outline"
-                            className="h-14 px-10 rounded-2xl text-lg font-bold border-2 hover:bg-primary/5 group border-muted/50 w-full sm:w-auto"
+                            className="h-16 px-10 rounded-2xl text-lg font-bold border-2 hover:bg-primary/5 group border-muted/50 w-full sm:w-auto"
                         >
                             <Play className="mr-3 h-5 w-5 fill-current group-hover:text-primary transition-colors" />
                             Watch Vision
@@ -157,8 +157,8 @@ export const LandingHero = () => {
                                         <span className="font-bold text-sm tracking-wide">SYSTEM PREVIEW</span>
                                     </div>
                                     <div className="flex gap-2 text-[10px] font-bold text-muted-foreground">
-                                        <span className="px-2 py-1 rounded bg-white/5 border border-white/10 uppercase">v1.2.0</span>
-                                        <span className="px-2 py-1 rounded bg-white/5 border border-white/10 uppercase">SYNCED</span>
+                                        <span className="px-2 py-1 rounded bg-white/5 border border-white/10 uppercase">v2.0.0</span>
+                                        <span className="px-2 py-1 rounded bg-white/5 border border-white/10 uppercase text-primary">ENTERPRISE READY</span>
                                     </div>
                                 </div>
 

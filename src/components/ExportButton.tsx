@@ -34,12 +34,24 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { convertToW3CTokens } from "@/lib/token-utils";
+import { exportToFlutter } from "@/lib/exporters/flutter";
+import { exportToSwiftUI } from "@/lib/exporters/swiftui";
+import { exportToKotlin } from "@/lib/exporters/kotlin";
+import { exportToCSSJS } from "@/lib/exporters/css-in-js";
+import { exportToFigmaVariables } from "@/lib/exporters/figma-variables";
+import { exportToStaticDocs } from "@/lib/exporters/static-docs";
+import { generateCLISyncScript } from "@/lib/cli/designforge-cli";
+import { exportToVSCodeSnippets } from "@/lib/exporters/vscode-snippets";
+import { generateGitHubAction } from "@/lib/exporters/ci-cd-templates";
+import { exportToStorybookAdvanced } from "@/lib/exporters/storybook-advanced";
+import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
+import { useSearchParams } from "react-router-dom";
 
 interface ExportButtonProps {
   designSystem: GeneratedDesignSystem;
 }
 
-type ExportFormat = "json" | "css" | "scss" | "tailwind" | "figma" | "style-dictionary" | "react-native" | "storybook" | "styleguide" | "swiftui" | "compose" | "w3c" | "storybook-pro";
+type ExportFormat = "json" | "css" | "scss" | "tailwind" | "figma" | "style-dictionary" | "react-native" | "storybook" | "styleguide" | "swiftui" | "compose" | "w3c" | "storybook-pro" | "flutter" | "css-in-js" | "figma-variables";
 
 interface ExportOption {
   id: ExportFormat;
@@ -518,73 +530,9 @@ export const Default: Story = {};
 `;
 }
 
-const generateSwiftUI = (ds: GeneratedDesignSystem): string => {
-  const parseToSwiftColor = (hex: string) => {
-    // Simple mock conversion for the demo, ideally parses HSL to RGB
-    // Assuming hex is in #RRGGBB format
-    const r = parseInt(hex.substring(1, 3), 16) / 255;
-    const g = parseInt(hex.substring(3, 5), 16) / 255;
-    const b = parseInt(hex.substring(5, 7), 16) / 255;
-    return `Color(red: ${r.toFixed(3)}, green: ${g.toFixed(3)}, blue: ${b.toFixed(3)})`;
-  };
-
-  return `import SwiftUI
-
-// DesignForge Generated Theme
-extension Color {
-    static let primaryBrand = ${parseToSwiftColor(ds.colors.primary)}
-    static let secondaryBrand = ${parseToSwiftColor(ds.colors.secondary)}
-    static let brandAccent = ${parseToSwiftColor(ds.colors.accent)}
-    static let brandBackground = ${parseToSwiftColor(ds.colors.background)}
-    static let brandSurface = ${parseToSwiftColor(ds.colors.surface)}
-    
-    // Semantic
-    static let brandSuccess = ${parseToSwiftColor(ds.colors.success)}
-    static let brandWarning = ${parseToSwiftColor(ds.colors.warning)}
-    static let brandError = ${parseToSwiftColor(ds.colors.error)}
-}
-
-extension Font {
-    static func brandHeading(size: CGFloat) -> Font {
-        return Font.custom("${ds.typography.fontFamily.heading}", size: size)
-    }
-    
-    static func brandBody(size: CGFloat) -> Font {
-        return Font.custom("${ds.typography.fontFamily.body}", size: size)
-    }
-}
-
-struct DesignTokens {
-    static let borderRadius: CGFloat = ${parseFloat(ds.borderRadius.md)}
-    static let spacingUnit: CGFloat = ${ds.spacing.unit}
-}
-`;
-};
-
-const generateCompose = (ds: GeneratedDesignSystem): string => {
-  return `package com.designforge.theme
-
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontFamily
-
-object DesignTokens {
-    val Primary = Color(0xFF${ds.colors.primary.replace('#', '')})
-    val Secondary = Color(0xFF${ds.colors.secondary.replace('#', '')})
-    val Accent = Color(0xFF${ds.colors.accent.replace('#', '')})
-    val Background = Color(0xFF${ds.colors.background.replace('#', '')})
-    val Surface = Color(0xFF${ds.colors.surface.replace('#', '')})
-    
-    val Success = Color(0xFF${ds.colors.success.replace('#', '')})
-    val Warning = Color(0xFF${ds.colors.warning.replace('#', '')})
-    val Error = Color(0xFF${ds.colors.error.replace('#', '')})
-
-    val SpacingUnit = ${ds.spacing.unit}.dp
-    val BorderRadius = ${parseFloat(ds.borderRadius.md)}.dp
-}
-`;
-};
+const generateCompose = exportToKotlin;
+const generateSwiftUI = exportToSwiftUI;
+const generateFlutter = exportToFlutter;
 
 function generateStyleguideMD(ds: GeneratedDesignSystem): string {
   return `# Design System Styleguide: ${ds.name}
@@ -629,45 +577,27 @@ const exportOptions: ExportOption[] = [
   { id: "scss", label: "SCSS", filename: "design-system.scss", icon: <FileCode className="h-4 w-4" />, generator: generateSCSS, description: "SCSS variables for Sass-based projects" },
   { id: "tailwind", label: "Tailwind Config", filename: "tailwind.config.js", icon: <FileCode className="h-4 w-4" />, generator: generateTailwindConfig, description: "Tailwind CSS configuration file" },
   { id: "react-native", label: "React Native", filename: "theme.ts", icon: <Smartphone className="h-4 w-4" />, generator: generateReactNative, description: "StyleSheet tokens for React Native" },
-  { id: "swiftui", label: "SwiftUI (iOS)", filename: "Theme.swift", icon: <Smartphone className="h-4 w-4" />, generator: generateSwiftUI, description: "Swift extensions for iOS themes" },
-  { id: "compose", label: "Compose (Android)", filename: "Theme.kt", icon: <Smartphone className="h-4 w-4" />, generator: generateCompose, description: "Kotlin Compose Color/Type definitions" },
+  { id: "swiftui", label: "SwiftUI (iOS)", filename: "Theme.swift", icon: <Smartphone className="h-4 w-4" />, generator: exportToSwiftUI, description: "Advanced Swift extensions for iOS" },
+  { id: "compose", label: "Compose (Android)", filename: "Theme.kt", icon: <Smartphone className="h-4 w-4" />, generator: exportToKotlin, description: "Advanced Kotlin Compose definitions" },
+  { id: "flutter", label: "Flutter (Dart)", filename: "tokens.dart", icon: <Smartphone className="h-4 w-4" />, generator: exportToFlutter, description: "Complete Flutter theme tokens" },
+  { id: "css-in-js", label: "CSS-in-JS", filename: "theme.ts", icon: <FileCode className="h-4 w-4" />, generator: exportToCSSJS, description: "Typed theme for Styled Components/Emotion" },
   { id: "storybook", label: "Storybook", filename: "tokens.stories.tsx", icon: <Component className="h-4 w-4" />, generator: generateStorybook, description: "React stories for documentation" },
   { id: "styleguide", label: "Styleguide MD", filename: "STYLEGUIDE.md", icon: <FileText className="h-4 w-4" />, generator: generateStyleguideMD, description: "Professional documentation in Markdown" },
   { id: "figma", label: "Figma Tokens", filename: "figma-tokens.json", icon: <FileJson className="h-4 w-4" />, generator: generateFigmaTokens, description: "Tokens compatible with Figma plugins" },
+  { id: "figma-variables", label: "Figma Variables", filename: "figma-variables.json", icon: <FileJson className="h-4 w-4" />, generator: exportToFigmaVariables, description: "Tokens compatible with Figma Variables REST API" },
   { id: "style-dictionary", label: "Style Dictionary", filename: "tokens.json", icon: <Layers className="h-4 w-4" />, generator: generateStyleDictionary, description: "Tokens for Style Dictionary framework" },
-  {
-    id: "storybook-pro",
-    label: "Storybook Pro",
-    filename: "storybook-config.zip",
-    icon: <BookOpen className="h-4 w-4" />,
-    description: "Advanced tokens + preview.js config",
-    generator: (ds) => `
-/** .storybook/preview.js **/
-export const parameters = {
-  backgrounds: {
-    default: 'surface',
-    values: [
-      { name: 'surface', value: '${ds.colors.surface}' },
-      { name: 'background', value: '${ds.colors.background}' },
-      { name: 'primary', value: '${ds.colors.primary}' },
-    ],
-  },
-  design: {
-    type: 'figma',
-    url: 'https://www.figma.com/file/sample',
-  },
-};
-
-/** Tokens **/
-const tokens = ${JSON.stringify(ds, null, 2)};
-`,
-  },
+  { id: "styleguide", label: "Static Docs (HTML)", filename: "index.html", icon: <BookOpen className="h-4 w-4" />, generator: exportToStaticDocs, description: "Self-hosted documentation site" },
+  { id: "storybook-pro", label: "Storybook Pro", filename: "storybook-theme.js", icon: <BookOpen className="h-4 w-4" />, generator: exportToStorybookAdvanced, description: "Advanced tokens + preview.js config" },
+  { id: "styleguide", label: "Static Docs (HTML)", filename: "index.html", icon: <BookOpen className="h-4 w-4" />, generator: exportToStaticDocs, description: "Self-hosted documentation site" },
+  { id: "json", label: "VS Code Snippets", filename: "designforge.code-snippets", icon: <FileCode className="h-4 w-4" />, generator: exportToVSCodeSnippets, description: "IntelliSense for design tokens" },
+  { id: "tailwind", label: "Sync Script (Node)", filename: "designforge-sync.js", icon: <FileCode className="h-4 w-4" />, generator: generateCLISyncScript, description: "Local sync utility for developers" },
+  { id: "w3c", label: "GitHub Action (Sync)", filename: "design-sync.yml", icon: <Layers className="h-4 w-4" />, generator: generateGitHubAction, description: "Automated CI/CD pipeline template" },
   {
     id: "w3c",
-    label: "W3C Design Tokens",
+    label: "DTCG (W3C Standard)",
     icon: <FileJson className="h-4 w-4" />,
-    filename: "tokens.w3c.json",
-    description: "Industry-standard JSON format",
+    filename: "tokens.dtcg.json",
+    description: "Design Tokens Community Group standard",
     generator: (ds) => JSON.stringify(convertToW3CTokens(ds), null, 2),
   },
 ];
@@ -687,6 +617,10 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
       setAuthDialogOpen(true);
       return;
     }
+    const [searchParams] = useSearchParams();
+    const dsId = searchParams.get("id") || "";
+    trackEvent(dsId, `exported_${filename.split('.')[1]}` as AnalyticsEvent, { filename });
+
     setIsDownloading(true);
     const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -707,6 +641,8 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
       return;
     }
     navigator.clipboard.writeText(JSON.stringify(designSystem, null, 2));
+    const [searchParams] = useSearchParams();
+    trackEvent(searchParams.get("id") || "", "exported_json", { method: "copy" });
     setCopied(true);
     toast.success("Copied JSON to clipboard");
     setTimeout(() => setCopied(false), 2000);

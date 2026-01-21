@@ -11,13 +11,13 @@ export const TextReveal = ({
     className?: string;
     delay?: number;
 }) => {
-    const characters = text.split("");
+    const words = text.split(" ");
 
     const container = {
         hidden: { opacity: 0 },
         visible: (i = 1) => ({
             opacity: 1,
-            transition: { staggerChildren: 0.03, delayChildren: delay * i },
+            transition: { staggerChildren: 0.1, delayChildren: delay * i },
         }),
     };
 
@@ -27,8 +27,8 @@ export const TextReveal = ({
             y: 0,
             transition: {
                 type: "spring" as const,
-                damping: 12,
-                stiffness: 100,
+                damping: 15,
+                stiffness: 150,
             },
         },
         hidden: {
@@ -36,27 +36,27 @@ export const TextReveal = ({
             y: 20,
             transition: {
                 type: "spring" as const,
-                damping: 12,
-                stiffness: 100,
+                damping: 15,
+                stiffness: 150,
             },
         },
     };
 
     return (
         <motion.div
-            style={{ display: "flex", flexWrap: "wrap" }}
+            style={{ display: "flex", flexWrap: "wrap", gap: "0.4em" }}
             variants={container}
             initial="hidden"
             animate="visible"
             className={cn("leading-tight", className)}
         >
-            {characters.map((char, index) => (
+            {words.map((word, index) => (
                 <motion.span
                     variants={child}
                     key={index}
-                    style={{ display: "inline-block", minWidth: char === " " ? "0.3em" : "auto" }}
+                    style={{ display: "inline-block" }}
                 >
-                    {char}
+                    {word}
                 </motion.span>
             ))}
         </motion.div>

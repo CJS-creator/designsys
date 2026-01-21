@@ -1,63 +1,42 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { History, User, Clock, FileText, ChevronRight } from "lucide-react";
+import { History, User, Clock, FileText, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { AuditLogEntry } from "@/lib/auditLogs";
+import { formatDistanceToNow } from "date-fns";
+
+interface AuditLog {
+    id: string;
+    action: string;
+    entity_type: string;
+    entity_id: string;
+    created_at: string;
+    user_id: string;
+    metadata: any;
+}
 
 interface AuditLogViewerProps {
     designSystemId?: string;
 }
 
 export const AuditLogViewer = ({ designSystemId }: AuditLogViewerProps) => {
-    const [logs, setLogs] = useState<AuditLogEntry[]>([]);
+    const [logs, setLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchLogs = async () => {
+            if (!designSystemId) return;
             setLoading(true);
             try {
-                // In a real app, we'd fetch from Supabase. 
-                // For this demo, we'll provide some simulated history that reflects the session work.
-                const simulatedLogs: AuditLogEntry[] = [
-                    {
-                        id: "1",
-                        design_system_id: designSystemId || "default",
-                        user_email: "designer@example.com",
-                        action: "Semantic Token Mapping",
-                        summary: "Automated calculation of onPrimary, onSurface, and container color roles.",
-                        created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-                    },
-                    {
-                        id: "2",
-                        design_system_id: designSystemId || "default",
-                        user_email: "designer@example.com",
-                        action: "Figma Sync Bridge",
-                        summary: "Established secure bridge URL for bidirectional token syncing.",
-                        created_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-                    },
-                    {
-                        id: "3",
-                        design_system_id: designSystemId || "default",
-                        user_email: "designer@example.com",
-                        action: "Vision Design Generation",
-                        summary: "Generated design palette from uploaded inspiration image.",
-                        created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-                    }
-                ];
-
-                // Try to fetch real logs if table exists
-                const { data, error } = await (supabase
-                    .from("design_audit_logs" as any) as any)
+                const { data, error } = await supabase
+                    .from("audit_logs" as any)
                     .select("*")
-                    .eq("design_system_id", designSystemId || "default")
-                    .order("created_at", { ascending: false });
+                    .eq("design_system_id", designSystemId)
+                    .order("created_at", { ascending: false })
+                    .limit(50);
 
-                if (!error && data) {
-                    setLogs([...data, ...simulatedLogs]);
-                } else {
-                    setLogs(simulatedLogs);
-                }
+                if (error) throw error;
+                setLogs((data as any) || []);
             } catch (err) {
                 console.error("Error fetching audit logs:", err);
             } finally {
@@ -68,6 +47,16 @@ export const AuditLogViewer = ({ designSystemId }: AuditLogViewerProps) => {
         fetchLogs();
     }, [designSystemId]);
 
+    const getActionColor = (action: string) => {
+        switch (action) {
+            case "CREATE": return "bg-green-500/10 text-green-600 border-green-500/20";
+            case "UPDATE": return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+            case "DELETE": return "bg-red-500/10 text-red-600 border-red-500/20";
+            case "PUBLISH": return "bg-purple-500/10 text-purple-600 border-purple-500/20";
+            default: return "bg-slate-500/10 text-slate-600 border-slate-500/20";
+        }
+    };
+
     return (
         <Card className="glass-card">
             <CardHeader>
@@ -75,54 +64,51 @@ export const AuditLogViewer = ({ designSystemId }: AuditLogViewerProps) => {
                     <div className="space-y-1">
                         <CardTitle className="text-2xl font-bold flex items-center gap-2">
                             <History className="h-6 w-6 text-primary" />
-                            Design Audit Logs
+                            Governance Audit Logs
                         </CardTitle>
                         <CardDescription>
                             A permanent, immutable record of all changes to this design system.
                         </CardDescription>
                     </div>
-                    <Badge variant="outline" className="bg-primary/5">Governance Level: Enterprise</Badge>
+                    <Badge variant="outline" className="bg-primary/5">Phase 2.2 Governance</Badge>
                 </div>
             </CardHeader>
             <CardContent>
                 {loading ? (
-                    <div className="py-12 flex justify-center">
-                        <div className="h-8 w-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    <div className="py-20 flex flex-col items-center justify-center gap-4 animate-pulse">
+                        <div className="h-10 w-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        <p className="text-sm text-muted-foreground font-medium uppercase tracking-tighter">Loading Governance Records</p>
+                    </div>
+                ) : logs.length === 0 ? (
+                    <div className="py-20 text-center text-muted-foreground italic border-2 border-dashed rounded-2xl bg-muted/5">
+                        No governance activity recorded yet.
                     </div>
                 ) : (
                     <div className="relative space-y-0">
-                        {/* Timeline line */}
                         <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-border/40" />
-
-                        <div className="space-y-8 relative">
+                        <div className="space-y-6 relative">
                             {logs.map((log) => (
-                                <div key={log.id} className="flex gap-6 group">
+                                <div key={log.id} className="flex gap-4 group">
                                     <div className="mt-1 relative z-10 flex h-10 w-10 min-w-10 items-center justify-center rounded-full border bg-background shadow-sm group-hover:border-primary/50 transition-colors">
-                                        <FileText className="h-4 w-4 text-primary" />
+                                        <Activity className="h-4 w-4 text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
                                     </div>
-                                    <div className="flex-1 space-y-2">
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                                            <h4 className="font-semibold text-sm group-hover:text-primary transition-colors">{log.action}</h4>
-                                            <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                                                <span className="flex items-center gap-1 bg-muted/30 px-2 py-0.5 rounded-full lowercase">
-                                                    <User className="h-2.5 w-2.5" />
-                                                    {log.user_email.split("@")[0]}
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Clock className="h-2.5 w-2.5" />
-                                                    {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </span>
+                                    <div className="flex-1 space-y-1.5 p-4 rounded-xl border bg-card/20 hover:bg-card/40 transition-colors">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Badge className={`text-[10px] font-extrabold uppercase tracking-widest ${getActionColor(log.action)}`}>
+                                                    {log.action}
+                                                </Badge>
+                                                <span className="text-xs font-bold capitalize text-foreground/80">{log.entity_type.toLowerCase()} Modification</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
+                                                <Clock className="h-3 w-3" />
+                                                {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
                                             </div>
                                         </div>
                                         <p className="text-xs text-muted-foreground leading-relaxed">
-                                            {log.summary}
+                                            User <span className="text-foreground font-bold">{log.user_id?.slice(0, 8)}</span> performed <span className="lowercase">{log.action}</span> on {log.entity_type.toLowerCase()}
+                                            <code className="bg-muted px-1.5 py-0.5 rounded ml-1 text-[10px] font-mono">{log.entity_id || 'system'}</code>
                                         </p>
-                                        <div className="pt-1">
-                                            <button className="text-[10px] font-medium text-primary flex items-center gap-0.5 hover:underline">
-                                                View Version Details
-                                                <ChevronRight className="h-2.5 w-2.5" />
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
                             ))}

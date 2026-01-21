@@ -218,7 +218,7 @@ export function generatePaletteFromMood(baseColor: string, mood: "energetic" | "
   }
 }
 // Phase 7: The Native Tier & AI Refinement
-export function optimizeColorForContrast(
+export function fixContrast(
   color: string,
   background: string,
   targetLevel: WCAGLevel = "AA",
@@ -242,15 +242,15 @@ export function optimizeColorForContrast(
   let attempts = 0;
   while (currentRatio < targetRatio && attempts < 50) {
     if (isBackgroundDark) {
-      l = Math.min(l + 2, 95); // Lighten if bg is dark
+      l = Math.min(l + 2, 98); // Lighten if bg is dark
     } else {
-      l = Math.max(l - 2, 5);  // Darken if bg is light
+      l = Math.max(l - 2, 2);  // Darken if bg is light
     }
 
     currentRatio = getContrastRatio(hslToString(h, s, l), background);
     attempts++;
 
-    if (l === 95 || l === 5) break; // Reached limits
+    if (l >= 98 || l <= 2) break; // Reached limits
   }
 
   return hslToString(h, s, l);
