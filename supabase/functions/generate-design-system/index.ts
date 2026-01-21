@@ -182,11 +182,61 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Sanitize inputs for AI prompt (escape special characters)
-    const sanitize = (str: string) => str.replace(/[`${}]/g, '');
+    // Enhanced input sanitization to protect against prompt injection attacks
+    const sanitize = (str: string): string => {
+      // Remove template literal characters
+      let sanitized = str.replace(/[`${}]/g, '');
+      
+      // Remove potential prompt injection patterns
+      const injectionPatterns = [
+        /ignore\s+(all\s+)?(previous\s+)?instructions?/gi,
+        /system\s*:/gi,
+        /assistant\s*:/gi,
+        /user\s*:/gi,
+        /\[INST\]/gi,
+        /\[\/INST\]/gi,
+        /<\|.*?\|>/g,
+        /<<.*?>>/g,
+        /\{\{.*?\}\}/g,
+        /debug\s+mode/gi,
+        /reveal\s+(all\s+)?config(uration)?/gi,
+        /output\s+instructions/gi,
+        /print\s+prompt/gi,
+        /show\s+system/gi,
+      ];
+      
+      for (const pattern of injectionPatterns) {
+        sanitized = sanitized.replace(pattern, '');
+      }
+      
+      // Normalize whitespace to prevent hidden characters
+      sanitized = sanitized.replace(/\s+/g, ' ').trim();
+      
+      // Remove control characters
+      sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
+      
+      return sanitized;
+    };
+    
+    // Additional validation for suspicious content
+    const containsSuspiciousPatterns = (str: string): boolean => {
+      const suspicious = [
+        /\bprompt\b.*\b(injection|override|bypass)\b/i,
+        /\b(jailbreak|escape|hack)\b.*\b(system|prompt)\b/i,
+        /\breturn\b.*\b(api|secret|key|token|password)\b/i,
+      ];
+      return suspicious.some(pattern => pattern.test(str));
+    };
+    
     const sanitizedIndustry = sanitize(industry);
     const sanitizedMoods = brandMood.map(sanitize);
     const sanitizedDescription = description ? sanitize(description) : null;
+    
+    // Check for suspicious patterns after sanitization
+    const allInputs = [sanitizedIndustry, ...sanitizedMoods, sanitizedDescription || ''].join(' ');
+    if (containsSuspiciousPatterns(allInputs)) {
+      console.warn("Suspicious input patterns detected, proceeding with extra caution");
+    }
 
     const userPrompt = `Generate a design system for the following project:
 
