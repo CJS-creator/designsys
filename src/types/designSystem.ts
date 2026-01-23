@@ -181,6 +181,8 @@ export interface AnimationTokens {
   };
 }
 
+import { UnifiedTokenStore } from "./tokens";
+
 export interface GeneratedDesignSystem {
   id?: string;
   name: string;
@@ -192,4 +194,5 @@ export interface GeneratedDesignSystem {
   grid: GridSystem;
   borderRadius: BorderRadius;
   animations: AnimationTokens;
+  tokenStore?: UnifiedTokenStore;
 }

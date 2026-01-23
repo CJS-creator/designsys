@@ -16,14 +16,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-interface GitConnection {
-    id: string;
-    repo_full_name: string;
-    default_branch: string;
-    sync_status: string;
-    last_sync_at: string;
-    config: any;
-}
+import { Tables } from "@/integrations/supabase/types";
+
+type GitConnection = Tables<"git_connections">;
+
 
 export function GitSettings({ designSystemId }: { designSystemId: string }) {
     const [connection, setConnection] = useState<GitConnection | null>(null);
@@ -37,7 +33,7 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
         setIsLoading(true);
         try {
             const { data, error } = await supabase
-                .from("git_connections" as any)
+                .from("git_connections")
                 .select("*")
                 .eq("design_system_id", designSystemId)
                 .single();
@@ -63,7 +59,7 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
         setIsLinking(true);
         try {
             const { error } = await supabase
-                .from("git_connections" as any)
+                .from("git_connections")
                 .upsert({
                     design_system_id: designSystemId,
                     repo_full_name: repoName,

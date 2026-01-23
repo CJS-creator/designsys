@@ -64,92 +64,86 @@ export const TokenGraph: React.FC<TokenGraphProps> = ({ designSystem }) => {
         const dsNodes: Node[] = [];
         const dsEdges: Edge[] = [];
 
-        // 1. Primitive Nodes (Colors)
-        const primitives = [
-            { id: 'p-primary', label: 'Primary', value: designSystem.colors.primary, color: designSystem.colors.primary },
-            { id: 'p-secondary', label: 'Secondary', value: designSystem.colors.secondary, color: designSystem.colors.secondary },
-            { id: 'p-bg', label: 'Background', value: designSystem.colors.background, color: designSystem.colors.background },
-            { id: 'p-text', label: 'Text', value: designSystem.colors.text, color: designSystem.colors.text },
-        ];
+        if (!designSystem.tokenStore) {
+            // Fallback to basic visualization if store is missing
+            const primitives = [
+                { id: 'p-primary', label: 'Primary', value: designSystem.colors.primary, color: designSystem.colors.primary },
+                { id: 'p-secondary', label: 'Secondary', value: designSystem.colors.secondary, color: designSystem.colors.secondary },
+                { id: 'p-text', label: 'Text', value: designSystem.colors.text, color: designSystem.colors.text },
+            ];
 
-        primitives.forEach((p, i) => {
+            primitives.forEach((p, i) => {
+                dsNodes.push({
+                    id: p.id,
+                    type: 'primitive',
+                    data: { label: p.label, value: p.value, color: p.color },
+                    position: { x: 50, y: i * 100 + 50 },
+                });
+            });
+            return { nodes: dsNodes, edges: dsEdges };
+        }
+
+        const { tokens, collections } = designSystem.tokenStore;
+        const REF_REGEX = /\{([^}]+)\}/g;
+
+        // Position tracking
+        let foundationCount = 0;
+        let semanticCount = 0;
+        let componentCount = 0;
+
+        Object.values(tokens).forEach((token) => {
+            const isFoundation = token.path.startsWith('colors.') || token.path.startsWith('spacing.') || token.path.startsWith('typography.');
+            const isSemantic = token.path.startsWith('semantic.');
+            const isComponent = token.path.startsWith('components.');
+
+            let type = 'primitive';
+            let x = 50;
+            let y = 0;
+
+            if (isSemantic) {
+                type = 'semantic';
+                x = 350;
+                y = semanticCount * 100 + 50;
+                semanticCount++;
+            } else if (isComponent) {
+                type = 'component';
+                x = 700;
+                y = componentCount * 150 + 75;
+                componentCount++;
+            } else {
+                y = foundationCount * 100 + 50;
+                foundationCount++;
+            }
+
+            // Preview for colors
+            const colorValue = typeof token.value === 'string' && token.value.startsWith('hsl') ? token.value : undefined;
+
             dsNodes.push({
-                id: p.id,
-                type: 'primitive',
-                data: { label: p.label, value: p.value, color: p.color },
-                position: { x: 50, y: i * 100 + 50 },
-            });
-        });
-
-        // 2. Semantic Nodes
-        const semantics = [
-            { id: 's-brand', label: '--ds-brand-primary', source: 'p-primary' },
-            { id: 's-action', label: '--ds-action-bg', source: 'p-primary' },
-            { id: 's-surface', label: '--ds-surface-main', source: 'p-secondary' },
-            { id: 's-foreground', label: '--ds-content-primary', source: 'p-text' },
-        ];
-
-        semantics.forEach((s, i) => {
-            dsNodes.push({
-                id: s.id,
-                type: 'semantic',
-                data: { label: s.label },
-                position: { x: 350, y: i * 100 + 50 },
+                id: token.path,
+                type: type as any,
+                data: {
+                    label: token.name || token.path.split('.').pop(),
+                    value: typeof token.value === 'string' ? token.value : JSON.stringify(token.value),
+                    color: colorValue
+                },
+                position: { x, y },
             });
 
-            dsEdges.push({
-                id: `e-${s.source}-${s.id}`,
-                source: s.source,
-                target: s.id,
-                animated: true,
-                style: { stroke: designSystem.colors.primary, strokeWidth: 2 },
-                markerEnd: { type: MarkerType.ArrowClosed, color: designSystem.colors.primary },
-            });
-        });
+            // Extract references for edges
+            const valueStr = typeof token.value === 'string' ? token.value : '';
+            const refs = [...valueStr.matchAll(REF_REGEX)].map(m => m[1]);
 
-        // 3. Component Nodes
-        const components = [
-            {
-                id: 'c-button',
-                label: 'Primary Button',
-                source: 's-action',
-                preview: (
-                    <div
-                        className="px-4 py-2 rounded-md font-bold text-xs"
-                        style={{ backgroundColor: designSystem.colors.primary, color: designSystem.colors.onPrimary }}
-                    >
-                        Button
-                    </div>
-                )
-            },
-            {
-                id: 'c-card',
-                label: 'Feature Card',
-                source: 's-brand',
-                preview: (
-                    <div
-                        className="w-full h-8 rounded border border-white/10"
-                        style={{ borderLeft: `4px solid ${designSystem.colors.primary}` }}
-                    />
-                )
-            },
-        ];
-
-        components.forEach((c, i) => {
-            dsNodes.push({
-                id: c.id,
-                type: 'component',
-                data: { label: c.label, preview: c.preview },
-                position: { x: 700, y: i * 150 + 75 },
-            });
-
-            dsEdges.push({
-                id: `e-${c.source}-${c.id}`,
-                source: c.source,
-                target: c.id,
-                type: ConnectionLineType.SmoothStep,
-                animated: true,
-                style: { stroke: designSystem.colors.primary, strokeWidth: 2, opacity: 0.5 },
+            refs.forEach(refPath => {
+                if (tokens[refPath]) {
+                    dsEdges.push({
+                        id: `e-${refPath}-${token.path}`,
+                        source: refPath,
+                        target: token.path,
+                        animated: true,
+                        style: { stroke: 'var(--primary)', strokeWidth: 2, opacity: 0.6 },
+                        markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--primary)' },
+                    });
+                }
             });
         });
 

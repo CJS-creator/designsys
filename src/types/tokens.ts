@@ -12,6 +12,7 @@ export interface BaseToken {
     path: string;
     type: TokenType;
     description?: string;
+    ref?: string; // Standard reference syntax: {namespace.path.to.token}
     extensions?: Record<string, any>;
 }
 
@@ -36,7 +37,7 @@ export interface DimensionToken extends BaseToken {
 
 export interface NumberToken extends BaseToken {
     type: 'number' | 'fontWeight';
-    value: number;
+    value: number | string; // Allows for references like "{fontWeights.bold}"
 }
 
 export interface PercentageToken extends BaseToken {
@@ -129,4 +130,20 @@ export interface TokenGroup {
     parentId?: string;
     tokens: string[]; // List of token paths
     groups: string[]; // List of subgroup IDs
+}
+
+export type TokenCollectionType = 'foundation' | 'semantic' | 'component';
+
+export interface TokenCollection {
+    id: string;
+    name: string;
+    type: TokenCollectionType;
+    description?: string;
+    groups: string[]; // Root IDs of TokenGroups
+}
+
+export interface UnifiedTokenStore {
+    collections: Record<string, TokenCollection>;
+    groups: Record<string, TokenGroup>;
+    tokens: Record<string, DesignToken>;
 }

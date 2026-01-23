@@ -22,8 +22,18 @@ function hexToHSL(hex: string): string {
     return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
+import { TokenEngine } from "./tokenEngine";
+
 export function injectDesignSystemVariables(system: GeneratedDesignSystem) {
+    // Resolve tokens if store exists
+    let resolvedSystem = system;
+    if (system.tokenStore) {
+        const engine = new TokenEngine(system.tokenStore);
+        resolvedSystem = engine.bake(system);
+    }
+
     const root = document.documentElement;
+    system = resolvedSystem; // Use resolved system for injection
 
     // Core shadcn variables mapping
     if (system.colors.primary) root.style.setProperty('--primary', hexToHSL(typeof system.colors.primary === 'string' ? system.colors.primary : (system.colors.primary as any).hover || '#000'));

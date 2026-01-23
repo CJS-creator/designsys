@@ -49,6 +49,7 @@ import { FeaturesOverview } from "../components/FeaturesOverview";
 import { DesignHealthScore } from "@/components/DesignHealthScore";
 import { AIChatPanel } from "@/components/AIChatPanel";
 import { ComponentSandbox } from "@/components/ComponentSandbox";
+import { ApprovalWorkflow } from "@/components/ApprovalWorkflow";
 
 // Lazy-loaded heavy components
 const AnimationSystemDocs = lazy(() => import("@/components/AnimationSystemDocs").then(m => ({ default: m.AnimationSystemDocs })));
@@ -307,6 +308,9 @@ const Index = () => {
                       <AnimatedTabsTrigger value="team" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
                         <Users className="h-4 w-4" /> Team
                       </AnimatedTabsTrigger>
+                      <AnimatedTabsTrigger value="governance" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
+                        <ShieldCheck className="h-4 w-4" /> Governance
+                      </AnimatedTabsTrigger>
                       <AnimatedTabsTrigger value="settings" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
                         <Settings className="h-4 w-4" /> Settings
                       </AnimatedTabsTrigger>
@@ -463,6 +467,12 @@ const Index = () => {
                   <TabsContent value="team" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <TeamSettings designSystemId={designSystem?.id || ""} />
+                    </Suspense>
+                  </TabsContent>
+
+                  <TabsContent value="governance" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <Suspense fallback={<DesignSystemSkeleton />}>
+                      <ApprovalWorkflow designSystemId={designSystem?.id || ""} />
                     </Suspense>
                   </TabsContent>
 

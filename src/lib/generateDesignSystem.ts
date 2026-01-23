@@ -70,7 +70,7 @@ function ensureCompleteDesignSystem(aiSystem: Partial<GeneratedDesignSystem>, in
     ),
   };
 
-  return {
+  const result: GeneratedDesignSystem = {
     name: aiSystem.name || fallback.name,
     colors,
     darkColors: aiSystem.darkColors || generateDarkModeColors(colors),
@@ -81,7 +81,14 @@ function ensureCompleteDesignSystem(aiSystem: Partial<GeneratedDesignSystem>, in
     borderRadius: aiSystem.borderRadius || fallback.borderRadius,
     animations: aiSystem.animations || fallback.animations,
   };
+
+  // Add tokenStore for semantic resolution
+  result.tokenStore = TokenEngine.fromDesignSystem(result);
+
+  return result;
 }
+
+import { TokenEngine } from "./theming/tokenEngine";
 
 // Helper Functions
 function generateSemanticColors(primary: string, secondary: string, accent: string): SemanticColors {
