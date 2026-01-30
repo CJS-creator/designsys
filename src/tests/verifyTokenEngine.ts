@@ -19,8 +19,10 @@ const mockStore: UnifiedTokenStore = {
             path: 'typography.h1',
             type: 'typography',
             value: {
+                fontFamily: 'Inter, sans-serif',
                 fontSize: '{spacing.xl}',
-                fontWeight: '{fontWeights.bold}'
+                fontWeight: '{fontWeights.bold}',
+                lineHeight: 1.2
             }
         },
         'spacing.xl': { name: 'XL', path: 'spacing.xl', type: 'spacing', value: '32px' },

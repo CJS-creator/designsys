@@ -14,7 +14,7 @@ export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
     const [copied, setCopied] = useState(false);
     const [syncToken] = useState(`df_${Math.random().toString(36).substring(2, 15)}`);
 
-    const figmaPluginUrl = "https://www.figma.com/community/plugin/designforge_sync";
+    const figmaPluginUrl = "https://designforge.me/figma-plugin";
     const bridgeUrl = `${window.location.origin}/api/tokens/${designSystemId || "default"}`;
 
     const copyToClipboard = (text: string) => {
