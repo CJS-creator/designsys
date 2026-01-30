@@ -15,13 +15,25 @@ import {
     Lock
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
-import { Tables } from "@/integrations/supabase/types";
-
-type GitConnection = Tables<"git_connections">;
+// Define GitConnection type locally since table was just created
+interface GitConnection {
+    id: string;
+    design_system_id: string;
+    user_id: string;
+    provider: string;
+    repo_full_name: string;
+    default_branch: string;
+    sync_status: string;
+    last_sync_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
 
 
 export function GitSettings({ designSystemId }: { designSystemId: string }) {
+    const { user } = useAuth();
     const [connection, setConnection] = useState<GitConnection | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isLinking, setIsLinking] = useState(false);
@@ -33,16 +45,17 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
         setIsLoading(true);
         try {
             const { data, error } = await supabase
-                .from("git_connections")
+                .from("git_connections" as any)
                 .select("*")
                 .eq("design_system_id", designSystemId)
                 .single();
 
             if (error && error.code !== "PGRST116") throw error;
-            setConnection(data || null);
+            setConnection((data as unknown as GitConnection) || null);
             if (data) {
-                setRepoName(data.repo_full_name);
-                setBranch(data.default_branch);
+                const conn = data as unknown as GitConnection;
+                setRepoName(conn.repo_full_name);
+                setBranch(conn.default_branch);
             }
         } catch (error) {
             console.error("Error fetching git connection:", error);
@@ -52,21 +65,22 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
     };
 
     const handleConnect = async () => {
-        if (!designSystemId || !repoName) {
+        if (!designSystemId || !repoName || !user) {
             toast.error("Please enter a repository name");
             return;
         }
         setIsLinking(true);
         try {
             const { error } = await supabase
-                .from("git_connections")
+                .from("git_connections" as any)
                 .upsert({
                     design_system_id: designSystemId,
+                    user_id: user.id,
                     repo_full_name: repoName,
                     default_branch: branch,
                     provider: 'github',
                     sync_status: 'idle'
-                });
+                }, { onConflict: 'design_system_id' });
 
             if (error) throw error;
             toast.success("Repository connected successfully!");
@@ -89,8 +103,8 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
-                <div className="p-2 bg-slate-900 rounded-lg">
-                    <Github className="h-6 w-6 text-white" />
+                <div className="p-2 bg-foreground rounded-lg">
+                    <Github className="h-6 w-6 text-background" />
                 </div>
                 <div>
                     <h2 className="text-xl font-bold">Git Code Connect</h2>
@@ -147,16 +161,16 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
                     </Card>
 
                     {connection && (
-                        <Card className="border-green-500/10 bg-green-500/5">
+                        <Card className="border-accent/10 bg-accent/5">
                             <CardContent className="p-6 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                    <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center">
+                                        <CheckCircle2 className="h-5 w-5 text-accent-foreground" />
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <span className="font-bold">Sync Active</span>
-                                            <Badge variant="outline" className="text-[10px] bg-green-500/10 text-green-600 border-green-500/20 uppercase">Live</Badge>
+                                            <Badge variant="outline" className="text-[10px] bg-accent/10 text-accent-foreground border-accent/20 uppercase">Live</Badge>
                                         </div>
                                         <p className="text-xs text-muted-foreground">Linked to <strong>{connection.repo_full_name}</strong> on <strong>{connection.default_branch}</strong></p>
                                     </div>
@@ -183,7 +197,7 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
                             </p>
                             <div className="p-3 bg-background rounded-lg border border-border/50">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <AlertCircle className="h-3 w-3 text-amber-500" />
+                                    <AlertCircle className="h-3 w-3 text-destructive" />
                                     <span className="text-[10px] font-bold">Token Safety</span>
                                 </div>
                                 <p className="text-[10px] text-muted-foreground">
