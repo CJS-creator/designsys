@@ -44,6 +44,53 @@ export type Database = {
         }
         Relationships: []
       }
+      git_connections: {
+        Row: {
+          created_at: string
+          default_branch: string
+          design_system_id: string
+          id: string
+          last_sync_at: string | null
+          provider: string
+          repo_full_name: string
+          sync_status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_branch?: string
+          design_system_id: string
+          id?: string
+          last_sync_at?: string | null
+          provider?: string
+          repo_full_name: string
+          sync_status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_branch?: string
+          design_system_id?: string
+          id?: string
+          last_sync_at?: string | null
+          provider?: string
+          repo_full_name?: string
+          sync_status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "git_connections_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: true
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
