@@ -30,7 +30,7 @@ import { Icon } from "@/components/ui/icon-registry";
 import { MagneticButton } from "@/components/animations/MagneticButton";
 import { TextReveal } from "@/components/animations/TextReveal";
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Activity, Box, Layers, Type, Settings, Users, Grid3X3, Palette, Eye, Smartphone, Code2, HelpCircle, Zap, X, Search, Lock, Layout, GitCompare, Shield, BookOpen, ExternalLink, Ruler, Maximize, Cast, Menu, BarChart3 } from "lucide-react";
+import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Activity, Box, Layers, Type, Settings, Users, Grid3X3, Palette, Eye, Smartphone, Code2, HelpCircle, Zap, X, Search, Lock, Layout, GitCompare, Shield, BookOpen, ExternalLink, Ruler, Maximize, Cast, Menu, BarChart3, ShieldCheck } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";

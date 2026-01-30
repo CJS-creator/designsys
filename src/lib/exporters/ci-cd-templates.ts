@@ -24,14 +24,14 @@ jobs:
         run: |
           # In a real scenario, this would call the DesignForge API
           # For now, we use the generated sync script
-          curl -X GET "https://api.designforge.ai/v1/export/${ds.id || 'current-id'}?format=json" \\
+          curl -X GET "https://api.designforge.me/v1/export/${ds.id || 'current-id'}?format=json" \\
                -H "Authorization: Bearer \${{ secrets.DESIGNFORGE_TOKEN }}" \\
                -o ./tokens.json
                
       - name: Commit and Push Changes
         run: |
           git config --global user.name "DesignForge Bot"
-          git config --global user.email "bot@designforge.ai"
+          git config --global user.email "bot@designforge.me"
           git add ./tokens.json
           git commit -m "chore: update design system tokens [${ds.name}]" || echo "No changes to commit"
           git push

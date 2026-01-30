@@ -11,8 +11,8 @@ import { create } from '@storybook/theming/create';
 export const storybookTheme = create({
   base: 'light',
   brandTitle: '${ds.name} Design System',
-  brandUrl: 'https://designforge.ai',
-  brandImage: 'https://designforge.ai/logo.png',
+  brandUrl: 'https://designforge.me',
+  brandImage: 'https://designforge.me/logo.png',
   brandTarget: '_self',
 
   // UI
