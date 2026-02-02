@@ -73,111 +73,118 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-black/[0.96] antialiased bg-grid-white/[0.02]">
-      <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-background antialiased">
+      {/* Gradient background overlay for visual depth */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+      <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02]" />
+
+      <Spotlight
+        className="-top-40 left-0 md:left-60 md:-top-20 dark:block"
+        fill="hsl(var(--primary))"
+      />
 
       <div className="relative z-10 w-full max-w-md px-4">
-        <Card className="w-full backdrop-blur-xl bg-black/40 border-white/10 shadow-2xl">
+        <Card className="w-full backdrop-blur-xl bg-card/80 border-border shadow-2xl">
           <CardHeader className="text-center space-y-2">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="p-3 rounded-xl bg-white/10 border border-white/20 backdrop-blur-md">
-                <Wand2 className="h-6 w-6 text-white" />
+              <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-md">
+                <Wand2 className="h-6 w-6 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400">
+            <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-muted-foreground">
               DesignForge
             </CardTitle>
-            <CardDescription className="text-neutral-400">
+            <CardDescription className="text-muted-foreground">
               Welcome back. Sign in to your workspace.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
 
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/10">
-                <TabsTrigger value="signin" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Sign In</TabsTrigger>
-                <TabsTrigger value="signup" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Sign Up</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-muted/50 border border-border">
+                <TabsTrigger value="signin" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground">Sign Up</TabsTrigger>
               </TabsList>
 
               <div className="mt-6">
                 <TabsContent value="signin">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signin-email" className="text-neutral-300">Email</Label>
+                      <Label htmlFor="signin-email" className="text-foreground">Email</Label>
                       <Input
                         id="signin-email"
                         type="email"
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/20"
+                        className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signin-password" className="text-neutral-300">Password</Label>
+                      <Label htmlFor="signin-password" className="text-foreground">Password</Label>
                       <Input
                         id="signin-password"
                         type="password"
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/20"
+                        className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
                         required
                       />
                     </div>
 
-                    <button
+                    <Button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full relative group/btn flex space-x-2 items-center justify-center px-4 py-2 text-black bg-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] hover:bg-neutral-200 transition duration-200"
+                      className="w-full group relative overflow-hidden"
                     >
                       {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      <span>Sign In &rarr;</span>
-                      <div className="absolute inset-x-0 h-px -bottom-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
-                      <div className="absolute inset-x-0 h-px -bottom-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent blur-sm opacity-0 transition duration-500 group-hover/btn:opacity-100" />
-                    </button>
+                      Sign In
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      <div className="absolute inset-x-0 h-px -bottom-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
+                    </Button>
                   </form>
                 </TabsContent>
 
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email" className="text-neutral-300">Email</Label>
+                      <Label htmlFor="signup-email" className="text-foreground">Email</Label>
                       <Input
                         id="signup-email"
                         type="email"
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/20"
+                        className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password" className="text-neutral-300">Password</Label>
+                      <Label htmlFor="signup-password" className="text-foreground">Password</Label>
                       <Input
                         id="signup-password"
                         type="password"
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/20"
+                        className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
                         required
                         minLength={6}
                       />
                     </div>
 
-                    <button
+                    <Button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full relative group/btn flex space-x-2 items-center justify-center px-4 py-2 text-black bg-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] hover:bg-neutral-200 transition duration-200"
+                      className="w-full group relative overflow-hidden"
                     >
                       {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      <span>Create Account &rarr;</span>
-                      <div className="absolute inset-x-0 h-px -bottom-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
-                      <div className="absolute inset-x-0 h-px -bottom-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent blur-sm opacity-0 transition duration-500 group-hover/btn:opacity-100" />
-                    </button>
+                      Create Account
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      <div className="absolute inset-x-0 h-px -bottom-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
+                    </Button>
                   </form>
                 </TabsContent>
               </div>
@@ -185,16 +192,16 @@ const Auth = () => {
 
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full bg-white/10" />
+                <Separator className="w-full bg-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-black px-2 text-neutral-500">Or continue with</span>
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
               </div>
             </div>
 
             <Button
               variant="outline"
-              className="w-full bg-transparent border-white/10 text-neutral-300 hover:bg-white/5 hover:text-white"
+              className="w-full bg-background/50 border-input text-foreground hover:bg-accent hover:text-accent-foreground"
               onClick={handleGoogleSignIn}
               disabled={isGoogleLoading || isLoading}
             >
