@@ -23,9 +23,9 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
   };
 
   return (
-    <div className="space-y-12 p-4">
+    <div className="space-y-8 p-4">
       {/* Duration Tokens */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold tracking-tight flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" />
@@ -34,7 +34,7 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
           <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">Duration</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           {Object.entries(animations.duration).map(([key, value], idx) => (
             <div
               key={key}
@@ -43,7 +43,7 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
             >
               <div className="flex items-center justify-between">
                 <div className="text-sm font-bold capitalize">{key}</div>
-                <div className="text-[10px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">{value}</div>
+                <div className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">{value}</div>
               </div>
 
               <button
@@ -68,7 +68,7 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
       </div>
 
       {/* Easing Curves */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold tracking-tight flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
@@ -77,7 +77,7 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
           <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">Bezier</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {Object.entries(animations.easing).map(([key, value], idx) => (
             <div
               key={key}
@@ -111,7 +111,7 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
               </div>
 
               <div className="bg-black/20 p-3 rounded-lg border border-white/5">
-                <code className="text-[10px] text-primary/80 block break-all leading-relaxed">
+                <code className="text-xs text-primary/80 block break-all leading-relaxed">
                   {value}
                 </code>
               </div>
@@ -121,8 +121,8 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
       </div>
 
       {/* Transition Presets */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 border-t border-white/5">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-6 border-t border-white/5">
+        <div className="space-y-4">
           <h3 className="text-lg font-bold flex items-center gap-2">
             <Focus className="h-5 w-5 text-primary" />
             Shorthand Presets
@@ -145,7 +145,7 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <h3 className="text-lg font-bold">Implementation Code</h3>
           <div className="relative group/code">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-2xl blur opacity-50 group-hover/code:opacity-100 transition-opacity" />

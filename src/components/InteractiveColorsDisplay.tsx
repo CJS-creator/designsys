@@ -28,8 +28,8 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
   };
 
   return (
-    <div className="space-y-12 p-4">
-      <div className="grid gap-10">
+    <div className="space-y-8 p-4">
+      <div className="grid gap-6">
         {colorGroups.map((group, groupIdx) => (
           <div key={group.name} className="space-y-6">
             <div className="flex items-center gap-4">
@@ -47,7 +47,7 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
               {Object.entries(group.states).map(([state, color], idx) => (
                 <div
                   key={state}
-                  className="group relative p-5 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1"
+                  className="group relative p-4 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1"
                   style={{ animationDelay: `${(groupIdx * 4 + idx) * 50}ms` }}
                 >
                   <div className="flex items-center justify-between mb-4">
@@ -116,13 +116,13 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
                 className="h-24 rounded-xl flex items-center justify-center transition-all group-hover:scale-105"
                 style={{ border: `2px solid ${colors.border}`, background: colors.background }}
               >
-                <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50">Standard</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase opacity-50">Standard</span>
               </div>
               <div
                 className="h-24 rounded-xl flex items-center justify-center transition-all group-hover:scale-105"
                 style={{ border: `2px solid ${colors.borderLight}`, background: colors.background }}
               >
-                <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50">Light</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase opacity-50">Light</span>
               </div>
             </div>
           </div>
@@ -148,8 +148,8 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
       </div>
 
       {/* Real-world Preview Buttons */}
-      <div className="p-8 rounded-3xl bg-primary/5 border border-primary/10 mt-10">
-        <h4 className="text-sm font-bold text-primary uppercase tracking-widest mb-6 text-center">Interactive Playground</h4>
+      <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 mt-10">
+        <h4 className="text-sm font-bold text-primary uppercase tracking-widest mb-4 text-center">Interactive Playground</h4>
         <div className="flex flex-wrap items-center justify-center gap-6">
           {colorGroups.map((group) => (
             <button

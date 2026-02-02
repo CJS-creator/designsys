@@ -70,7 +70,8 @@ const DocEditor = lazy(() => import("@/components/docs/DocEditor").then(m => ({ 
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
   const [themedDesignSystem, setThemedDesignSystem] = useState<GeneratedDesignSystem | null>(null);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
   const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>("owner");
@@ -79,7 +80,18 @@ const Index = () => {
   });
   const { user, signOut } = useAuth();
   const { resetOnboarding, selectedTemplate } = useOnboarding();
-  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value }, { replace: true });
+  };
 
   const handleGenerate = async (input: DesignSystemInput) => {
     setIsLoading(true);
@@ -260,6 +272,7 @@ const Index = () => {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full"
+                  aria-label="Dismiss banner"
                   onClick={() => {
                     setShowGuestBanner(false);
                     sessionStorage.setItem("guest_banner_dismissed", "true");
@@ -277,16 +290,25 @@ const Index = () => {
             <DesignSystemSkeleton />
           ) : (
             designSystem && (
-              <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
+              <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
                 {/* Modern Sliding Tabs with Scroll Indicators */}
-                <div className="sticky top-[72px] z-40 bg-background/60 dark:bg-black/60 backdrop-blur-xl border-b border-border/40 py-2 mb-8 -mx-4 px-4 relative" id="tour-tabs">
+                <div
+                  className="sticky top-[72px] z-40 bg-background/60 dark:bg-black/60 backdrop-blur-xl border-b border-border/40 py-2 mb-4 -mx-4 px-4 relative"
+                  id="tour-tabs"
+                  role="navigation"
+                  aria-label="Design system sections"
+                >
                   {/* Left scroll indicator */}
                   <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background/80 to-transparent pointer-events-none z-10 md:hidden" />
                   {/* Right scroll indicator */}
                   <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none z-10 md:hidden" />
 
                   <div className="overflow-x-auto scrollbar-hide">
-                    <TabsList className="bg-transparent p-0 h-auto flex-nowrap w-max md:w-full md:justify-start gap-2">
+                    <TabsList
+                      className="bg-transparent p-0 h-auto flex-nowrap w-max md:w-full md:justify-start gap-2"
+                      role="tablist"
+                      aria-label="Design system sections"
+                    >
                       <AnimatedTabsTrigger value="overview" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
                         <Palette className="h-4 w-4" /> Overview
                       </AnimatedTabsTrigger>
@@ -385,7 +407,7 @@ const Index = () => {
                               <Ruler className="h-5 w-5 text-primary" />
                               <h3 className="text-lg font-semibold text-foreground">Spacing & Radius</h3>
                             </div>
-                            <div className="grid md:grid-cols-2 gap-10">
+                            <div className="grid md:grid-cols-2 gap-6">
                               <div className="space-y-4">
                                 <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
                                 <p className="text-xs text-muted-foreground mb-4">{designSystem.spacing.unit}px base unit with consistent scale</p>

@@ -7,6 +7,7 @@ import { MovingBorderButton } from "@/components/ui/moving-border";
 import { GradientOrbs } from "@/components/animations/GradientOrbs";
 import { MagneticButton } from "@/components/animations/MagneticButton";
 import { TextReveal } from "@/components/animations/TextReveal";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const CodePreview = () => {
@@ -116,6 +117,10 @@ export const LandingHero = () => {
                             size="lg"
                             variant="outline"
                             className="h-16 px-10 rounded-2xl text-lg font-bold border-2 hover:bg-primary/5 group border-muted/50 w-full sm:w-auto"
+                            onClick={() => toast.info("Vision video coming soon in the next update!", {
+                                description: "We are currently perfecting our product vision video.",
+                                icon: <Play className="h-4 w-4" />
+                            })}
                         >
                             <Play className="mr-3 h-5 w-5 fill-current group-hover:text-primary transition-colors" />
                             Watch Vision
@@ -165,9 +170,9 @@ export const LandingHero = () => {
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                     {[
                                         { label: "Primary", color: "bg-primary", val: "#7C3AED" },
-                                        { label: "Secondary", color: "bg-purple-600", val: "#9333EA" },
+                                        { label: "Secondary", color: "bg-secondary", val: "#9333EA" },
                                         { label: "Accent", color: "bg-accent", val: "#F43F5E" },
-                                        { label: "Surface", color: "bg-slate-900", val: "#0F172A" },
+                                        { label: "Surface", color: "bg-card", val: "#0F172A" },
                                     ].map((c, i) => (
                                         <motion.div
                                             key={i}

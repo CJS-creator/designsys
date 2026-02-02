@@ -3,8 +3,10 @@
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
-@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
+@import '@fontsource/merriweather/400.css';
+@import '@fontsource/merriweather/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/700.css';
 
 @tailwind base;
 @tailwind components;
@@ -340,4 +342,7 @@ All colors MUST be HSL.
   .inter-var {
     font-feature-settings: 'cv11', 'ss01';
   }
+}
+.text-safe {
+  @apply leading-normal py-0.5 overflow-visible min-h-[1.2em];
 }

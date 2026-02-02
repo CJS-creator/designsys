@@ -14,13 +14,13 @@ export function useTokens(designSystemId?: string) {
         setLoading(true);
         try {
             const { data, error } = await supabase
-                .from("design_tokens" as any)
+                .from("design_tokens")
                 .select("*")
                 .eq("design_system_id", designSystemId);
 
             if (error) throw error;
 
-            const formattedTokens = (data || []).map((row: any) => ({
+            const formattedTokens = (data || []).map((row) => ({
                 name: row.name,
                 path: row.path,
                 type: row.token_type as TokenType,
@@ -46,7 +46,7 @@ export function useTokens(designSystemId?: string) {
 
         try {
             const { error } = await supabase
-                .from("design_tokens" as any)
+                .from("design_tokens")
                 .upsert({
                     design_system_id: designSystemId,
                     name: token.name,
@@ -72,7 +72,7 @@ export function useTokens(designSystemId?: string) {
 
         try {
             const { error } = await supabase
-                .from("design_tokens" as any)
+                .from("design_tokens")
                 .delete()
                 .eq("design_system_id", designSystemId)
                 .eq("path", path);

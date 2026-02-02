@@ -78,15 +78,15 @@ export function AIAdvisor({ designSystem }: { designSystem: GeneratedDesignSyste
                 </div>
                 <CardDescription className="text-xs">Real-time design audits for your system</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
                 {suggestions.map((suggestion) => (
                     <div
                         key={suggestion.id}
-                        className={`flex items-start gap-3 p-3 rounded-lg border text-xs transition-all hover:translate-x-1 ${suggestion.severity === "success"
-                                ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-                                : suggestion.severity === "warning"
-                                    ? "bg-amber-500/5 border-amber-500/20 text-amber-700 dark:text-amber-400"
-                                    : "bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400"
+                        className={`flex items-start gap-3 p-2.5 rounded-lg border text-xs transition-all hover:translate-x-1 ${suggestion.severity === "success"
+                            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                            : suggestion.severity === "warning"
+                                ? "bg-amber-500/5 border-amber-500/20 text-amber-700 dark:text-amber-400"
+                                : "bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400"
                             }`}
                     >
                         {suggestion.severity === "success" ? (

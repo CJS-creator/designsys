@@ -427,6 +427,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                   <Input
                     type="color"
                     id="colorPicker"
+                    aria-label="Pick brand color"
                     value={primaryColor || "#6366f1"}
                     onChange={(e) => setPrimaryColor(e.target.value)}
                     className="h-[150%] w-[150%] -translate-x-[25%] -translate-y-[25%] p-0 border-0 cursor-pointer"
@@ -436,6 +437,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
               <Input
                 type="text"
                 placeholder="#6366f1"
+                aria-label="Enter hex color code"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
                 className="h-12 flex-1 font-mono bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all rounded-xl hover:bg-white/10"
@@ -456,6 +458,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                 className="text-primary hover:text-primary hover:bg-primary/10 h-7 rounded-full text-xs"
                 onClick={handleRandomPrompt}
                 title="Fill with random idea"
+                aria-label="Randomize description"
               >
                 <Dice5 className="h-3 w-3 mr-1.5" />
                 Surprise Me

@@ -41,7 +41,7 @@ export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSyst
 
     return (
         <Card className="overflow-hidden border-2 border-primary/10 shadow-xl shadow-primary/5">
-            <CardHeader className="bg-muted/30 pb-6">
+            <CardHeader className="bg-muted/30 pb-4">
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
                         <CardTitle className="flex items-center gap-2 text-xl">
@@ -55,19 +55,19 @@ export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSyst
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="pt-6">
-                <div className="flex gap-4 mb-8">
+            <CardContent className="pt-4">
+                <div className="flex gap-4 mb-5">
                     <div className="flex-1 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-center">
                         <div className="text-2xl font-black text-red-500">{report.summary.errors}</div>
-                        <div className="text-[10px] uppercase font-black text-red-500/60 tracking-widest">Errors</div>
+                        <div className="text-xs uppercase font-black text-red-500/60 tracking-widest">Errors</div>
                     </div>
                     <div className="flex-1 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 text-center">
                         <div className="text-2xl font-black text-amber-500">{report.summary.warnings}</div>
-                        <div className="text-[10px] uppercase font-black text-amber-500/60 tracking-widest">Warnings</div>
+                        <div className="text-xs uppercase font-black text-amber-500/60 tracking-widest">Warnings</div>
                     </div>
                     <div className="flex-1 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 text-center">
                         <div className="text-2xl font-black text-blue-500">{report.summary.infos}</div>
-                        <div className="text-[10px] uppercase font-black text-blue-500/60 tracking-widest">Insights</div>
+                        <div className="text-xs uppercase font-black text-blue-500/60 tracking-widest">Insights</div>
                     </div>
                 </div>
 
@@ -102,7 +102,7 @@ export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSyst
                                         {issue.recommendation && (
                                             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50">
                                                 <Sparkles className="h-3 w-3 text-primary animate-pulse" />
-                                                <p className="text-[10px] font-bold text-primary/80 uppercase tracking-wider">{issue.recommendation}</p>
+                                                <p className="text-xs font-bold text-primary/80 uppercase tracking-wider">{issue.recommendation}</p>
                                             </div>
                                         )}
                                     </div>
@@ -113,7 +113,7 @@ export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSyst
                 </div>
 
                 {report.issues.length > 4 && (
-                    <button className="w-full mt-6 py-3 rounded-xl border border-dashed border-border text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted/50 transition-all">
+                    <button className="w-full mt-6 py-3 rounded-xl border border-dashed border-border text-xs font-black uppercase tracking-widest text-muted-foreground hover:bg-muted/50 transition-all">
                         View {report.issues.length - 4} More Issues
                     </button>
                 )}

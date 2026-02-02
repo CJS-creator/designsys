@@ -25,9 +25,9 @@ export function ShadowDisplay({ shadows }: ShadowDisplayProps) {
             className="h-20 w-full bg-background rounded-xl border border-border/50 shadow-sm transition-all duration-300 group-hover:border-primary/50 relative flex items-center justify-center p-2"
             style={{ boxShadow: value }}
           >
-            <span className="text-[10px] font-bold text-muted-foreground uppercase">{name}</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase leading-relaxed">{name}</span>
           </div>
-          <p className="text-[10px] font-mono text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">Copy Shadow</p>
+          <p className="text-xs font-mono text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">Copy Shadow</p>
         </button>
       ))}
     </div>

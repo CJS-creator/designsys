@@ -273,7 +273,7 @@ ${Object.entries(ds.grid.breakpoints)
 // Color Map (for programmatic access)
 $colors: (
   'primary': $color-primary,
-  'secondary': $color-color-secondary,
+  'secondary': $color-secondary,
   'accent': $color-accent,
   'background': $color-background,
   'surface': $color-surface,
@@ -707,6 +707,7 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 ml-2"
+                aria-label={`Preview ${option.label} format`}
                 onClick={(e) => {
                   e.stopPropagation();
                   openPreview(option);

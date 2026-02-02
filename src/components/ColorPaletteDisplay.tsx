@@ -58,7 +58,7 @@ export function ColorPaletteDisplay({ colors, renderItem }: ColorPaletteDisplayP
 
             <div className="text-center w-full">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">{name}</p>
-              <p className="text-[10px] font-mono text-muted-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity -mt-1">{value}</p>
+              <p className="text-xs font-mono text-muted-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity leading-normal">{value}</p>
             </div>
           </button>
         )

@@ -2,10 +2,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { DesignSystemInput, GeneratedDesignSystem, SemanticColors, ColorPalette, DarkModeColors, AnimationTokens } from "@/types/designSystem";
 import { generateInteractiveStates, hslToString, parseHslString, hexToHsl, getOnColor, getContainerColor } from "./colorUtils";
 
+async function invokeWithRetry(name: string, options: any, retries = 2, delay = 1500): Promise<any> {
+  const result = await supabase.functions.invoke(name, options);
+
+  // Retry on network errors or 5xx/429 status codes if possible to detect
+  // supabase-js error object usually contains status
+  const status = (result.error as any)?.status;
+  const shouldRetry = result.error && (retries > 0) && (!status || status >= 500 || status === 429);
+
+  if (shouldRetry) {
+    console.warn(`Function ${name} failed with status ${status}, retrying... (${retries} left)`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+    return invokeWithRetry(name, options, retries - 1, delay * 2);
+  }
+
+  return result;
+}
+
 export async function generateDesignSystemWithAI(input: DesignSystemInput): Promise<GeneratedDesignSystem> {
   console.log("Calling AI to generate design system...", input);
 
-  const { data, error } = await supabase.functions.invoke("generate-design-system", {
+  const { data, error } = await invokeWithRetry("generate-design-system", {
     body: {
       appType: input.appType,
       industry: input.industry,
@@ -17,7 +34,7 @@ export async function generateDesignSystemWithAI(input: DesignSystemInput): Prom
 
   if (error) {
     console.error("Edge function error:", error);
-    throw new Error(error.message || "Failed to generate design system");
+    throw new Error(error.message || "Failed to generate design system after retries");
   }
 
   if (data?.error) {

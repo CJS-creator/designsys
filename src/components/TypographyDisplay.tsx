@@ -22,12 +22,12 @@ export function TypographyDisplay({
   };
 
   return (
-    <div className="space-y-10 w-full">
+    <div className="space-y-6 w-full">
       {/* Container for Typography subsections using the specified grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Left Column: Font Families & Font Weights */}
-        <div className="space-y-10">
+        <div className="space-y-6">
           {/* Font Families */}
           <div className="space-y-4">
             <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">
@@ -42,7 +42,7 @@ export function TypographyDisplay({
                     className="flex items-center justify-between p-4 rounded-xl border border-border bg-background hover:bg-muted/50 transition-all duration-300 group"
                   >
                     <div className="flex flex-col items-start gap-1">
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-full mb-1">
+                      <span className="text-xs font-bold text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-full mb-1">
                         {type}
                       </span>
                       <span
@@ -51,7 +51,7 @@ export function TypographyDisplay({
                       >
                         {font.split(',')[0].replace(/['"]/g, '')}
                       </span>
-                      <span className="text-[10px] font-mono text-muted-foreground mt-1">{font}</span>
+                      <span className="text-xs font-mono text-muted-foreground mt-1">{font}</span>
                     </div>
                     <div className="h-8 w-8 flex items-center justify-center rounded-full border border-border bg-background group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
                       <Copy className="h-3 w-3" />
@@ -81,8 +81,8 @@ export function TypographyDisplay({
                     >
                       Aa
                     </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-2">{weight}</span>
-                    <span className="text-[10px] font-mono text-muted-foreground/60">{value}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-2">{weight}</span>
+                    <span className="text-xs font-mono text-muted-foreground/60">{value}</span>
                   </button>
                 )
               ))}
@@ -105,13 +105,13 @@ export function TypographyDisplay({
                     onClick={() => copyValue(value)}
                     className="flex items-center justify-between w-full p-4 hover:bg-muted/50 transition-all group"
                   >
-                    <div className="flex items-center gap-8">
+                    <div className="flex items-center gap-8 py-1">
                       <span className="text-xs font-mono text-muted-foreground w-12 text-left uppercase">
                         {size}
                       </span>
                       <span
                         className="text-foreground group-hover:text-primary transition-colors"
-                        style={{ fontSize: value, lineHeight: 1.2 }}
+                        style={{ fontSize: value, lineHeight: 1.5 }}
                       >
                         Ag
                       </span>

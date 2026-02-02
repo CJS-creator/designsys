@@ -131,7 +131,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
         </div>
       </CardHeader>
 
-      <CardContent className={`space-y-8 ${isDarkMode ? "dark" : ""}`}>
+      <CardContent className={`space-y-6 ${isDarkMode ? "dark" : ""}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeSection}
@@ -142,7 +142,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
           >
             {/* Showcase Section */}
             {activeSection === "showcase" && (
-              <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-12">
+              <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-8">
 
                 {/* 1. Spotlight */}
                 <motion.div variants={staggerItem}>
@@ -178,7 +178,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
                       <p className="text-muted-foreground">Button with a continuously rotating gradient border.</p>
                     </div>
                   </div>
-                  <div className="p-10 flex items-center justify-center bg-zinc-950 rounded-lg">
+                  <div className="p-6 flex items-center justify-center bg-zinc-950 rounded-lg">
                     <MovingBorderButton
                       borderRadius="1.75rem"
                       className="bg-zinc-900 text-white border-neutral-200 dark:border-slate-800"
@@ -278,7 +278,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
                       <p className="text-muted-foreground">Smoothly animating numbers.</p>
                     </div>
                   </div>
-                  <div className="p-10 flex items-center justify-center bg-card border rounded-lg">
+                  <div className="p-6 flex items-center justify-center bg-card border rounded-lg">
                     <p className="whitespace-pre-wrap text-8xl font-medium tracking-tighter text-black dark:text-white">
                       <NumberTicker value={100} />
                     </p>

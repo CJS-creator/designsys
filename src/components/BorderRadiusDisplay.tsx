@@ -26,8 +26,8 @@ export function BorderRadiusDisplay({ borderRadius }: BorderRadiusDisplayProps) 
             style={{ borderRadius: value }}
           />
           <div className="text-center w-full">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">{name}</p>
-            <p className="text-[10px] font-mono text-muted-foreground/60">{value}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">{name}</p>
+            <p className="text-xs font-mono text-muted-foreground/60">{value}</p>
           </div>
         </button>
       ))}

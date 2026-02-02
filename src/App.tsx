@@ -12,35 +12,38 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import SharedDesign from "./pages/SharedDesign";
 import Landing from "./pages/Landing";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="dark" storageKey="vite-ui-theme">
-      <AuthProvider>
-        <OnboardingProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <OnboardingModal />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/share/:id" element={<SharedDesign />} />
-                <Route path="/app" element={<Index />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="dark" storageKey="vite-ui-theme">
+        <AuthProvider>
+          <OnboardingProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <OnboardingModal />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/share/:id" element={<SharedDesign />} />
+                  <Route path="/app" element={<Index />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
 
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </OnboardingProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </OnboardingProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
