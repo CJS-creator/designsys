@@ -417,13 +417,13 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
               Primary Brand Color{" "}
               <span className="text-neutral-500 text-sm">(Optional - AI will suggest if empty)</span>
             </Label>
-            <p className="text-xs text-neutral-400 -mt-1">
+            <p className="text-xs text-muted-foreground -mt-1">
               Your brand color will influence the generated palette. Leave empty for AI-suggested colors.
             </p>
             <div className="flex gap-3">
               <div className="relative group/picker cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 rounded-xl blur opacity-20 group-hover/picker:opacity-40 transition-opacity" />
-                <div className="h-12 w-16 overflow-hidden rounded-xl border border-white/10 ring-2 ring-transparent group-hover/picker:ring-white/20 transition-all relative z-10 bg-black">
+                <div className="h-12 w-16 overflow-hidden rounded-xl border border-border ring-2 ring-transparent group-hover/picker:ring-primary/20 transition-all relative z-10 bg-card">
                   <Input
                     type="color"
                     id="colorPicker"
@@ -440,7 +440,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                 aria-label="Enter hex color code"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                className="h-12 flex-1 font-mono bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all rounded-xl hover:bg-white/10"
+                className="h-12 flex-1 font-mono bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all rounded-xl hover:bg-muted/30"
               />
             </div>
           </motion.div>

@@ -50,15 +50,15 @@ const TiltCard = ({ children, className }: { children: React.ReactNode, classNam
 };
 
 const FeatureHeader = ({ icon: Icon, color }: { icon: any, color: string }) => (
-    <div className="relative flex flex-1 w-full h-full min-h-[10rem] rounded-xl overflow-hidden bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors flex-col items-center justify-center gap-6 p-6">
-        <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
+    <div className="relative flex flex-1 w-full h-full min-h-[10rem] rounded-xl overflow-hidden bg-muted/30 border border-border/50 group-hover:border-primary/50 transition-colors flex-col items-center justify-center gap-6 p-6">
+        <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02] -z-10" />
         <motion.div
             animate={{
                 scale: [1, 1.05, 1],
                 rotate: [0, 2, -2, 0]
             }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className={cn("p-5 rounded-3xl bg-white/5 shadow-2xl relative z-10 border border-white/5", color)}
+            className={cn("p-5 rounded-3xl bg-muted/30 shadow-2xl relative z-10 border border-border/50", color)}
         >
             <Icon className="h-12 w-12" />
         </motion.div>

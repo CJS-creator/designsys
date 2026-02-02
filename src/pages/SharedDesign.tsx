@@ -74,7 +74,10 @@ const SharedDesign = () => {
     }
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5 -z-10" />
+            <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02] -z-10" />
             {/* Header */}
             <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -107,10 +110,10 @@ const SharedDesign = () => {
             {/* Content */}
             <main className="container mx-auto px-4 py-8">
                 <Tabs defaultValue="overview" className="space-y-8">
-                    <TabsList className="flex-wrap">
-                        <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="components">Components</TabsTrigger>
-                        <TabsTrigger value="preview">Live Preview</TabsTrigger>
+                    <TabsList className="bg-muted/50 border border-border rounded-xl p-1 h-auto flex-wrap">
+                        <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
+                        <TabsTrigger value="components" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Components</TabsTrigger>
+                        <TabsTrigger value="preview" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Preview</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-8">

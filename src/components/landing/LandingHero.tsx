@@ -135,7 +135,7 @@ export const LandingHero = () => {
                     transition={{ duration: 1, delay: 1, type: "spring", bounce: 0.2 }}
                     className="relative w-full max-w-6xl perspective-[1000px]"
                 >
-                    <div className="relative rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_40px_100px_-20px_rgba(124,58,237,0.3)] bg-black/80 backdrop-blur-3xl p-6 md:p-10 group cursor-default">
+                    <div className="relative rounded-[2rem] overflow-hidden border border-border/50 shadow-[0_40px_100px_-20px_rgba(124,58,237,0.3)] bg-card/90 dark:bg-black/80 backdrop-blur-3xl p-6 md:p-10 group cursor-default">
                         {/* Window Chrome */}
                         <div className="absolute top-4 left-6 flex gap-2">
                             <div className="w-3 h-3 rounded-full bg-red-500/50" />
@@ -145,7 +145,7 @@ export const LandingHero = () => {
 
                         <div className="grid md:grid-cols-12 gap-10 mt-6">
                             {/* Code Section */}
-                            <div className="md:col-span-4 text-left border-r border-white/5 pr-6 hidden md:block">
+                            <div className="md:col-span-4 text-left border-r border-border/50 pr-6 hidden md:block">
                                 <div className="flex items-center gap-2 mb-6 text-muted-foreground text-xs uppercase tracking-widest font-bold">
                                     <Terminal className="h-4 w-4" /> design-tokens.ts
                                 </div>
@@ -162,8 +162,8 @@ export const LandingHero = () => {
                                         <span className="font-bold text-sm tracking-wide">SYSTEM PREVIEW</span>
                                     </div>
                                     <div className="flex gap-2 text-[10px] font-bold text-muted-foreground">
-                                        <span className="px-2 py-1 rounded bg-white/5 border border-white/10 uppercase">v2.0.0</span>
-                                        <span className="px-2 py-1 rounded bg-white/5 border border-white/10 uppercase text-primary">ENTERPRISE READY</span>
+                                        <span className="px-2 py-1 rounded bg-muted/30 border border-border/50 uppercase">v2.0.0</span>
+                                        <span className="px-2 py-1 rounded bg-muted/30 border border-border/50 uppercase text-primary">ENTERPRISE READY</span>
                                     </div>
                                 </div>
 
@@ -177,7 +177,7 @@ export const LandingHero = () => {
                                         <motion.div
                                             key={i}
                                             whileHover={{ scale: 1.05 }}
-                                            className="p-3 rounded-2xl bg-white/5 border border-white/10 text-left space-y-3"
+                                            className="p-3 rounded-2xl bg-muted/20 border border-border/50 text-left space-y-3"
                                         >
                                             <div className={cn("h-16 w-full rounded-xl shadow-inner", c.color)} />
                                             <div>
@@ -188,16 +188,16 @@ export const LandingHero = () => {
                                     ))}
                                 </div>
 
-                                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 grid grid-cols-3 gap-6">
+                                <div className="p-6 rounded-2xl bg-muted/30 border border-border/50 grid grid-cols-3 gap-6">
                                     <div className="space-y-3 col-span-2">
-                                        <div className="h-3 w-1/3 bg-white/10 rounded-full" />
-                                        <div className="h-8 w-full bg-white/5 rounded-xl flex items-center px-4 gap-3">
+                                        <div className="h-3 w-1/3 bg-muted/50 rounded-full" />
+                                        <div className="h-8 w-full bg-muted/30 rounded-xl flex items-center px-4 gap-3">
                                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                            <div className="h-2 w-2/3 bg-white/10 rounded-full" />
+                                            <div className="h-2 w-2/3 bg-muted/50 rounded-full" />
                                         </div>
                                         <div className="h-12 w-full bg-primary/20 rounded-xl border border-primary/20" />
                                     </div>
-                                    <div className="flex flex-col items-center justify-center p-4 rounded-xl border border-white/10 bg-white/5 gap-2">
+                                    <div className="flex flex-col items-center justify-center p-4 rounded-xl border border-border/50 bg-muted/30 gap-2">
                                         <Palette className="h-8 w-8 text-primary" />
                                         <span className="text-[10px] font-bold text-center">GENERATING VARIANTS...</span>
                                     </div>
