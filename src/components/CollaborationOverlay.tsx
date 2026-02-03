@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,10 +40,10 @@ export const CollaborationOverlay = ({ channelId, currentUser }: CollaborationOv
                 setOnlineUsers(uniqueUsers);
             })
             .on("presence", { event: "join" }, ({ newPresences }) => {
-                console.log("Users joined: ", newPresences);
+                monitor.debug("Users joined collaboration", { newPresences });
             })
             .on("presence", { event: "leave" }, ({ leftPresences }) => {
-                console.log("Users left: ", leftPresences);
+                monitor.debug("Users left collaboration", { leftPresences });
             })
             .subscribe(async (status) => {
                 if (status === "SUBSCRIBED") {
@@ -51,7 +52,7 @@ export const CollaborationOverlay = ({ channelId, currentUser }: CollaborationOv
                         email: (currentUser as { email: string }).email,
                         online_at: new Date().toISOString(),
                     });
-                    console.log("Presence tracking status:", presenceTrackStatus);
+                    monitor.debug("Presence tracking status", { presenceTrackStatus });
                 }
             });
 

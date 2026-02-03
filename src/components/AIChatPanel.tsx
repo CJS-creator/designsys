@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Sparkles, User, Brain, Bot, X, Maximize2, Minimize2, Loader2, RefreshCcw } from "lucide-react";
+import { Send, Sparkles, User, Bot, Minimize2, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { cn } from "@/lib/utils";
@@ -81,8 +82,8 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ designSystem, onUpdate
             }
 
             setMessages(prev => [...prev, assistantMessage]);
-        } catch (error) {
-            console.error("Chat update failed:", error);
+        } catch (err: any) {
+            monitor.error("Chat update failed", err as Error);
             setMessages(prev => [...prev, {
                 id: (Date.now() + 1).toString(),
                 role: "assistant",

@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { DesignSystemInput, GeneratedDesignSystem, SemanticColors, ColorPalette, DarkModeColors, AnimationTokens } from "@/types/designSystem";
 import { generateInteractiveStates, hslToString, parseHslString, hexToHsl, getOnColor, getContainerColor } from "./colorUtils";
+import { monitor } from "./monitoring";
 
 async function invokeWithRetry(name: string, options: any, retries = 2, delay = 1500): Promise<any> {
   const result = await supabase.functions.invoke(name, options);
@@ -11,7 +12,7 @@ async function invokeWithRetry(name: string, options: any, retries = 2, delay = 
   const shouldRetry = result.error && (retries > 0) && (!status || status >= 500 || status === 429);
 
   if (shouldRetry) {
-    console.warn(`Function ${name} failed with status ${status}, retrying... (${retries} left)`);
+    monitor.warn(`Function ${name} failed with status ${status}, retrying... (${retries} left)`);
     await new Promise(resolve => setTimeout(resolve, delay));
     return invokeWithRetry(name, options, retries - 1, delay * 2);
   }
@@ -20,7 +21,7 @@ async function invokeWithRetry(name: string, options: any, retries = 2, delay = 
 }
 
 export async function generateDesignSystemWithAI(input: DesignSystemInput): Promise<GeneratedDesignSystem> {
-  console.log("Calling AI to generate design system...", input);
+  monitor.debug("Calling AI to generate design system...", { input });
 
   const { data, error } = await invokeWithRetry("generate-design-system", {
     body: {
@@ -33,12 +34,12 @@ export async function generateDesignSystemWithAI(input: DesignSystemInput): Prom
   });
 
   if (error) {
-    console.error("Edge function error:", error);
+    monitor.error("Edge function error", error);
     throw new Error(error.message || "Failed to generate design system after retries");
   }
 
   if (data?.error) {
-    console.error("AI generation error:", data.error);
+    monitor.error("AI generation error", new Error(data.error));
     throw new Error(data.error);
   }
 
@@ -46,7 +47,7 @@ export async function generateDesignSystemWithAI(input: DesignSystemInput): Prom
     throw new Error("No design system returned from AI");
   }
 
-  console.log("AI generated design system:", data.designSystem);
+  monitor.debug("AI generated design system", { designSystem: data.designSystem });
 
   // Ensure the AI response has all required fields, fill in missing ones
   const aiSystem = data.designSystem;
@@ -244,7 +245,6 @@ const fontLibrary = {
 
 function selectSmartFontPair(industry: string, moods: string[]): { heading: string; body: string } {
   // Determine primary mood match
-  const primaryMood = moods[0] || "modern";
 
   // Strategy: 
   // - "Elegant"/"Luxury" -> Serif Heading + Sans Body
@@ -449,11 +449,11 @@ export function generateDesignSystemFallback(input: DesignSystemInput): Generate
   if (isFinance && isModern) {
     // Trend: "Glassmorphism" / Subtle depth for Fintech
     radiusBase = 12;
-    console.log("[Predictive Trend] Applying Fintech Glassmorphism tokens");
+    monitor.info("[Predictive Trend] Applying Fintech Glassmorphism tokens");
   } else if (input.brandMood.includes("brutalism")) {
     // Trend: "Neo-brutalism"
     radiusBase = 2;
-    console.log("[Predictive Trend] Applying Neo-brutalism sharp tokens");
+    monitor.info("[Predictive Trend] Applying Neo-brutalism sharp tokens");
   }
 
   const borderRadius = {

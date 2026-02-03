@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
+import { monitor } from "@/lib/monitoring";
 import { Link, useSearchParams } from "react-router-dom";
 import { BrandSwitcher } from "@/components/BrandSwitcher";
 import { supabase } from "@/integrations/supabase/client";
@@ -113,7 +114,7 @@ const Index = () => {
         description: "Your custom design system is ready to use.",
       });
     } catch (error) {
-      console.error("AI generation failed, using fallback:", error);
+      monitor.error("AI generation failed, using fallback", error as Error);
       const fallbackSystem = generateDesignSystemFallback(input);
       setDesignSystem(fallbackSystem);
       toast.warning("Generated with fallback algorithm", {

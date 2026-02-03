@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
     History,
     GitCommit,
     Plus,
-    CheckCircle2,
     Clock,
-    ChevronRight,
-    ArrowUpRight
+    ChevronRight
 } from "lucide-react";
 import { VersionDiff } from "./VersionDiff";
 import { toast } from "sonner";
@@ -70,7 +69,7 @@ export function VersionManager({ designSystemId }: { designSystemId: string }) {
             if (error) throw error;
             setVersions((data as any) || []);
         } catch (error) {
-            console.error("Error fetching versions:", error);
+            monitor.error("Error fetching versions", error as Error);
         } finally {
             setIsLoading(false);
         }

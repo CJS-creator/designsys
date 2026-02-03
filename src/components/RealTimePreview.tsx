@@ -52,6 +52,7 @@ export function RealTimePreview({ designSystem, formValues }: RealTimePreviewPro
               size="icon"
               className="h-8 w-8"
               onClick={() => setDevice("mobile")}
+              aria-label="Mobile preview"
             >
               <Smartphone className="h-4 w-4" />
             </Button>
@@ -60,6 +61,7 @@ export function RealTimePreview({ designSystem, formValues }: RealTimePreviewPro
               size="icon"
               className="h-8 w-8"
               onClick={() => setDevice("tablet")}
+              aria-label="Tablet preview"
             >
               <Tablet className="h-4 w-4" />
             </Button>
@@ -68,6 +70,7 @@ export function RealTimePreview({ designSystem, formValues }: RealTimePreviewPro
               size="icon"
               className="h-8 w-8"
               onClick={() => setDevice("desktop")}
+              aria-label="Desktop preview"
             >
               <Monitor className="h-4 w-4" />
             </Button>
@@ -76,6 +79,7 @@ export function RealTimePreview({ designSystem, formValues }: RealTimePreviewPro
               size="icon"
               className="h-8 w-8"
               onClick={() => setDevice("fullscreen")}
+              aria-label="Fullscreen preview"
             >
               <Maximize2 className="h-4 w-4" />
             </Button>
@@ -86,6 +90,7 @@ export function RealTimePreview({ designSystem, formValues }: RealTimePreviewPro
             variant="outline"
             size="icon"
             onClick={() => setIsDarkMode(!isDarkMode)}
+            aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
             {isDarkMode ? (
               <Sun className="h-4 w-4" />
@@ -177,7 +182,7 @@ export function RealTimePreview({ designSystem, formValues }: RealTimePreviewPro
                       marginBottom: "1.5rem",
                     }}
                   >
-                    Create stunning design systems with AI-powered generation. 
+                    Create stunning design systems with AI-powered generation.
                     Your brand, your style, automatically.
                   </p>
                   <div className="flex gap-3 flex-wrap">

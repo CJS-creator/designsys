@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type SpotlightProps = {
@@ -7,10 +7,34 @@ type SpotlightProps = {
 };
 
 export const Spotlight = ({ className, fill = "white" }: SpotlightProps) => {
+    const [isVisible, setIsVisible] = useState(false);
+    const svgRef = useRef<SVGSVGElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            },
+            { threshold: 0.1 }
+        );
+
+        if (svgRef.current) {
+            observer.observe(svgRef.current);
+        }
+
+        return () => {
+            if (svgRef.current) {
+                observer.unobserve(svgRef.current);
+            }
+        };
+    }, []);
+
     return (
         <svg
+            ref={svgRef}
             className={cn(
-                "animate-spotlight pointer-events-none absolute z-[1] h-[169%] w-[138%] lg:w-[84%] opacity-0 hidden md:block",
+                "pointer-events-none absolute z-[1] h-[169%] w-[138%] lg:w-[84%] opacity-0 hidden md:block",
+                isVisible && "animate-spotlight",
                 className
             )}
             xmlns="http://www.w3.org/2000/svg"

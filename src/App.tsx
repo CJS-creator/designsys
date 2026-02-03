@@ -14,6 +14,7 @@ import SharedDesign from "./pages/SharedDesign";
 import Landing from "./pages/Landing";
 import { PublicDocViewer } from "./components/docs/PublicDocViewer";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 
 const queryClient = new QueryClient();
@@ -34,7 +35,14 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/share/:id" element={<SharedDesign />} />
                   <Route path="/docs/:shareId" element={<PublicDocViewer />} />
-                  <Route path="/app" element={<Index />} />
+                  <Route
+                    path="/app"
+                    element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    }
+                  />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
 
                   <Route path="*" element={<NotFound />} />

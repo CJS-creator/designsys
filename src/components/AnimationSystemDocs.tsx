@@ -165,7 +165,7 @@ export function AnimationSystemDocs() {
                         <div className="bg-card p-6 rounded-lg shadow-xl max-w-md w-full mx-4 pointer-events-auto">
                           <div className="flex items-center justify-between mb-4">
                             <h3 className="font-semibold">Modal Animation</h3>
-                            <Button variant="ghost" size="icon" onClick={() => setShowModal(false)}>
+                            <Button variant="ghost" size="icon" onClick={() => setShowModal(false)} aria-label="Close modal">
                               <X className="h-4 w-4" />
                             </Button>
                           </div>

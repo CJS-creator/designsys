@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { monitor } from "@/lib/monitoring";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -54,7 +55,7 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
 
             toast.success("Design bundle generated successfully!");
         } catch (err: any) {
-            console.error(err);
+            monitor.error("Bulk export failed", err as Error);
             setError(err.message || "Export failed. Please try again.");
             toast.error("Bulk export failed");
         } finally {

@@ -1,4 +1,5 @@
 import { Octokit } from "octokit";
+import { monitor } from "../monitoring";
 
 export interface GitSyncParams {
     accessToken: string;
@@ -82,7 +83,7 @@ export class GitHubService {
 
             return { success: true, prUrl: prData.html_url };
         } catch (error: any) {
-            console.error("GitHub Sync Error:", error);
+            monitor.error("GitHub Sync Error", error as Error);
             throw new Error(`Git Sync Failed: ${error.message}`);
         }
     }

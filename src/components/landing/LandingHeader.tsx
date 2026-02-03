@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Wand2, Menu, X, ArrowRight, User } from "lucide-react";
+import { Wand2, Menu, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -102,7 +102,7 @@ export const LandingHeader = () => {
                 <div className="md:hidden">
                     <Sheet open={isOpen} onOpenChange={setIsOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" aria-label="Open navigation menu">
                                 <Menu className="h-6 w-6" />
                             </Button>
                         </SheetTrigger>

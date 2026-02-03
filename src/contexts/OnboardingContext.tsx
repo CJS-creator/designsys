@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { monitor } from "@/lib/monitoring";
 
 export interface OnboardingPreferences {
   experience: "beginner" | "intermediate" | "expert";
@@ -126,8 +127,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     });
     localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analytics));
 
-    // Log for debugging - in production this would send to analytics service
-    console.log("[Onboarding Analytics]", event, data);
+    // Log for tracking - sends to analytics service if configured
+    monitor.trackEvent(event, data);
   };
 
   const startOnboarding = () => {

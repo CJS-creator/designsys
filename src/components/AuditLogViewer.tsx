@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { History, User, Clock, FileText, Activity } from "lucide-react";
+import { History, Clock, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 
@@ -38,7 +39,7 @@ export const AuditLogViewer = ({ designSystemId }: AuditLogViewerProps) => {
                 if (error) throw error;
                 setLogs((data as any) || []);
             } catch (err) {
-                console.error("Error fetching audit logs:", err);
+                monitor.error("Error fetching audit logs", err as Error);
             } finally {
                 setLoading(false);
             }

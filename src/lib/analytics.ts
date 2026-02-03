@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { monitor } from "./monitoring";
 
 export type AnalyticsEvent =
     | "design_generated"
@@ -27,6 +28,6 @@ export async function trackEvent(
         ]);
         if (error) throw error;
     } catch (err) {
-        console.error("Failed to track analytics event:", err);
+        monitor.error("Failed to track analytics event", err as Error);
     }
 }

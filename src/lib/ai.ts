@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { monitor } from "./monitoring";
 
 export type AICopilotAction = 'audit' | 'generate-theme' | 'expand-palette' | 'fix-accessibility';
 
@@ -24,7 +25,7 @@ export async function runAICopilot(action: AICopilotAction, tokens: any[], conte
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error("AI Copilot Error:", error);
+        monitor.error("AI Copilot Error", error as Error);
         throw error;
     }
 }

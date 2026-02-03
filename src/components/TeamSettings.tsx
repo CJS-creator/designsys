@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,7 @@ export const TeamSettings = ({ designSystemId }: TeamSettingsProps) => {
             if (error) throw error;
             setMembers((data as any) || []);
         } catch (error) {
-            console.error("Error fetching members:", error);
+            monitor.error("Error fetching members", error as Error);
         } finally {
             setIsLoading(false);
         }

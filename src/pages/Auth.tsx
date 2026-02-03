@@ -10,7 +10,6 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Wand2, Loader2, ArrowRight } from "lucide-react";
 import { Spotlight } from "@/components/ui/spotlight";
-import { MovingBorderButton } from "@/components/ui/moving-border";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -48,7 +47,7 @@ const Auth = () => {
     }
 
     setIsLoading(true);
-    const { error } = await signUp(email, password);
+    const { error, session } = await signUp(email, password);
     setIsLoading(false);
 
     if (error) {
@@ -57,8 +56,15 @@ const Auth = () => {
       } else {
         toast.error("Sign up failed", { description: error.message });
       }
+    } else if (!session) {
+      // No session means email confirmation is required
+      toast.success("Check your email!", {
+        description: "We've sent you a confirmation link. Please verify your email to sign in.",
+        duration: 10000
+      });
     } else {
-      toast.success("Account created!", { description: "You can now sign in" });
+      toast.success("Account created!");
+      navigate("/app");
     }
   };
 

@@ -1,21 +1,97 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Layout, Copy, Check, RefreshCw, Link as LinkIcon, ExternalLink } from "lucide-react";
+import { Layout, Copy, Check, RefreshCw, Link as LinkIcon, ExternalLink, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
 interface FigmaSyncProps {
     designSystemId?: string;
 }
 
+interface FigmaConnection {
+    id: string;
+    access_token: string;
+    last_sync_at: string | null;
+    sync_status: string;
+}
+
 export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
+    const { user } = useAuth();
     const [copied, setCopied] = useState(false);
-    const [syncToken] = useState(`df_${Math.random().toString(36).substring(2, 15)}`);
+    const [connection, setConnection] = useState<FigmaConnection | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isRotating, setIsRotating] = useState(false);
 
     const figmaPluginUrl = "https://designforge.me/figma-plugin";
     const bridgeUrl = `${window.location.origin}/api/tokens/${designSystemId || "default"}`;
+
+    const fetchConnection = async () => {
+        if (!designSystemId) return;
+        setIsLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from("figma_connections" as any)
+                .select("*")
+                .eq("design_system_id", designSystemId)
+                .maybeSingle();
+
+            if (error) throw error;
+            if (data) {
+                setConnection(data as unknown as FigmaConnection);
+            } else if (user) {
+                // Initialize a token if none exists
+                const newToken = `df_${Math.random().toString(36).substring(2, 15)}`;
+                const { data: created, error: createError } = await supabase
+                    .from("figma_connections" as any)
+                    .insert({
+                        design_system_id: designSystemId,
+                        user_id: user.id,
+                        access_token: newToken,
+                        sync_status: 'idle'
+                    })
+                    .select()
+                    .single();
+
+                if (createError) throw createError;
+                setConnection(created as unknown as FigmaConnection);
+            }
+        } catch (error) {
+            monitor.error("Error fetching figma connection", error as Error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRotateToken = async () => {
+        if (!designSystemId || !user || !connection) return;
+        setIsRotating(true);
+        const newToken = `df_${Math.random().toString(36).substring(2, 15)}`;
+
+        try {
+            const { error } = await supabase
+                .from("figma_connections" as any)
+                .update({ access_token: newToken })
+                .eq("design_system_id", designSystemId);
+
+            if (error) throw error;
+            setConnection({ ...connection, access_token: newToken });
+            toast.success("Token rotated successfully");
+        } catch (error: any) {
+            toast.error("Failed to rotate token: " + error.message);
+        } finally {
+            setIsRotating(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchConnection();
+    }, [designSystemId]);
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -23,6 +99,10 @@ export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
         toast.success("Copied to clipboard");
         setTimeout(() => setCopied(false), 2000);
     };
+
+    if (isLoading) {
+        return <div className="p-8 text-center text-muted-foreground animate-pulse">Initializing Figma bridge...</div>;
+    }
 
     return (
         <div className="space-y-6 animate-in fade-in duration-700">
@@ -57,14 +137,14 @@ export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
                                     readOnly
                                     className="bg-muted/30 font-mono text-xs"
                                 />
-                                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(bridgeUrl)}>
+                                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(bridgeUrl)} aria-label="Copy Bridge URL">
                                     <Copy className="h-4 w-4" />
                                 </Button>
                             </div>
-                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <div className="text-[10px] text-muted-foreground flex items-center gap-1">
                                 <LinkIcon className="h-3 w-3" />
                                 Use this URL in the DesignForge Figma Plugin.
-                            </p>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -72,25 +152,36 @@ export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
                             <div className="flex gap-2">
                                 <Input
                                     id="sync-token"
-                                    value={syncToken}
+                                    value={connection?.access_token || ""}
                                     readOnly
                                     type="password"
                                     className="bg-muted/30 font-mono text-xs"
                                 />
-                                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(syncToken)}>
+                                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(connection?.access_token || "")} aria-label="Copy Access Token">
                                     {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                                 </Button>
+                            </div>
+                            <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <ShieldCheck className="h-3 w-3 text-primary" />
+                                This token grants read-only access to your design system tokens.
                             </div>
                         </div>
                     </div>
 
                     <div className="pt-4 border-t flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-xs font-medium">Bridge Active</span>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <div className={cn("h-2 w-2 rounded-full", connection?.sync_status === 'idle' ? 'bg-green-500 animate-pulse' : 'bg-blue-500')} />
+                                <span className="text-xs font-medium">Bridge {connection?.sync_status === 'idle' ? 'Active' : 'Connected'}</span>
+                            </div>
+                            {connection?.last_sync_at && (
+                                <div className="text-[10px] text-muted-foreground italic">
+                                    Last synced: {new Date(connection.last_sync_at).toLocaleString()}
+                                </div>
+                            )}
                         </div>
-                        <Button variant="ghost" size="sm" className="text-xs gap-2">
-                            <RefreshCw className="h-3 w-3" />
+                        <Button variant="ghost" size="sm" className="text-xs gap-2" onClick={handleRotateToken} disabled={isRotating}>
+                            <RefreshCw className={cn("h-3 w-3", isRotating && "animate-spin")} />
                             Rotate Token
                         </Button>
                     </div>

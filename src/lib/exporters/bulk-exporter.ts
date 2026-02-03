@@ -1,4 +1,3 @@
-import JSZip from "jszip";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { DesignToken } from "@/types/tokens";
 import { exportToPDF, exportToWord } from "./asset-exporters";
@@ -16,8 +15,9 @@ interface BulkExportOptions {
 export async function generateBulkBundle(
     ds: GeneratedDesignSystem,
     tokens: DesignToken[],
-    options?: BulkExportOptions
+    options: BulkExportOptions = {}
 ): Promise<Blob> {
+    const JSZip = (await import("jszip")).default;
     const zip = new JSZip();
     const totalSteps = 6;
     let currentStep = 0;

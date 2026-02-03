@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -27,7 +28,7 @@ export function useBrands(designSystemId?: string) {
 
             if (error) throw error;
 
-            const formattedBrands = (data || []).map(row => ({
+            const formattedBrands: BrandTheme[] = (data || []).map((row: any) => ({
                 id: row.id,
                 design_system_id: row.design_system_id,
                 name: row.name,
@@ -40,11 +41,11 @@ export function useBrands(designSystemId?: string) {
 
             // Set default active brand
             if (!activeBrandId && formattedBrands.length > 0) {
-                const defaultBrand = formattedBrands.find(b => b.is_default) || formattedBrands[0];
+                const defaultBrand = formattedBrands.find((b: BrandTheme) => b.is_default) || formattedBrands[0];
                 setActiveBrandId(defaultBrand.id);
             }
         } catch (error: any) {
-            console.error("Error fetching brands:", error);
+            monitor.error("Error fetching brands", error as Error);
             // toast.error("Failed to load brands");
         } finally {
             setLoading(false);

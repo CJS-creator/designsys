@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: Error | null, session: Session | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -22,6 +22,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        // Detect session expiry
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          if (event === 'SIGNED_OUT' && user) {
+            // Session was active and is now gone - likely expired
+            import('sonner').then(({ toast }) => {
+              toast.warning("Session expired", {
+                description: "Please sign in again to continue.",
+                duration: 5000
+              });
+            });
+          }
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -35,16 +48,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [user]);
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signUp({
+    const redirectUrl = `${window.location.origin}/app`;
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: redirectUrl },
     });
-    return { error: error as Error | null };
+    return {
+      error: error as Error | null,
+      session: data.session
+    };
   };
 
   const signIn = async (email: string, password: string) => {
@@ -56,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}/app`,
       },
     });
     return { error: error as Error | null };

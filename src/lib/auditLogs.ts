@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { monitor } from "./monitoring";
 
 export interface AuditLogEntry {
     id: string;
@@ -11,8 +12,6 @@ export interface AuditLogEntry {
 
 /**
  * Records an action in the design audit logs.
- * Note: This currently simulates a database insert if a table doesn't exist yet,
- * but is wired to Supabase for future scale.
  */
 export const recordAuditLog = async (
     designSystemId: string,
@@ -20,7 +19,7 @@ export const recordAuditLog = async (
     action: string,
     summary: string
 ) => {
-    console.log(`[Audit Log] Recording: ${action} - ${summary} by ${userEmail}`);
+    monitor.info(`[Audit Log] Recording: ${action}`, { summary, userEmail });
 
     try {
         const { error } = await (supabase
@@ -35,13 +34,12 @@ export const recordAuditLog = async (
             ]);
 
         if (error) {
-            // If table doesn't exist yet, we still log to console for development
-            console.warn("Audit log insert failed (likely missing table):", error.message);
+            monitor.warn("Audit log insert failed", { error: error.message });
             return false;
         }
         return true;
     } catch (err) {
-        console.error("Audit log error:", err);
+        monitor.error("Audit log exception", err as Error);
         return false;
     }
 };

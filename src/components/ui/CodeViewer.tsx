@@ -27,6 +27,7 @@ export function CodeViewer({ code, language = "tsx", className }: CodeViewerProp
                     variant="ghost"
                     className="h-6 w-6 hover:bg-background/50"
                     onClick={copyToClipboard}
+                    aria-label={copied ? "Copied to clipboard" : "Copy code"}
                 >
                     {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                 </Button>

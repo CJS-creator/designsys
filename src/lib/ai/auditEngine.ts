@@ -1,5 +1,6 @@
-import { GeneratedDesignSystem, ColorPalette } from "@/types/designSystem";
+import { GeneratedDesignSystem } from "@/types/designSystem";
 import { getContrastRatio } from "../colorUtils";
+import { monitor } from "../monitoring";
 
 export type AuditLevel = "error" | "warning" | "info";
 
@@ -104,7 +105,7 @@ export class DesignAuditEngine {
                 });
             }
         } catch (e) {
-            console.error("Failed to calculate contrast", e);
+            monitor.error("Failed to calculate contrast", e as Error);
         }
     }
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { monitor } from '@/lib/monitoring';
 import {
     FiHome,
     FiSettings,
@@ -53,7 +54,6 @@ import {
     FiLoader,
     FiCheck,
     FiX,
-    FiAlertCircle,
     FiCheckCircle,
     FiXCircle,
     FiHelpCircle,
@@ -65,8 +65,6 @@ import {
     FiInbox,
     FiArchive,
     FiTrash,
-    FiMoreHorizontal,
-    FiMoreVertical,
     FiFilter,
     FiSliders,
     FiTarget,
@@ -86,7 +84,6 @@ import {
     FiClipboard,
     FiScissors,
     FiPaperclip,
-    FiAtSign,
     FiCreditCard,
     FiShoppingCart,
     FiPackage,
@@ -233,7 +230,7 @@ export function Icon({ name, size = 16, className, ...props }: IconProps) {
     const IconComponent = Icons[name];
 
     if (!IconComponent) {
-        console.warn(`Icon "${name}" not found in registry`);
+        monitor.warn(`Icon "${name}" not found in registry`);
         return null;
     }
 

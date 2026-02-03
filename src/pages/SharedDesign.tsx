@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { GeneratedDesignSystem } from "@/types/designSystem";
@@ -37,7 +38,7 @@ const SharedDesign = () => {
                 // Add type assertion/checking here if needed, or assume it matches GeneratedDesignSystem
                 setDesignSystem(data.design_system_data as unknown as GeneratedDesignSystem);
             } catch (err: unknown) {
-                console.error("Error fetching design:", err);
+                monitor.error("Error fetching design", err as Error);
                 setError((err as Error)?.message || "Failed to load design system");
                 toast.error("Design not found or access denied");
             } finally {

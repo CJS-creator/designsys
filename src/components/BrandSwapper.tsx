@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,7 +52,7 @@ export function BrandSwapper({ designSystemId, baseDesignSystem, onThemeChange }
                 applyTheme(active);
             }
         } catch (err) {
-            console.error("Error fetching themes:", err);
+            monitor.error("Error fetching themes", err as Error);
         } finally {
             setIsLoading(false);
         }

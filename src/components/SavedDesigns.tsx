@@ -190,7 +190,7 @@ export const SavedDesigns = ({ onLoad, currentSystem }: SavedDesignsProps) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    title="Share"
+                    aria-label="Share design system"
                     onClick={() => handleShare(design.id)}
                   >
                     <Share2 className="h-4 w-4" />
@@ -198,6 +198,7 @@ export const SavedDesigns = ({ onLoad, currentSystem }: SavedDesignsProps) => {
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label="Delete design system"
                     className="text-destructive hover:text-destructive"
                     onClick={() => deleteDesign(design.id)}
                   >

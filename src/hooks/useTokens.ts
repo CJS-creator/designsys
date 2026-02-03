@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DesignToken, TokenType } from "@/types/tokens";
 import { toast } from "sonner";
+import { monitor } from "@/lib/monitoring";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function useTokens(designSystemId?: string) {
@@ -33,7 +34,7 @@ export function useTokens(designSystemId?: string) {
 
             setTokens(formattedTokens as DesignToken[]);
         } catch (error: any) {
-            console.error("Error fetching tokens:", error);
+            monitor.error("Error fetching tokens", error as Error);
             toast.error("Failed to load tokens");
         } finally {
             setLoading(false);
@@ -42,7 +43,7 @@ export function useTokens(designSystemId?: string) {
 
     const resolveToken = (path: string, visited = new Set<string>()): DesignToken | null => {
         if (visited.has(path)) {
-            console.warn(`Circular reference detected for token: ${path}`);
+            monitor.warn(`Circular reference detected for token: ${path}`);
             return null;
         }
         visited.add(path);
@@ -81,14 +82,14 @@ export function useTokens(designSystemId?: string) {
                                 data: { token }
                             })
                         });
-                        console.log(`Webhook triggered: ${webhook.url}`);
+                        monitor.info(`Webhook triggered: ${webhook.url}`);
                     } catch (e) {
-                        console.error(`Failed to trigger webhook ${webhook.url}:`, e);
+                        monitor.error(`Failed to trigger webhook ${webhook.url}`, e as Error);
                     }
                 }
             }
         } catch (error) {
-            console.error("Error fetching webhooks:", error);
+            monitor.error("Error fetching webhooks", error as Error);
         }
     };
 
@@ -122,7 +123,7 @@ export function useTokens(designSystemId?: string) {
             toast.success("Token saved");
             fetchTokens();
         } catch (error: any) {
-            console.error("Error saving token:", error);
+            monitor.error("Error saving token", error as Error);
             toast.error("Failed to save token");
         }
     };
@@ -142,7 +143,7 @@ export function useTokens(designSystemId?: string) {
             toast.success("Token archived");
             fetchTokens();
         } catch (error: any) {
-            console.error("Error archiving token:", error);
+            monitor.error("Error archiving token", error as Error);
             toast.error("Failed to archive token");
         }
     };
@@ -162,7 +163,7 @@ export function useTokens(designSystemId?: string) {
             toast.success("Token restored");
             fetchTokens();
         } catch (error: any) {
-            console.error("Error restoring token:", error);
+            monitor.error("Error restoring token", error as Error);
             toast.error("Failed to restore token");
         }
     };
@@ -182,7 +183,7 @@ export function useTokens(designSystemId?: string) {
             toast.success("Token permanently deleted");
             fetchTokens();
         } catch (error: any) {
-            console.error("Error deleting token:", error);
+            monitor.error("Error deleting token", error as Error);
             toast.error("Failed to delete token");
         }
     };

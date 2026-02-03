@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,7 +133,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
         };
       }
     } catch (error) {
-      console.error('Failed to load saved form state:', error);
+      monitor.error('Failed to load saved form state', error as Error);
     }
     return {
       appType: initialValues?.appType || "web",
@@ -164,7 +165,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
     try {
       localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formState));
     } catch (error) {
-      console.error('Failed to save form state:', error);
+      monitor.error('Failed to save form state', error as Error);
     }
   }, [appType, industry, brandMood, primaryColor, description]);
 

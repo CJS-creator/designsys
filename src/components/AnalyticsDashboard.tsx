@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from "recharts";
-import { Activity, Download, MousePointer2, TrendingUp, BarChart3 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { Activity, Download, MousePointer2, BarChart3 } from "lucide-react";
 
 interface AnalyticsDashboardProps {
     designSystemId: string;
@@ -51,7 +52,7 @@ export function AnalyticsDashboard({ designSystemId }: AnalyticsDashboardProps) 
                 activeUsers: new Set((events as any[]).map(e => e.metadata?.user_id)).size || 1
             });
         } catch (err) {
-            console.error("Error fetching analytics:", err);
+            monitor.error("Error fetching analytics", err as Error);
         }
     };
 
@@ -132,7 +133,7 @@ export function AnalyticsDashboard({ designSystemId }: AnalyticsDashboardProps) 
                                     cursor={{ fill: 'rgba(0,0,0,0.05)' }}
                                 />
                                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                    {data.map((entry, index) => (
+                                    {data.map((_, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Bar>

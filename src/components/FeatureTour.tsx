@@ -42,7 +42,9 @@ const TOUR_STEPS = [
     },
 ] as const;
 
-export const FeatureTour = () => {
+import { forwardRef } from "react";
+
+export const FeatureTour = forwardRef<HTMLDivElement>((_, ref) => {
     const { theme } = useTheme();
 
     useEffect(() => {
@@ -70,5 +72,7 @@ export const FeatureTour = () => {
         }
     }, [theme]);
 
-    return null; // This component doesn't render anything visible
-};
+    return <div ref={ref} style={{ display: 'none' }} aria-hidden="true" />;
+});
+
+FeatureTour.displayName = "FeatureTour";

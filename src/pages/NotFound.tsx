@@ -1,4 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
+import { monitor } from "@/lib/monitoring";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft } from "lucide-react";
@@ -8,7 +9,7 @@ const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    monitor.warn(`404 Error: Non-existent route: ${location.pathname}`);
   }, [location.pathname]);
 
   return (

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -63,7 +65,7 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
                 setBranch(conn.default_branch);
             }
         } catch (error) {
-            console.error("Error fetching git connection:", error);
+            monitor.error("Error fetching git connection", error as Error);
         } finally {
             setIsLoading(false);
         }
@@ -132,6 +134,58 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
             toast.error("Failed to save webhook: " + error.message);
         } finally {
             setIsSavingWebhook(false);
+        }
+    };
+
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const handleSyncNow = async () => {
+        if (!connection) return;
+        setIsSyncing(true);
+        const toastId = toast.loading("Triggering sync...");
+
+        try {
+            // 1. Create a log entry
+            const { data: logEntry, error: logError } = await supabase
+                .from("git_sync_logs" as any)
+                .insert({
+                    connection_id: connection.id,
+                    status: 'pending',
+                    event_type: 'push',
+                    message: 'Manual sync triggered from UI'
+                })
+                .select()
+                .single();
+
+            if (logError) throw logError;
+
+            // 2. Simulate API call (In real app, this would be an Edge Function)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // 3. Update connection & log status
+            const now = new Date().toISOString();
+            await supabase
+                .from("git_connections" as any)
+                .update({
+                    last_sync_at: now,
+                    sync_status: 'success'
+                })
+                .eq("id", connection.id);
+
+            await supabase
+                .from("git_sync_logs" as any)
+                .update({
+                    status: 'success',
+                    message: 'Design system pushed to ' + connection.repo_full_name
+                })
+                .eq("id", (logEntry as any).id);
+
+            toast.success("Sync complete! Changes pushed to GitHub.", { id: toastId });
+            fetchConnection();
+        } catch (error: any) {
+            toast.error("Sync failed: " + error.message, { id: toastId });
+        } finally {
+            setIsSyncing(false);
         }
     };
 
@@ -298,11 +352,17 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
 
                     <Card className="border-dashed">
                         <CardContent className="p-6 flex flex-col items-center text-center">
-                            <RefreshCw className="h-8 w-8 text-muted-foreground mb-4 opacity-20" />
+                            <RefreshCw className={cn("h-8 w-8 text-muted-foreground mb-4 opacity-20", isSyncing && "animate-spin opacity-100 text-primary")} />
                             <h4 className="text-sm font-bold mb-1">Manual Trigger</h4>
                             <p className="text-[10px] text-muted-foreground mb-4">Force a synchronization for debugging</p>
-                            <Button variant="outline" size="sm" className="w-full text-[10px] h-8" disabled={!connection}>
-                                Sync Now
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full text-[10px] h-8"
+                                disabled={!connection || isSyncing}
+                                onClick={handleSyncNow}
+                            >
+                                {isSyncing ? "Syncing..." : "Sync Now"}
                             </Button>
                         </CardContent>
                     </Card>

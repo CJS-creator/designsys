@@ -104,7 +104,7 @@ export const LiveFeedback = ({ channelId, currentUser }: LiveFeedbackProps) => {
                                 <div className={`p-2 rounded-full bg-background/50 backdrop-blur-sm border shadow-sm ${color}`}>
                                     <Icon className="h-6 w-6" />
                                 </div>
-                                <span className="text-[10px] font-bold bg-background/80 px-1.5 py-0.5 rounded border whitespace-nowrap">
+                                <span className="text-xs font-bold bg-background/80 px-1.5 py-0.5 rounded border whitespace-nowrap">
                                     {r.user_email.split('@')[0]}
                                 </span>
                             </motion.div>
@@ -125,6 +125,7 @@ export const LiveFeedback = ({ channelId, currentUser }: LiveFeedbackProps) => {
                                         size="icon"
                                         className={`h-9 w-9 rounded-xl hover:bg-muted ${emoji.color}`}
                                         onClick={() => sendReaction(emoji.icon)}
+                                        aria-label={`Send ${emoji.label} reaction`}
                                     >
                                         <emoji.icon className="h-5 w-5" />
                                     </Button>

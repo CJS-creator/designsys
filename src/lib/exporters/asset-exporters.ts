@@ -1,5 +1,3 @@
-import { jsPDF } from "jspdf";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType } from "docx";
 import * as htmlToImage from 'html-to-image';
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { DesignToken } from "@/types/tokens";
@@ -8,6 +6,7 @@ import { DesignToken } from "@/types/tokens";
  * PDF Exporter
  */
 export async function exportToPDF(ds: GeneratedDesignSystem, tokens: DesignToken[]): Promise<Blob> {
+    const { jsPDF } = await import("jspdf");
     const doc = new jsPDF();
     const margin = 20;
     let y = margin;
@@ -95,51 +94,53 @@ export async function exportToPDF(ds: GeneratedDesignSystem, tokens: DesignToken
  * Word Exporter (.docx)
  */
 export async function exportToWord(ds: GeneratedDesignSystem, tokens: DesignToken[]): Promise<Blob> {
-    const doc = new Document({
+    const docx = await import("docx");
+
+    const doc = new docx.Document({
         sections: [{
             properties: {},
             children: [
-                new Paragraph({
+                new docx.Paragraph({
                     text: ds.name,
-                    heading: HeadingLevel.TITLE,
+                    heading: docx.HeadingLevel.TITLE,
                 }),
-                new Paragraph({
+                new docx.Paragraph({
                     text: "Design System Specification",
-                    heading: HeadingLevel.HEADING_2,
+                    heading: docx.HeadingLevel.HEADING_2,
                 }),
-                new Paragraph({
+                new docx.Paragraph({
                     children: [
-                        new TextRun({
+                        new docx.TextRun({
                             text: ds.description || "A comprehensive design system created with DesignForge.",
                             italics: true,
                         }),
                     ],
                 }),
-                new Paragraph({ text: "", spacing: { after: 400 } }),
+                new docx.Paragraph({ text: "", spacing: { after: 400 } }),
 
-                new Paragraph({
+                new docx.Paragraph({
                     text: "Color Palette",
-                    heading: HeadingLevel.HEADING_1,
+                    heading: docx.HeadingLevel.HEADING_1,
                 }),
 
-                new Table({
-                    width: { size: 100, type: WidthType.PERCENTAGE },
+                new docx.Table({
+                    width: { size: 100, type: docx.WidthType.PERCENTAGE },
                     rows: [
-                        new TableRow({
+                        new docx.TableRow({
                             children: [
-                                new TableCell({ children: [new Paragraph({ text: "Token Name", style: "bold" })] }),
-                                new TableCell({ children: [new Paragraph({ text: "Path", style: "bold" })] }),
-                                new TableCell({ children: [new Paragraph({ text: "Value", style: "bold" })] }),
+                                new docx.TableCell({ children: [new docx.Paragraph({ text: "Token Name" })] }),
+                                new docx.TableCell({ children: [new docx.Paragraph({ text: "Path" })] }),
+                                new docx.TableCell({ children: [new docx.Paragraph({ text: "Value" })] }),
                             ],
                         }),
                         ...tokens.filter(t => (t as any).token_type === 'color' || t.type === 'color').map(color => (
-                            new TableRow({
+                            new docx.TableRow({
                                 children: [
-                                    new TableCell({ children: [new Paragraph(color.name)] }),
-                                    new TableCell({ children: [new Paragraph(color.path)] }),
-                                    new TableCell({
-                                        children: [new Paragraph(String(color.value))],
-                                        shading: { fill: String(color.value).replace('#', ''), type: ShadingType.CLEAR }
+                                    new docx.TableCell({ children: [new docx.Paragraph(color.name)] }),
+                                    new docx.TableCell({ children: [new docx.Paragraph(color.path)] }),
+                                    new docx.TableCell({
+                                        children: [new docx.Paragraph(String(color.value))],
+                                        shading: { fill: String(color.value).replace('#', ''), type: docx.ShadingType.CLEAR }
                                     }),
                                 ],
                             })
@@ -150,7 +151,7 @@ export async function exportToWord(ds: GeneratedDesignSystem, tokens: DesignToke
         }],
     });
 
-    return await Packer.toBlob(doc);
+    return await docx.Packer.toBlob(doc);
 }
 
 /**
