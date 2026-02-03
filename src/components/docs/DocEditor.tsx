@@ -99,7 +99,7 @@ export function DocEditor({ designSystemId }: { designSystemId: string }) {
                 {blocks.map((block) => (
                     <div key={block.id} className="relative group">
                         <div className="absolute -left-10 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
-                            <Button variant="ghost" size="icon" className="h-6 w-6 cursor-grab">
+                            <Button variant="ghost" size="icon" className="h-6 w-6 cursor-grab" aria-label="Drag block">
                                 <GripVertical className="h-3 w-3" />
                             </Button>
                             <Button
@@ -107,6 +107,7 @@ export function DocEditor({ designSystemId }: { designSystemId: string }) {
                                 size="icon"
                                 className="h-6 w-6 text-destructive"
                                 onClick={() => removeBlock(block.id)}
+                                aria-label="Remove block"
                             >
                                 <Trash2 className="h-3 w-3" />
                             </Button>

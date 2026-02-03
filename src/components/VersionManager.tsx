@@ -226,7 +226,7 @@ export function VersionManager({ designSystemId }: { designSystemId: string }) {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="icon" className="group-hover:translate-x-1 transition-transform">
+                                            <Button variant="ghost" size="icon" className="group-hover:translate-x-1 transition-transform" aria-label="View version details">
                                                 <ChevronRight className="h-5 w-5" />
                                             </Button>
                                         </div>

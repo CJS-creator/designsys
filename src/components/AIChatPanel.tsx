@@ -132,7 +132,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ designSystem, onUpdate
                                 </div>
                             </div>
                             <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsMinimized(true)}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsMinimized(true)} aria-label="Minimize chat">
                                     <Minimize2 className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -190,6 +190,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ designSystem, onUpdate
                                     size="icon"
                                     className="rounded-xl shrink-0"
                                     disabled={isProcessing || !input.trim()}
+                                    aria-label="Send message"
                                 >
                                     <Send className="h-4 w-4" />
                                 </Button>

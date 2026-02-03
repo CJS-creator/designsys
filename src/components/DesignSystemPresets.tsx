@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Palette, Sparkles, Layers, Building, CreditCard, Leaf, Briefcase, Zap, Heart, Music, Code, Search } from "lucide-react";
 import { GeneratedDesignSystem, ColorPalette, DarkModeColors } from "@/types/designSystem";
@@ -789,7 +787,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
       shadows: { none: "none", sm: "0 1px 2px rgba(0, 0, 0, 0.05)", md: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1)", "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)", inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)" },
       grid: { columns: 12, gutter: "24px", margin: "24px", maxWidth: "1280px", breakpoints: { sm: "640px", md: "768px", lg: "1024px", xl: "1280px", "2xl": "1536px" } },
       borderRadius: { none: "0", sm: "2px", md: "4px", lg: "6px", xl: "8px", "2xl": "12px", full: "9999px" },
-      animations: null,
+      animations: { duration: { instant: "0ms", fast: "100ms", normal: "200ms", slow: "300ms", slower: "500ms" }, easing: { linear: "linear", easeIn: "ease-in", easeOut: "ease-out", easeInOut: "ease-in-out", spring: "cubic-bezier(0.34, 1.56, 0.64, 1)", bounce: "cubic-bezier(0.68, -0.55, 0.27, 1.55)" }, transitions: { fade: "opacity 200ms ease", scale: "transform 200ms ease", slide: "transform 300ms ease", all: "all 200ms ease", colors: "background-color 200ms, color 200ms", transform: "transform 200ms ease" } },
     },
   },
   {
@@ -850,7 +848,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
       shadows: { none: "none", sm: "2px 2px 0px #000000", md: "4px 4px 0px #000000", lg: "6px 6px 0px #000000", xl: "8px 8px 0px #000000", "2xl": "12px 12px 0px #000000", inner: "inset 2px 2px 0px #000000" },
       grid: { columns: 12, gutter: "24px", margin: "24px", maxWidth: "1400px", breakpoints: { sm: "640px", md: "768px", lg: "1024px", xl: "1280px", "2xl": "1536px" } },
       borderRadius: { none: "0", sm: "0", md: "0", lg: "0", xl: "0", "2xl": "0", full: "9999px" },
-      animations: null,
+      animations: { duration: { instant: "0ms", fast: "50ms", normal: "100ms", slow: "200ms", slower: "300ms" }, easing: { linear: "linear", easeIn: "ease-in", easeOut: "ease-out", easeInOut: "ease-in-out", spring: "cubic-bezier(0.68, -0.55, 0.27, 1.55)", bounce: "cubic-bezier(0.68, -0.55, 0.27, 1.55)" }, transitions: { fade: "opacity 100ms linear", scale: "transform 100ms ease", slide: "transform 200ms ease", all: "all 100ms ease", colors: "background-color 100ms, color 100ms", transform: "transform 100ms ease" } },
     },
   },
   {
@@ -911,7 +909,7 @@ const presets: { name: string; description: string; icon: typeof Palette; tags: 
       shadows: { none: "none", sm: "0 0 5px #FDE047", md: "0 0 10px #FDE047", lg: "0 0 20px #DB2777", xl: "0 0 40px #06B6D4", "2xl": "0 0 60px #06B6D4", inner: "inset 0 0 10px #DB2777" },
       grid: { columns: 12, gutter: "16px", margin: "16px", maxWidth: "1600px", breakpoints: { sm: "640px", md: "768px", lg: "1024px", xl: "1280px", "2xl": "1536px" } },
       borderRadius: { none: "0", sm: "0", md: "2px", lg: "4px", xl: "8px", "2xl": "16px", full: "24px" },
-      animations: null,
+      animations: { duration: { instant: "0ms", fast: "80ms", normal: "150ms", slow: "300ms", slower: "500ms" }, easing: { linear: "linear", easeIn: "cubic-bezier(0.4, 0, 1, 1)", easeOut: "cubic-bezier(0, 0, 0.2, 1)", easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)", spring: "cubic-bezier(0.175, 0.885, 0.32, 1.275)", bounce: "cubic-bezier(0.68, -0.55, 0.27, 1.55)" }, transitions: { fade: "opacity 150ms ease", scale: "transform 150ms ease", slide: "transform 300ms ease", all: "all 150ms ease", colors: "background-color 150ms, color 150ms", transform: "transform 150ms ease" } },
     },
   },
 ];
@@ -978,7 +976,7 @@ export const DesignSystemPresets = ({ onApplyPreset }: DesignSystemPresetsProps)
 
       {/* Presets Bento Grid */}
       <BentoGrid className="max-w-7xl mx-auto md:auto-rows-auto">
-        {filteredPresets.map((preset, i) => (
+        {filteredPresets.map((preset) => (
           <CardContainer key={preset.name} className="inter-var h-full">
             <CardBody className="bg-card/95 relative group/card hover:shadow-2xl hover:shadow-primary/10 border-2 border-border/50 w-full h-auto rounded-2xl p-6 backdrop-blur-md transition-all hover:border-primary/30 hover:scale-[1.02] overflow-hidden">
               {/* Colored accent border */}

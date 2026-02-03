@@ -128,10 +128,10 @@ export function DesignSystemSettings({ designSystemId }: DesignSystemSettingsPro
                                                 value={`${window.location.origin}/docs/${shareId}`}
                                                 className="font-mono text-xs bg-muted/30"
                                             />
-                                            <Button variant="outline" size="icon" onClick={copyUrl}>
+                                            <Button variant="outline" size="icon" onClick={copyUrl} aria-label="Copy public URL">
                                                 {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                                             </Button>
-                                            <Button variant="secondary" size="icon" asChild>
+                                            <Button variant="secondary" size="icon" asChild aria-label="Open public documentation">
                                                 <a href={`/docs/${shareId}`} target="_blank" rel="noreferrer">
                                                     <ExternalLink className="h-4 w-4" />
                                                 </a>

@@ -55,6 +55,7 @@ export function OnboardingModal() {
             size="icon"
             className="absolute top-4 right-4 z-10"
             onClick={skipOnboarding}
+            aria-label="Close onboarding"
           >
             <X className="h-4 w-4" />
           </Button>
