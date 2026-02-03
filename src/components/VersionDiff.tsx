@@ -1,17 +1,16 @@
-import { useState } from "react";
-import { GeneratedDesignSystem } from "@/types/designSystem";
+import { DesignToken } from "@/types/tokens";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { GitCompare, ArrowRight, Check, X, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface VersionDiffProps {
-    currentSystem: GeneratedDesignSystem;
-    previousSystem?: GeneratedDesignSystem;
+    currentTokens: DesignToken[];
+    previousTokens: DesignToken[];
 }
 
-export const VersionDiff = ({ currentSystem, previousSystem }: VersionDiffProps) => {
-    if (!previousSystem) {
+export const VersionDiff = ({ currentTokens, previousTokens }: VersionDiffProps) => {
+    if (!previousTokens || previousTokens.length === 0) {
         return (
             <Card className="glass-card border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center space-y-4">
@@ -21,7 +20,7 @@ export const VersionDiff = ({ currentSystem, previousSystem }: VersionDiffProps)
                     <div className="space-y-1">
                         <h3 className="font-semibold">No version to compare</h3>
                         <p className="text-sm text-muted-foreground max-w-sm">
-                            Save a version of your design system first to enable side-by-side visual diffing.
+                            Publish a version first to enable side-by-side visual diffing.
                         </p>
                     </div>
                 </CardContent>
@@ -30,28 +29,39 @@ export const VersionDiff = ({ currentSystem, previousSystem }: VersionDiffProps)
     }
 
     const findDiffs = () => {
-        const diffs: { path: string; old: string; new: string }[] = [];
+        const diffs: { path: string; old: any; new: any; action: 'ADDED' | 'MODIFIED' | 'DELETED' }[] = [];
 
-        // Compare main colors
-        const colorKeys = Object.keys(currentSystem.colors) as (keyof typeof currentSystem.colors)[];
-        colorKeys.forEach(key => {
-            if (typeof currentSystem.colors[key] === "string" && currentSystem.colors[key] !== previousSystem.colors[key]) {
+        const currentMap = new Map(currentTokens.map(t => [t.path, t]));
+        const previousMap = new Map(previousTokens.map(t => [t.path, t]));
+
+        // Check for modified and deleted
+        previousTokens.forEach(oldToken => {
+            const newToken = currentMap.get(oldToken.path);
+            if (!newToken) {
                 diffs.push({
-                    path: `Colors > ${key}`,
-                    old: previousSystem.colors[key] as string,
-                    new: currentSystem.colors[key] as string
+                    path: oldToken.path,
+                    old: oldToken.ref || oldToken.value,
+                    new: null,
+                    action: 'DELETED'
+                });
+            } else if (JSON.stringify(newToken.value) !== JSON.stringify(oldToken.value) || newToken.ref !== oldToken.ref) {
+                diffs.push({
+                    path: oldToken.path,
+                    old: oldToken.ref || oldToken.value,
+                    new: newToken.ref || newToken.value,
+                    action: 'MODIFIED'
                 });
             }
         });
 
-        // Compare radius
-        const radiusKeys = Object.keys(currentSystem.borderRadius) as (keyof typeof currentSystem.borderRadius)[];
-        radiusKeys.forEach(key => {
-            if (currentSystem.borderRadius[key] !== previousSystem.borderRadius[key]) {
+        // Check for added
+        currentTokens.forEach(newToken => {
+            if (!previousMap.has(newToken.path)) {
                 diffs.push({
-                    path: `Radius > ${key}`,
-                    old: previousSystem.borderRadius[key],
-                    new: currentSystem.borderRadius[key]
+                    path: newToken.path,
+                    old: null,
+                    new: newToken.ref || newToken.value,
+                    action: 'ADDED'
                 });
             }
         });
@@ -101,15 +111,27 @@ export const VersionDiff = ({ currentSystem, previousSystem }: VersionDiffProps)
                                 ) : (
                                     diffs.map((diff, i) => (
                                         <tr key={i} className="hover:bg-muted/5 transition-colors group">
-                                            <td className="px-6 py-4 font-mono text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-wider">
-                                                {diff.path}
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="font-mono text-[10px] font-bold text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-wider truncate max-w-[200px]" title={diff.path}>
+                                                        {diff.path}
+                                                    </span>
+                                                    <Badge
+                                                        variant={diff.action === 'ADDED' ? 'secondary' : diff.action === 'DELETED' ? 'destructive' : 'outline'}
+                                                        className="text-[8px] h-3 px-1 w-fit font-bold"
+                                                    >
+                                                        {diff.action}
+                                                    </Badge>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
-                                                    {(diff.old.startsWith("#") || diff.old.startsWith("hsl")) && (
+                                                    {diff.old && typeof diff.old === 'string' && (diff.old.startsWith("#") || diff.old.startsWith("hsl")) && (
                                                         <div className="h-4 w-4 rounded-full border border-white/10 shadow-sm" style={{ backgroundColor: diff.old }} />
                                                     )}
-                                                    <span className="font-mono text-xs tabular-nums">{diff.old}</span>
+                                                    <span className="font-mono text-[10px] tabular-nums truncate max-w-[100px]">
+                                                        {diff.old === null ? "—" : String(diff.old)}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-muted-foreground text-center">
@@ -117,10 +139,12 @@ export const VersionDiff = ({ currentSystem, previousSystem }: VersionDiffProps)
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
-                                                    {(diff.new.startsWith("#") || diff.new.startsWith("hsl")) && (
+                                                    {diff.new && typeof diff.new === 'string' && (diff.new.startsWith("#") || diff.new.startsWith("hsl")) && (
                                                         <div className="h-4 w-4 rounded-full border border-white/10 shadow-sm" style={{ backgroundColor: diff.new }} />
                                                     )}
-                                                    <span className="font-mono text-xs text-primary font-bold tabular-nums">{diff.new}</span>
+                                                    <span className="font-mono text-[10px] text-primary font-bold tabular-nums truncate max-w-[100px]">
+                                                        {diff.new === null ? "—" : String(diff.new)}
+                                                    </span>
                                                 </div>
                                             </td>
                                         </tr>

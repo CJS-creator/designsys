@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { BrandSwitcher } from "@/components/BrandSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { DesignSystemForm } from "@/components/DesignSystemForm";
@@ -30,7 +31,7 @@ import { Icon } from "@/components/ui/icon-registry";
 import { MagneticButton } from "@/components/animations/MagneticButton";
 import { TextReveal } from "@/components/animations/TextReveal";
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Activity, Box, Layers, Type, Settings, Users, Grid3X3, Palette, Eye, Smartphone, Code2, HelpCircle, Zap, X, Search, Lock, Layout, GitCompare, Shield, BookOpen, ExternalLink, Ruler, Maximize, Cast, Menu, BarChart3, ShieldCheck } from "lucide-react";
+import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Activity, Box, Layers, Type, Settings as SettingsIcon, Users, Grid3X3, Palette, Eye, Smartphone, Code2, HelpCircle, Zap, X, Search, Lock, Layout, GitCompare, Shield, BookOpen, ExternalLink, Ruler, Maximize, Cast, Menu, BarChart3, ShieldCheck } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
@@ -59,6 +60,7 @@ const MotionGallery = lazy(() => import("@/components/MotionGallery").then(m => 
 const VisionGenerator = lazy(() => import("@/components/VisionGenerator").then(m => ({ default: m.VisionGenerator })));
 const FigmaSync = lazy(() => import("@/components/FigmaSync").then(m => ({ default: m.FigmaSync })));
 const ComponentBlueprints = lazy(() => import("@/components/ComponentBlueprints").then(m => ({ default: m.ComponentBlueprints })));
+const DesignSystemSettings = lazy(() => import("@/components/DesignSystemSettings").then(m => ({ default: m.DesignSystemSettings })));
 // Phase 2/3 Components are imported directly
 const AccessibilityChecker = lazy(() => import("@/components/AccessibilityChecker").then(m => ({ default: m.AccessibilityChecker })));
 const ColorBlindnessSimulator = lazy(() => import("@/components/ColorBlindnessSimulator").then(m => ({ default: m.ColorBlindnessSimulator })));
@@ -242,6 +244,10 @@ const Index = () => {
                 </Button>
               )}
               <ModeToggle />
+              <div className="h-6 w-px bg-border/40 mx-2" />
+              {designSystem && (
+                <BrandSwitcher designSystemId={designSystem.id} />
+              )}
               <div id="tour-export">
                 {designSystem && <ExportButton designSystem={designSystem} />}
               </div>
@@ -356,6 +362,9 @@ const Index = () => {
                       </AnimatedTabsTrigger>
                       <AnimatedTabsTrigger value="saved" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
                         <History className="h-4 w-4" /> Saved
+                      </AnimatedTabsTrigger>
+                      <AnimatedTabsTrigger value="settings" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
+                        <SettingsIcon className="h-4 w-4" /> Settings
                       </AnimatedTabsTrigger>
                     </TabsList>
                   </div>
@@ -546,6 +555,12 @@ const Index = () => {
                   <TabsContent value="saved" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <SavedDesigns onLoad={handleLoadDesign} currentSystem={designSystem} />
+                    </Suspense>
+                  </TabsContent>
+
+                  <TabsContent value="settings" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <Suspense fallback={<DesignSystemSkeleton />}>
+                      <DesignSystemSettings designSystemId={designSystem?.id || ""} />
                     </Suspense>
                   </TabsContent>
                 </div>

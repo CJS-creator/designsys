@@ -1,83 +1,119 @@
 import { GeneratedDesignSystem } from "@/types/designSystem";
+import { DesignToken, TokenType } from "@/types/tokens";
 
 /**
- * Converts the GeneratedDesignSystem into the Draft W3C Design Token format.
- * https://tr.designtokens.org/format/
+ * Converts internal DesignToken array into W3C DTCG community group format.
+ * Supports nesting, aliases, and explicit types.
  */
-export const convertToW3CTokens = (ds: GeneratedDesignSystem): Record<string, unknown> => {
-    const tokens = {
+export const convertToDTCG = (tokens: DesignToken[], dsName: string): Record<string, any> => {
+    const result: Record<string, any> = {
         _meta: {
             generated_by: "DesignForge AI",
-            version: "1.0",
-            description: `W3C Design Tokens for ${ds.name}`
-        },
-        color: {},
-        typography: {
-            fontFamily: {},
-            fontSize: {},
-            fontWeight: {},
-            lineHeight: {}
-        },
-        spacing: {},
-        borderRadius: {},
-        shadow: {}
+            version: "1.2",
+            description: `DTCG Compliant Tokens for ${dsName}`
+        }
     };
 
-    // 1. Colors
-    Object.entries(ds.colors).forEach(([key, value]) => {
-        if (typeof value === "string") {
-            tokens.color[key] = {
-                $value: value,
-                $type: "color"
-            };
-        }
+    tokens.forEach(token => {
+        const parts = token.path.split('.');
+        let current = result;
+
+        parts.forEach((part, index) => {
+            if (index === parts.length - 1) {
+                // Last part, add the token object
+                current[part] = {
+                    $value: token.ref ? token.ref : (token.value || ""),
+                    $type: token.type,
+                    $description: token.description || undefined,
+                    $extensions: token.extensions || undefined
+                };
+            } else {
+                // Not the last part, ensure group exists
+                if (!current[part]) {
+                    current[part] = {};
+                }
+                current = current[part];
+            }
+        });
     });
 
-    // 2. Typography
+    return result;
+};
+
+/**
+ * Legacy converter for GeneratedDesignSystem
+ */
+export const convertToW3CTokens = (ds: GeneratedDesignSystem): Record<string, unknown> => {
+    // Implement using the newer logic for consistency
+    const flattenedTokens: DesignToken[] = [];
+
+    // Flatten colors
+    Object.entries(ds.colors).forEach(([key, value]) => {
+        flattenedTokens.push({
+            name: key,
+            path: `color.${key}`,
+            type: 'color',
+            value: value as string
+        });
+    });
+
+    // Flatten typography
     Object.entries(ds.typography.fontFamily).forEach(([key, value]) => {
-        tokens.typography.fontFamily[key] = {
-            $value: value,
-            $type: "fontFamily"
-        };
+        flattenedTokens.push({
+            name: key,
+            path: `typography.fontFamily.${key}`,
+            type: 'fontFamily' as any,
+            value: value as string
+        });
     });
 
     Object.entries(ds.typography.sizes).forEach(([key, value]) => {
-        tokens.typography.fontSize[key] = {
-            $value: value,
-            $type: "dimension"
-        };
+        flattenedTokens.push({
+            name: key,
+            path: `typography.fontSize.${key}`,
+            type: 'dimension' as any,
+            value: value as string
+        });
     });
 
     Object.entries(ds.typography.weights).forEach(([key, value]) => {
-        tokens.typography.fontWeight[key] = {
-            $value: value.toString(),
-            $type: "fontWeight"
-        };
+        flattenedTokens.push({
+            name: key,
+            path: `typography.fontWeight.${key}`,
+            type: 'fontWeight' as any,
+            value: value.toString()
+        });
     });
 
-    // 3. Spacing
+    // Flatten spacing
     Object.entries(ds.spacing.scale).forEach(([key, value]) => {
-        tokens.spacing[key] = {
-            $value: value,
-            $type: "dimension"
-        };
+        flattenedTokens.push({
+            name: key,
+            path: `spacing.${key}`,
+            type: 'dimension' as any,
+            value: value as string
+        });
     });
 
-    // 4. Border Radius
+    // Flatten Border Radius
     Object.entries(ds.borderRadius).forEach(([key, value]) => {
-        tokens.borderRadius[key] = {
-            $value: value,
-            $type: "dimension"
-        };
+        flattenedTokens.push({
+            name: key,
+            path: `borderRadius.${key}`,
+            type: 'dimension' as any,
+            value: value as string
+        });
     });
 
-    // 5. Shadows
+    // Flatten Shadows
     Object.entries(ds.shadows).forEach(([key, value]) => {
-        tokens.shadow[key] = {
-            $value: value,
-            $type: "shadow"
-        };
+        flattenedTokens.push({
+            name: key,
+            path: `shadow.${key}`,
+            type: 'shadow' as any,
+            value: value as string
+        });
     });
 
-    return tokens;
+    return convertToDTCG(flattenedTokens, ds.name);
 };

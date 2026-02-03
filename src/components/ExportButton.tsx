@@ -44,11 +44,17 @@ import { generateCLISyncScript } from "@/lib/cli/designforge-cli";
 import { exportToVSCodeSnippets } from "@/lib/exporters/vscode-snippets";
 import { generateGitHubAction } from "@/lib/exporters/ci-cd-templates";
 import { exportToStorybookAdvanced } from "@/lib/exporters/storybook-advanced";
+import { exportToDTCG } from "@/lib/exporters/dtcg";
 import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
 import { useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { resolveTemplate } from "@/lib/exporters/custom-templating";
+import { DesignToken } from "@/types/tokens";
+import { Separator } from "@/components/ui/separator";
 
 interface ExportButtonProps {
   designSystem: GeneratedDesignSystem;
+  tokens?: DesignToken[];
 }
 
 type ExportFormat = "json" | "css" | "scss" | "tailwind" | "figma" | "style-dictionary" | "react-native" | "storybook" | "styleguide" | "swiftui" | "compose" | "w3c" | "storybook-pro" | "flutter" | "css-in-js" | "figma-variables";
@@ -58,8 +64,8 @@ interface ExportOption {
   label: string;
   filename: string;
   icon: React.ReactNode;
-  generator: (ds: GeneratedDesignSystem) => string;
-  description?: string; // Added description as optional
+  generator: (ds: GeneratedDesignSystem, tokens?: DesignToken[]) => string;
+  description?: string;
 }
 
 function generateCSSVariables(ds: GeneratedDesignSystem): string {
@@ -572,37 +578,25 @@ ${Object.entries(ds.shadows).map(([name, val]) => `- **${name}**: ${val}`).join(
 }
 
 const exportOptions: ExportOption[] = [
-  { id: "json", label: "JSON", filename: "design-system.json", icon: <FileJson className="h-4 w-4" />, generator: (ds) => JSON.stringify(ds, null, 2), description: "Raw design system data in JSON format" },
-  { id: "css", label: "CSS Variables", filename: "design-system.css", icon: <FileCode className="h-4 w-4" />, generator: generateCSSVariables, description: "CSS custom properties for easy theming" },
-  { id: "scss", label: "SCSS", filename: "design-system.scss", icon: <FileCode className="h-4 w-4" />, generator: generateSCSS, description: "SCSS variables for Sass-based projects" },
-  { id: "tailwind", label: "Tailwind Config", filename: "tailwind.config.js", icon: <FileCode className="h-4 w-4" />, generator: generateTailwindConfig, description: "Tailwind CSS configuration file" },
-  { id: "react-native", label: "React Native", filename: "theme.ts", icon: <Smartphone className="h-4 w-4" />, generator: generateReactNative, description: "StyleSheet tokens for React Native" },
-  { id: "swiftui", label: "SwiftUI (iOS)", filename: "Theme.swift", icon: <Smartphone className="h-4 w-4" />, generator: exportToSwiftUI, description: "Advanced Swift extensions for iOS" },
-  { id: "compose", label: "Compose (Android)", filename: "Theme.kt", icon: <Smartphone className="h-4 w-4" />, generator: exportToKotlin, description: "Advanced Kotlin Compose definitions" },
-  { id: "flutter", label: "Flutter (Dart)", filename: "tokens.dart", icon: <Smartphone className="h-4 w-4" />, generator: exportToFlutter, description: "Complete Flutter theme tokens" },
-  { id: "css-in-js", label: "CSS-in-JS", filename: "theme.ts", icon: <FileCode className="h-4 w-4" />, generator: exportToCSSJS, description: "Typed theme for Styled Components/Emotion" },
-  { id: "storybook", label: "Storybook", filename: "tokens.stories.tsx", icon: <Component className="h-4 w-4" />, generator: generateStorybook, description: "React stories for documentation" },
-  { id: "styleguide", label: "Styleguide MD", filename: "STYLEGUIDE.md", icon: <FileText className="h-4 w-4" />, generator: generateStyleguideMD, description: "Professional documentation in Markdown" },
-  { id: "figma", label: "Figma Tokens", filename: "figma-tokens.json", icon: <FileJson className="h-4 w-4" />, generator: generateFigmaTokens, description: "Tokens compatible with Figma plugins" },
-  { id: "figma-variables", label: "Figma Variables", filename: "figma-variables.json", icon: <FileJson className="h-4 w-4" />, generator: exportToFigmaVariables, description: "Tokens compatible with Figma Variables REST API" },
-  { id: "style-dictionary", label: "Style Dictionary", filename: "tokens.json", icon: <Layers className="h-4 w-4" />, generator: generateStyleDictionary, description: "Tokens for Style Dictionary framework" },
-  { id: "styleguide", label: "Static Docs (HTML)", filename: "index.html", icon: <BookOpen className="h-4 w-4" />, generator: exportToStaticDocs, description: "Self-hosted documentation site" },
-  { id: "storybook-pro", label: "Storybook Pro", filename: "storybook-theme.js", icon: <BookOpen className="h-4 w-4" />, generator: exportToStorybookAdvanced, description: "Advanced tokens + preview.js config" },
-  { id: "styleguide", label: "Static Docs (HTML)", filename: "index.html", icon: <BookOpen className="h-4 w-4" />, generator: exportToStaticDocs, description: "Self-hosted documentation site" },
-  { id: "json", label: "VS Code Snippets", filename: "designforge.code-snippets", icon: <FileCode className="h-4 w-4" />, generator: exportToVSCodeSnippets, description: "IntelliSense for design tokens" },
-  { id: "tailwind", label: "Sync Script (Node)", filename: "designforge-sync.js", icon: <FileCode className="h-4 w-4" />, generator: generateCLISyncScript, description: "Local sync utility for developers" },
-  { id: "w3c", label: "GitHub Action (Sync)", filename: "design-sync.yml", icon: <Layers className="h-4 w-4" />, generator: generateGitHubAction, description: "Automated CI/CD pipeline template" },
-  {
-    id: "w3c",
-    label: "DTCG (W3C Standard)",
-    icon: <FileJson className="h-4 w-4" />,
-    filename: "tokens.dtcg.json",
-    description: "Design Tokens Community Group standard",
-    generator: (ds) => JSON.stringify(convertToW3CTokens(ds), null, 2),
-  },
+  { id: "json", label: "JSON", filename: "design-system.json", icon: <FileJson className="h-4 w-4" />, generator: (ds, tokens) => tokens ? JSON.stringify(tokens, null, 2) : JSON.stringify(ds, null, 2), description: "Raw design system data in JSON format" },
+  { id: "css", label: "CSS Variables", filename: "design-system.css", icon: <FileCode className="h-4 w-4" />, generator: (ds) => generateCSSVariables(ds), description: "CSS custom properties for easy theming" },
+  { id: "scss", label: "SCSS", filename: "design-system.scss", icon: <FileCode className="h-4 w-4" />, generator: (ds) => generateSCSS(ds), description: "SCSS variables for Sass-based projects" },
+  { id: "tailwind", label: "Tailwind Config", filename: "tailwind.config.js", icon: <FileCode className="h-4 w-4" />, generator: (ds) => generateTailwindConfig(ds), description: "Tailwind CSS configuration file" },
+  { id: "react-native", label: "React Native", filename: "theme.ts", icon: <Smartphone className="h-4 w-4" />, generator: (ds) => generateReactNative(ds), description: "StyleSheet tokens for React Native" },
+  { id: "swiftui", label: "SwiftUI (iOS)", filename: "DesignTokens.swift", icon: <Smartphone className="h-4 w-4" />, generator: (ds, tokens) => exportToSwiftUI(tokens || [], ds.name), description: "Advanced Swift extensions for iOS" },
+  { id: "compose", label: "Compose (Android)", filename: "DesignTokens.kt", icon: <Smartphone className="h-4 w-4" />, generator: (ds, tokens) => exportToKotlin(tokens || [], ds.name), description: "Advanced Kotlin Compose definitions" },
+  { id: "flutter", label: "Flutter (Dart)", filename: "design_tokens.dart", icon: <Smartphone className="h-4 w-4" />, generator: (ds, tokens) => exportToFlutter(tokens || [], ds.name), description: "Complete Flutter theme tokens" },
+  { id: "css-in-js", label: "CSS-in-JS", filename: "theme.ts", icon: <FileCode className="h-4 w-4" />, generator: (ds, tokens) => exportToCSSJS(tokens || [], ds.name), description: "Typed theme for Styled Components/Emotion" },
+  { id: "storybook", label: "Storybook", filename: "tokens.stories.tsx", icon: <Component className="h-4 w-4" />, generator: (ds) => generateStorybook(ds), description: "React stories for documentation" },
+  { id: "styleguide", label: "Styleguide MD", filename: "STYLEGUIDE.md", icon: <FileText className="h-4 w-4" />, generator: (ds) => generateStyleguideMD(ds), description: "Professional documentation in Markdown" },
+  { id: "figma", label: "Figma Tokens", filename: "figma-tokens.json", icon: <FileJson className="h-4 w-4" />, generator: (ds) => generateFigmaTokens(ds), description: "Tokens compatible with Figma plugins" },
+  { id: "figma-variables", label: "Figma Variables", filename: "figma-variables.json", icon: <FileJson className="h-4 w-4" />, generator: (ds) => exportToFigmaVariables(ds), description: "Tokens compatible with Figma Variables REST API" },
+  { id: "style-dictionary", label: "Style Dictionary", filename: "tokens.json", icon: <Layers className="h-4 w-4" />, generator: (ds) => generateStyleDictionary(ds), description: "Tokens for Style Dictionary framework" },
+  { id: "storybook-pro", label: "Storybook Pro", filename: "storybook-theme.js", icon: <BookOpen className="h-4 w-4" />, generator: (ds) => exportToStorybookAdvanced(ds), description: "Advanced tokens + preview.js config" },
+  { id: "w3c", label: "DTCG (W3C Standard)", icon: <FileJson className="h-4 w-4" />, filename: "tokens.dtcg.json", description: "Design Tokens Community Group standard", generator: (ds, tokens) => exportToDTCG(tokens || []) },
 ];
 
-export function ExportButton({ designSystem }: ExportButtonProps) {
+export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -610,13 +604,42 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
   const [previewContent, setPreviewContent] = useState("");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [customTemplates, setCustomTemplates] = useState<any[]>([]);
+  const [searchParams] = useSearchParams();
+  const dsId = searchParams.get("id") || "";
+
+  useEffect(() => {
+    const fetchCustomTemplates = async () => {
+      if (!dsId) return;
+      const { data } = await supabase
+        .from("export_templates" as any)
+        .select("*")
+        .eq("design_system_id", dsId);
+
+      if (data) setCustomTemplates(data);
+    };
+
+    fetchCustomTemplates();
+  }, [dsId]);
+
+  const customOptions: ExportOption[] = customTemplates.map(t => ({
+    id: `custom-${t.id}` as any,
+    label: t.name,
+    filename: `${t.name}.${t.extension}`,
+    icon: <FileCode className="h-4 w-4 text-primary" />,
+    generator: (ds, tokens) => resolveTemplate(t.template, tokens || [], ds.name),
+    description: `Custom format: ${t.name}`
+  }));
 
 
-  const downloadFile = (content: string, filename: string) => {
+  const downloadFile = (option: ExportOption) => {
     if (!user) {
       setAuthDialogOpen(true);
       return;
     }
+    const content = option.generator(designSystem, tokens);
+    const filename = option.filename;
+
     const [searchParams] = useSearchParams();
     const dsId = searchParams.get("id") || "";
     trackEvent(dsId, `exported_${filename.split('.')[1]}` as AnalyticsEvent, { filename });
@@ -649,7 +672,7 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
   };
 
   const openPreview = (option: ExportOption) => {
-    const content = option.generator(designSystem);
+    const content = option.generator(designSystem, tokens);
     setPreviewFormat(option);
     setPreviewContent(content);
     setPreviewOpen(true);
@@ -694,11 +717,40 @@ export function ExportButton({ designSystem }: ExportButtonProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
+          {customOptions.length > 0 && (
+            <>
+              <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Custom Exporters</div>
+              {customOptions.map((option) => (
+                <DropdownMenuItem key={option.id} className="flex items-center justify-between">
+                  <span
+                    className="flex items-center flex-1 cursor-pointer"
+                    onClick={() => downloadFile(option)}
+                  >
+                    <span className="mr-2">{option.icon}</span>
+                    {option.label}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 ml-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openPreview(option);
+                    }}
+                  >
+                    <Eye className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuItem>
+              ))}
+              <Separator className="my-1" />
+            </>
+          )}
+          <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Built-in Formats</div>
           {exportOptions.map((option) => (
             <DropdownMenuItem key={option.id} className="flex items-center justify-between">
               <span
                 className="flex items-center flex-1 cursor-pointer"
-                onClick={() => downloadFile(option.generator(designSystem), option.filename)}
+                onClick={() => downloadFile(option)}
               >
                 <span className="mr-2">{option.icon}</span>
                 {option.label}

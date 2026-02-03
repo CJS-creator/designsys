@@ -12,7 +12,10 @@ import {
     ExternalLink,
     CheckCircle2,
     AlertCircle,
-    Lock
+    Lock,
+    Globe,
+    Zap,
+    Key
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +42,8 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
     const [isLinking, setIsLinking] = useState(false);
     const [repoName, setRepoName] = useState("");
     const [branch, setBranch] = useState("main");
+    const [webhookUrl, setWebhookUrl] = useState("");
+    const [isSavingWebhook, setIsSavingWebhook] = useState(false);
 
     const fetchConnection = async () => {
         if (!designSystemId) return;
@@ -61,6 +66,19 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
             console.error("Error fetching git connection:", error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchWebhook = async () => {
+        if (!designSystemId) return;
+        const { data } = await supabase
+            .from("design_system_webhooks" as any)
+            .select("*")
+            .eq("design_system_id", designSystemId)
+            .maybeSingle();
+
+        if (data) {
+            setWebhookUrl((data as any).url);
         }
     };
 
@@ -92,8 +110,34 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
         }
     };
 
+    const handleSaveWebhook = async () => {
+        if (!designSystemId || !webhookUrl || !user) {
+            toast.error("Please enter a valid webhook URL");
+            return;
+        }
+        setIsSavingWebhook(true);
+        try {
+            const { error } = await supabase
+                .from("design_system_webhooks" as any)
+                .upsert({
+                    design_system_id: designSystemId,
+                    user_id: user.id,
+                    url: webhookUrl,
+                    event_types: ['tokens.updated']
+                }, { onConflict: 'design_system_id' });
+
+            if (error) throw error;
+            toast.success("Webhook configured successfully!");
+        } catch (error: any) {
+            toast.error("Failed to save webhook: " + error.message);
+        } finally {
+            setIsSavingWebhook(false);
+        }
+    };
+
     useEffect(() => {
         fetchConnection();
+        fetchWebhook();
     }, [designSystemId]);
 
     if (isLoading) {
@@ -182,6 +226,51 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
                             </CardContent>
                         </Card>
                     )}
+
+                    <Card className="border-primary/10 bg-card/50 backdrop-blur-sm">
+                        <CardHeader>
+                            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                <Globe className="h-4 w-4" />
+                                Webhook Delivery
+                            </CardTitle>
+                            <CardDescription>
+                                Notify external services (like CI/CD or Slack) when tokens change.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Payload URL</label>
+                                <div className="relative">
+                                    <Input
+                                        placeholder="https://api.yourdomain.com/webhooks/design-tokens"
+                                        value={webhookUrl}
+                                        onChange={(e) => setWebhookUrl(e.target.value)}
+                                        className="pl-9"
+                                    />
+                                    <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
+                                <div className="flex items-center gap-3">
+                                    <Zap className="h-4 w-4 text-primary" />
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase">Event Type</p>
+                                        <p className="text-xs font-medium">tokens.updated</p>
+                                    </div>
+                                </div>
+                                <Badge variant="outline" className="text-[9px]">JSON POST</Badge>
+                            </div>
+                            <Button
+                                variant="secondary"
+                                onClick={handleSaveWebhook}
+                                disabled={isSavingWebhook}
+                                className="w-full gap-2 font-bold"
+                            >
+                                {webhookUrl ? "Update Webhook" : "Configure Webhook"}
+                                <Key className="h-4 w-4" />
+                            </Button>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <div className="space-y-6">

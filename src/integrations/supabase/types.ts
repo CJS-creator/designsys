@@ -20,7 +20,9 @@ export type Database = {
           description: string | null
           design_system_data: Json
           id: string
+          is_public: boolean | null
           name: string
+          share_id: string | null
           updated_at: string
           user_id: string
         }
@@ -29,7 +31,9 @@ export type Database = {
           description?: string | null
           design_system_data: Json
           id?: string
+          is_public?: boolean | null
           name: string
+          share_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -38,7 +42,9 @@ export type Database = {
           description?: string | null
           design_system_data?: Json
           id?: string
+          is_public?: boolean | null
           name?: string
+          share_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -152,6 +158,47 @@ export type Database = {
             referencedRelation: "token_groups"
             referencedColumns: ["id"]
           }
+        ]
+      }
+      brand_themes: {
+        Row: {
+          created_at: string
+          design_system_id: string
+          id: string
+          is_default: boolean | null
+          mode: string | null
+          name: string
+          tokens_override: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          design_system_id: string
+          id?: string
+          is_default?: boolean | null
+          mode?: string | null
+          name: string
+          tokens_override?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          design_system_id?: string
+          id?: string
+          is_default?: boolean | null
+          mode?: string | null
+          name?: string
+          tokens_override?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_themes_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
         ]
       }
       token_groups: {

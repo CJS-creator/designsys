@@ -7,6 +7,8 @@ export type TokenType =
     | 'borderWidth' | 'shadow' | 'gradient' | 'typography'
     | 'composition' | 'asset' | 'border';
 
+export type TokenStatus = 'draft' | 'published' | 'deprecated' | 'archived';
+
 export interface BaseToken {
     name: string;
     path: string;
@@ -14,6 +16,7 @@ export interface BaseToken {
     description?: string;
     ref?: string; // Standard reference syntax: {namespace.path.to.token}
     extensions?: Record<string, any>;
+    status?: TokenStatus;
 }
 
 export interface ColorToken extends BaseToken {

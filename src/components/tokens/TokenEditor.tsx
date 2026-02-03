@@ -31,16 +31,19 @@ const tokenSchema = z.object({
     path: z.string().min(1, "Path is required"),
     type: z.string(),
     description: z.string().optional(),
+    ref: z.string().optional(),
     value: z.any(), // Flexible based on type
+    status: z.enum(['draft', 'published', 'deprecated']).default('draft'),
 });
 
 interface TokenEditorProps {
     token?: DesignToken;
+    allTokens?: DesignToken[];
     onSave: (token: DesignToken) => void;
     onCancel: () => void;
 }
 
-export function TokenEditor({ token, onSave, onCancel }: TokenEditorProps) {
+export function TokenEditor({ token, allTokens = [], onSave, onCancel }: TokenEditorProps) {
     const [selectedType, setSelectedType] = useState<TokenType>(token?.type || 'color');
 
     const form = useForm<any>({
@@ -51,11 +54,21 @@ export function TokenEditor({ token, onSave, onCancel }: TokenEditorProps) {
             type: "color",
             description: "",
             value: "#000000",
+            status: "draft",
         },
     });
 
     const onSubmit = (data: any) => {
-        onSave(data as DesignToken);
+        // Clean up data before saving
+        const submissionData = { ...data };
+        if (submissionData.ref) {
+            // If it's a reference, ensure it has the {} syntax if needed, 
+            // but DTCG standard is just the path or {path}. We'll support both.
+            if (!submissionData.ref.startsWith('{')) {
+                submissionData.ref = `{${submissionData.ref}}`;
+            }
+        }
+        onSave(submissionData as DesignToken);
     };
 
     const renderValueEditor = () => {
@@ -252,6 +265,97 @@ export function TokenEditor({ token, onSave, onCancel }: TokenEditorProps) {
                                 </FormItem>
                             )}
                         />
+
+                        <FormField
+                            control={form.control}
+                            name="status"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Token Status</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a status" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="draft">Draft (Experimental)</SelectItem>
+                                            <SelectItem value="published">Published (Stable)</SelectItem>
+                                            <SelectItem value="deprecated">Deprecated (Do not use)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Token Aliasing / Reference Picker */}
+                        <div className="pt-4 border-t space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                                    Token Aliasing (Reference)
+                                </h3>
+                                <Badge variant="outline" className="text-[10px]">DTCG COMPLIANT</Badge>
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="ref"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Reference another token</FormLabel>
+                                        <Select
+                                            onValueChange={(val) => field.onChange(val === "none" ? "" : val)}
+                                            value={field.value?.replace(/[{}]/g, '') || "none"}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="bg-muted/30">
+                                                    <SelectValue placeholder="Select a token to alias" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="none">Literal Value (No Alias)</SelectItem>
+                                                {allTokens
+                                                    .filter(t => t.path !== token?.path) // Prevent self-reference
+                                                    .map(t => (
+                                                        <SelectItem key={t.path} value={t.path}>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2 h-2 rounded-full bg-primary" />
+                                                                <span>{t.path}</span>
+                                                                <span className="text-[10px] text-muted-foreground uppercase">({t.type})</span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))
+                                                }
+                                            </SelectContent>
+                                        </Select>
+                                        <FormDescription>
+                                            Aliasing allows you to create semantic references (e.g., button.primary → brand.blue).
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {form.watch("ref") && (
+                                <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <p className="text-xs font-medium text-primary flex items-center gap-2">
+                                        <Layers className="h-3 w-3" />
+                                        Alias Chain:
+                                    </p>
+                                    <div className="mt-2 flex items-center gap-2 text-[10px] font-mono text-muted-foreground overflow-x-auto whitespace-nowrap pb-1">
+                                        <span className="text-foreground font-bold">{form.watch("path") || "new-token"}</span>
+                                        <span>→</span>
+                                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20">
+                                            {form.watch("ref").replace(/[{}]/g, '')}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         <div className="pt-4 border-t">
                             <h3 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wider">

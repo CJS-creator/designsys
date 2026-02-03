@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import SharedDesign from "./pages/SharedDesign";
 import Landing from "./pages/Landing";
+import { PublicDocViewer } from "./components/docs/PublicDocViewer";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 
@@ -32,6 +33,7 @@ const App = () => (
                   <Route path="/" element={<Landing />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/share/:id" element={<SharedDesign />} />
+                  <Route path="/docs/:shareId" element={<PublicDocViewer />} />
                   <Route path="/app" element={<Index />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
 

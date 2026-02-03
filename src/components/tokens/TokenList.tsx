@@ -38,24 +38,59 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd }: TokenListProps) {
         return matchesSearch && matchesType;
     });
 
+    const resolveValue = (token: DesignToken): any => {
+        if (token.ref) {
+            const refPath = token.ref.replace(/[{}]/g, '');
+            const target = tokens.find(t => t.path === refPath);
+            return target ? resolveValue(target) : "Invalid Ref";
+        }
+        return token.value;
+    };
+
     const renderTokenValue = (token: DesignToken) => {
+        const value = resolveValue(token);
+        const isRef = !!token.ref;
+
         switch (token.type) {
             case 'color':
                 return (
                     <div className="flex items-center gap-2">
                         <div
                             className="w-4 h-4 rounded border border-border"
-                            style={{ backgroundColor: token.value }}
+                            style={{ backgroundColor: typeof value === 'string' ? value : 'transparent' }}
                         />
-                        <code className="text-xs uppercase">{token.value}</code>
+                        <code className="text-[10px] uppercase font-mono bg-muted px-1 rounded">{value}</code>
+                        {isRef && (
+                            <span className="text-[9px] text-muted-foreground italic truncate max-w-[80px]">
+                                via {token.ref}
+                            </span>
+                        )}
                     </div>
                 );
             case 'dimension':
             case 'spacing':
             case 'borderRadius':
-                return <code className="text-xs">{token.value}</code>;
+                return (
+                    <div className="flex items-center gap-2">
+                        <code className="text-[10px] font-mono bg-muted px-1 rounded">{value}</code>
+                        {isRef && (
+                            <span className="text-[9px] text-muted-foreground italic truncate max-w-[80px]">
+                                via {token.ref}
+                            </span>
+                        )}
+                    </div>
+                );
             default:
-                return <span className="text-xs text-muted-foreground italic">Complex Value</span>;
+                return (
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-muted-foreground italic">Complex</span>
+                        {isRef && (
+                            <span className="text-[9px] text-muted-foreground italic truncate max-w-[80px]">
+                                via {token.ref}
+                            </span>
+                        )}
+                    </div>
+                );
         }
     };
 
@@ -117,10 +152,26 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd }: TokenListProps) {
                                 >
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-medium text-sm">{token.name}</span>
-                                            <Badge variant="outline" className="text-[10px] h-4 px-1 capitalize">
+                                            <span className="font-semibold text-sm tracking-tight">{token.name}</span>
+                                            <Badge variant="outline" className="text-[9px] h-3.5 px-1 capitalize font-bold">
                                                 {token.type}
                                             </Badge>
+                                            {token.ref && (
+                                                <Badge variant="secondary" className="text-[9px] h-3.5 px-1 bg-primary/10 text-primary border-primary/20">
+                                                    ALIAS
+                                                </Badge>
+                                            )}
+                                            {token.status && (
+                                                <Badge
+                                                    variant="outline"
+                                                    className={`text-[9px] h-3.5 px-1 font-bold uppercase ${token.status === 'published' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                                                        token.status === 'deprecated' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                                                            'bg-gray-500/10 text-gray-500 border-gray-500/20'
+                                                        }`}
+                                                >
+                                                    {token.status}
+                                                </Badge>
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <code className="text-[11px] text-muted-foreground">{token.path}</code>
@@ -140,6 +191,12 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd }: TokenListProps) {
                                             </DropdownMenuItem>
                                             <DropdownMenuItem className="gap-2">
                                                 <Copy className="h-3 w-3" /> Duplicate
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => onEdit({ ...token, status: 'deprecated' })}
+                                                className="gap-2 text-yellow-600 focus:text-yellow-600"
+                                            >
+                                                <Filter className="h-3 w-3" /> Deprecate
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() => onDelete(token.path)}
