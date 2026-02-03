@@ -31,7 +31,7 @@ import { Icon } from "@/components/ui/icon-registry";
 import { MagneticButton } from "@/components/animations/MagneticButton";
 import { TextReveal } from "@/components/animations/TextReveal";
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Activity, Box, Layers, Type, Settings as SettingsIcon, Users, Grid3X3, Palette, Eye, Smartphone, Code2, HelpCircle, Zap, X, Search, Lock, Layout, GitCompare, Shield, BookOpen, ExternalLink, Ruler, Maximize, Cast, Menu, BarChart3, ShieldCheck } from "lucide-react";
+import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Activity, Box, Layers, Type, Settings as SettingsIcon, Users, Grid3X3, Palette, Eye, Smartphone, Code2, HelpCircle, Zap, X, Search, Lock, Layout, GitCompare, Shield, BookOpen, ExternalLink, Ruler, Maximize, Cast, Menu, BarChart3, ShieldCheck, ShoppingBag } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
@@ -66,6 +66,7 @@ const AccessibilityChecker = lazy(() => import("@/components/AccessibilityChecke
 const ColorBlindnessSimulator = lazy(() => import("@/components/ColorBlindnessSimulator").then(m => ({ default: m.ColorBlindnessSimulator })));
 const TokenManagementDashboard = lazy(() => import("@/components/tokens/TokenManagementDashboard").then(m => ({ default: m.TokenManagementDashboard })));
 const DocEditor = lazy(() => import("@/components/docs/DocEditor").then(m => ({ default: m.DocEditor })));
+const Marketplace = lazy(() => import("@/components/marketplace/Marketplace").then(m => ({ default: m.Marketplace })));
 // const GitSettings = lazy(() => import("@/components/GitSettings").then(m => ({ default: m.GitSettings }))); // GitSettings is now directly imported
 // const TeamSettings = lazy(() => import("@/components/TeamSettings").then(m => ({ default: m.TeamSettings }))); // TeamSettings is now directly imported
 
@@ -339,8 +340,8 @@ const Index = () => {
                       <AnimatedTabsTrigger value="governance" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
                         <ShieldCheck className="h-4 w-4" /> Governance
                       </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="settings" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Settings className="h-4 w-4" /> Settings
+                      <AnimatedTabsTrigger value="marketplace" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
+                        <ShoppingBag className="h-4 w-4" /> Store
                       </AnimatedTabsTrigger>
                       <AnimatedTabsTrigger value="vision" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
                         <Sparkles className="h-4 w-4" /> Vision
@@ -555,6 +556,15 @@ const Index = () => {
                   <TabsContent value="saved" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <SavedDesigns onLoad={handleLoadDesign} currentSystem={designSystem} />
+                    </Suspense>
+                  </TabsContent>
+
+                  <TabsContent value="marketplace" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <Suspense fallback={<DesignSystemSkeleton />}>
+                      <Marketplace
+                        onImport={handleRestoreVersion}
+                        currentSystemId={designSystem?.id}
+                      />
                     </Suspense>
                   </TabsContent>
 

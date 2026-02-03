@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -34,10 +34,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { convertToW3CTokens } from "@/lib/token-utils";
-import { exportToFlutter } from "@/lib/exporters/flutter";
-import { exportToSwiftUI } from "@/lib/exporters/swiftui";
-import { exportToKotlin } from "@/lib/exporters/kotlin";
-import { exportToCSSJS } from "@/lib/exporters/css-in-js";
+import { exportToFlutterPro as exportToFlutter } from "@/lib/exporters/flutter";
+import { exportToSwiftUIPro as exportToSwiftUI } from "@/lib/exporters/swiftui";
+import { exportToKotlinPro as exportToKotlin } from "@/lib/exporters/kotlin";
+import { exportToCSSJSPro as exportToCSSJS } from "@/lib/exporters/css-in-js";
 import { exportToFigmaVariables } from "@/lib/exporters/figma-variables";
 import { exportToStaticDocs } from "@/lib/exporters/static-docs";
 import { generateCLISyncScript } from "@/lib/cli/designforge-cli";
