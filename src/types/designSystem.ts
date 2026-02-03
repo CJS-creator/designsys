@@ -186,6 +186,7 @@ import { UnifiedTokenStore } from "./tokens";
 export interface GeneratedDesignSystem {
   id?: string;
   name: string;
+  description?: string;
   colors: ColorPalette;
   darkColors?: DarkModeColors;
   typography: TypographyScale;
