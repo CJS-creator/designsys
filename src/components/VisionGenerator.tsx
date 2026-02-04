@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, Image as ImageIcon, Sparkles, RefreshCcw } from "lucide-react";
-import { GeneratedDesignSystem } from "@/types/designSystem";
 import { toast } from "sonner";
 
 interface VisionGeneratorProps {

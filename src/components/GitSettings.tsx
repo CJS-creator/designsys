@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { exportToGitHub } from "@/lib/git/sync";
 
 // Define GitConnection type locally since table was just created
 interface GitConnection {
@@ -140,47 +141,39 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
     const [isSyncing, setIsSyncing] = useState(false);
 
     const handleSyncNow = async () => {
-        if (!connection) return;
+        if (!connection || !designSystemId) return;
         setIsSyncing(true);
-        const toastId = toast.loading("Triggering sync...");
+        const toastId = toast.loading("Syncing with GitHub...");
 
         try {
-            // 1. Create a log entry
-            const { data: logEntry, error: logError } = await supabase
-                .from("git_sync_logs" as any)
-                .insert({
-                    connection_id: connection.id,
-                    status: 'pending',
-                    event_type: 'push',
-                    message: 'Manual sync triggered from UI'
-                })
-                .select()
-                .single();
+            // 1. Fetch current tokens for export
+            const { data: tokensData } = await supabase
+                .from("design_tokens")
+                .select("*")
+                .eq("design_system_id", designSystemId);
 
-            if (logError) throw logError;
+            const tokens = (tokensData || []).map(row => ({
+                path: row.path,
+                name: row.name,
+                type: row.token_type,
+                value: row.value,
+                ref: row.alias_path
+            }));
 
-            // 2. Simulate API call (In real app, this would be an Edge Function)
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // 2. Perform export
+            const result = await exportToGitHub(
+                designSystemId,
+                tokens as any,
+                connection.repo_full_name,
+                connection.default_branch
+            );
 
-            // 3. Update connection & log status
-            const now = new Date().toISOString();
-            await supabase
-                .from("git_connections" as any)
-                .update({
-                    last_sync_at: now,
-                    sync_status: 'success'
-                })
-                .eq("id", connection.id);
+            if (result.success) {
+                toast.success(result.message, { id: toastId });
+            } else {
+                toast.error(result.message, { id: toastId });
+            }
 
-            await supabase
-                .from("git_sync_logs" as any)
-                .update({
-                    status: 'success',
-                    message: 'Design system pushed to ' + connection.repo_full_name
-                })
-                .eq("id", (logEntry as any).id);
-
-            toast.success("Sync complete! Changes pushed to GitHub.", { id: toastId });
             fetchConnection();
         } catch (error: any) {
             toast.error("Sync failed: " + error.message, { id: toastId });

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+// Slider available for future use: import { Slider } from "@/components/ui/slider";
 import { Palette, Copy, Check, RefreshCw, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -78,25 +78,25 @@ function hslToHex(h: number, s: number, l: number): string {
 function generateShades(baseColor: string): ColorShade[] {
   const hsl = hexToHsl(baseColor);
   const shades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
-  
+
   return shades.map((shade) => {
     // Map shade to lightness (50 = lightest, 950 = darkest)
-    const lightness = shade === 50 ? 97 : 
-                      shade === 100 ? 94 :
-                      shade === 200 ? 86 :
-                      shade === 300 ? 76 :
-                      shade === 400 ? 64 :
-                      shade === 500 ? 50 :
-                      shade === 600 ? 40 :
-                      shade === 700 ? 32 :
-                      shade === 800 ? 24 :
+    const lightness = shade === 50 ? 97 :
+      shade === 100 ? 94 :
+        shade === 200 ? 86 :
+          shade === 300 ? 76 :
+            shade === 400 ? 64 :
+              shade === 500 ? 50 :
+                shade === 600 ? 40 :
+                  shade === 700 ? 32 :
+                    shade === 800 ? 24 :
                       shade === 900 ? 18 : 10;
-    
+
     // Adjust saturation slightly for lighter/darker shades
     const saturation = shade <= 100 ? Math.max(0, hsl.s - 20) :
-                       shade >= 800 ? Math.max(0, hsl.s - 10) :
-                       hsl.s;
-    
+      shade >= 800 ? Math.max(0, hsl.s - 10) :
+        hsl.s;
+
     return {
       shade,
       color: hslToHex(hsl.h, saturation, lightness),
@@ -115,7 +115,7 @@ export function MultiPaletteGenerator({
     { name: "Secondary", baseColor: secondaryColor, shades: generateShades(secondaryColor) },
     { name: "Accent", baseColor: accentColor, shades: generateShades(accentColor) },
   ]);
-  
+
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
 
   const updatePalette = useCallback((index: number, newBaseColor: string) => {
@@ -195,7 +195,7 @@ export function MultiPaletteGenerator({
           .join("\n");
       })
       .join("\n\n");
-    
+
     navigator.clipboard.writeText(`:root {\n${css}\n}`);
     toast.success("Copied all palettes as CSS variables");
   };
@@ -259,7 +259,7 @@ export function MultiPaletteGenerator({
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-            
+
             <div className="flex gap-1 overflow-x-auto pb-2">
               {palette.shades.map((shade) => {
                 const colorKey = `${palette.name}-${shade.shade}`;

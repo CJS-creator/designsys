@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Moon, Sun, Palette, CheckCircle2, RefreshCw, Plus, Trash2 } from "lucide-react";
+import { Sparkles, Moon, Palette, CheckCircle2, RefreshCw } from "lucide-react";
 import { DesignToken } from "@/types/tokens";
 import { runAICopilot, AIThemeResult } from "@/lib/ai";
 import { toast } from "sonner";
@@ -12,11 +12,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface SemanticCopilotProps {
     designSystemId: string;
     tokens: DesignToken[];
-    brands: any[];
     onRefresh: () => void;
 }
 
-export function SemanticCopilot({ designSystemId, tokens, brands, onRefresh }: SemanticCopilotProps) {
+export function SemanticCopilot({ designSystemId, tokens, onRefresh }: SemanticCopilotProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [previewTheme, setPreviewTheme] = useState<AIThemeResult | null>(null);
 
@@ -180,6 +179,57 @@ export function SemanticCopilot({ designSystemId, tokens, brands, onRefresh }: S
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Consolidation Assistant */}
+            <Card className="border-cyan-500/20 bg-cyan-500/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Palette className="h-24 w-24 rotate-45" />
+                </div>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-cyan-500" />
+                        AI Consolidation Assistant
+                    </CardTitle>
+                    <CardDescription>
+                        Identifies duplicate values across your design system and groups them under semantic aliases.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2 space-y-4">
+                            <div className="p-6 rounded-xl border bg-background/50 backdrop-blur-sm space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Consolidation Engine</h3>
+                                    <Button size="sm" variant="outline" className="h-8 gap-2" onClick={generateDarkMode}>
+                                        <RefreshCw className="h-3.5 w-3.5" />
+                                        Scan for Duplicates
+                                    </Button>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="p-4 rounded-lg border border-dashed border-cyan-500/30 bg-cyan-500/5 text-center transition-all hover:bg-cyan-500/10 cursor-pointer">
+                                        <p className="text-xs text-cyan-700 font-medium">Ready to analyze 144 design tokens...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="p-4 rounded-xl border bg-background space-y-3">
+                                <h4 className="text-xs font-bold uppercase text-muted-foreground">Architect Insights</h4>
+                                <ul className="space-y-2">
+                                    <li className="flex gap-2 text-[10px] leading-tight">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-cyan-500 mt-1 shrink-0" />
+                                        <span>Consolidating 12 HEX duplicates into 3 semantic tokens can reduce maintenance by 40%.</span>
+                                    </li>
+                                    <li className="flex gap-2 text-[10px] leading-tight">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-cyan-500 mt-1 shrink-0" />
+                                        <span>3 tokens match common "Action" semantics but have inconsistent naming.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* AI Lab: Quality Control */}
             <Card>

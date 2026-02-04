@@ -85,41 +85,48 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
         }
     };
 
-    const assetCategories = [
-        {
-            title: "Documentation",
-            description: "Full design specifications and guidelines",
-            icon: FileText,
-            color: "text-blue-500",
-            bg: "bg-blue-500/10",
-            formats: [
-                { name: "Specification (PDF)", type: 'pdf', size: "2.4 MB" },
-                { name: "Spec Document (DOCX)", type: 'docx', size: "1.2 MB" },
-            ]
-        },
-        {
-            title: "Code Tokens",
-            description: "Raw variables for multiple platforms",
-            icon: FileType,
-            color: "text-purple-500",
-            bg: "bg-purple-500/10",
-            formats: [
-                { name: "JSON Tokens", format: 'json', size: "45 KB" },
-                { name: "Tailwind Config", format: 'js', size: "12 KB" },
-            ]
-        },
-        {
-            title: "Asset Package",
-            description: "SVG and high-res image representations",
-            icon: ImageIcon,
-            color: "text-orange-500",
-            bg: "bg-orange-500/10",
-            formats: [
-                { name: "Color Swatches (PNG)", format: 'png', size: "850 KB" },
-                { name: "Logo Icons (SVG)", format: 'svg', size: "120 KB" },
-            ]
-        }
-    ];
+    const assetCategories: Array<{
+        title: string;
+        description: string;
+        icon: any;
+        color: string;
+        bg: string;
+        formats: Array<{ name: string; type?: 'pdf' | 'docx' | 'css' | 'json'; format?: string; size: string }>;
+    }> = [
+            {
+                title: "Documentation",
+                description: "Full design specifications and guidelines",
+                icon: FileText,
+                color: "text-blue-500",
+                bg: "bg-blue-500/10",
+                formats: [
+                    { name: "Specification (PDF)", type: 'pdf', size: "2.4 MB" },
+                    { name: "Spec Document (DOCX)", type: 'docx', size: "1.2 MB" },
+                ]
+            },
+            {
+                title: "Code Tokens",
+                description: "Raw variables for multiple platforms",
+                icon: FileType,
+                color: "text-purple-500",
+                bg: "bg-purple-500/10",
+                formats: [
+                    { name: "JSON Tokens", format: 'json', size: "45 KB" },
+                    { name: "Tailwind Config", format: 'js', size: "12 KB" },
+                ]
+            },
+            {
+                title: "Asset Package",
+                description: "SVG and high-res image representations",
+                icon: ImageIcon,
+                color: "text-orange-500",
+                bg: "bg-orange-500/10",
+                formats: [
+                    { name: "Color Swatches (PNG)", format: 'png', size: "850 KB" },
+                    { name: "Logo Icons (SVG)", format: 'svg', size: "120 KB" },
+                ]
+            }
+        ];
 
     return (
         <div className="max-w-6xl mx-auto space-y-8 p-6">

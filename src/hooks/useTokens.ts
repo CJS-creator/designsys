@@ -128,6 +128,38 @@ export function useTokens(designSystemId?: string) {
         }
     };
 
+    const batchSaveTokens = async (tokensToSave: DesignToken[]) => {
+        if (!user || !designSystemId) {
+            toast.error("Sign in to save tokens");
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from("design_tokens")
+                .upsert(tokensToSave.map(token => ({
+                    design_system_id: designSystemId,
+                    name: token.name,
+                    path: token.path,
+                    token_type: token.type,
+                    value: token.value as any,
+                    description: token.description,
+                    alias_path: token.ref || null,
+                    is_alias: !!token.ref,
+                    extensions: token.extensions,
+                    status: token.status || 'draft',
+                })) as any, { onConflict: "design_system_id,path" });
+
+            if (error) throw error;
+
+            toast.success(`${tokensToSave.length} tokens updated`);
+            fetchTokens();
+        } catch (error: any) {
+            monitor.error("Error batch saving tokens", error as Error);
+            toast.error("Failed to save multiple tokens");
+        }
+    };
+
     const deleteToken = async (path: string) => {
         if (!designSystemId) return;
 
@@ -197,6 +229,7 @@ export function useTokens(designSystemId?: string) {
         tokensByPath: Object.fromEntries(tokens.map(t => [t.path, t])),
         loading,
         saveToken,
+        batchSaveTokens,
         deleteToken,
         restoreToken,
         permanentlyDeleteToken,

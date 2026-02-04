@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Plus, X, Loader2, GitCompare } from "lucide-react";
-import { LivePreview } from "./LivePreview";
+
 
 interface ComparisonViewProps {
   baseInput: DesignSystemInput;
@@ -101,7 +101,7 @@ export const ComparisonView = ({ baseInput, initialSystem }: ComparisonViewProps
                     <h3 className="font-semibold">{system.name}</h3>
                     <span className="text-xs text-muted-foreground">Variation {index + 1}</span>
                   </div>
-                  
+
                   {/* Color Swatches */}
                   <div className="flex gap-1">
                     {Object.entries(system.colors).slice(0, 5).map(([name, color]) => (
@@ -113,7 +113,7 @@ export const ComparisonView = ({ baseInput, initialSystem }: ComparisonViewProps
                       />
                     ))}
                   </div>
-                  
+
                   {/* Quick Preview */}
                   <div
                     className="p-4 rounded-lg space-y-2"

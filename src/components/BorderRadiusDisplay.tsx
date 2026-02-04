@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { BorderRadius } from "@/types/designSystem";
-import { Circle } from "lucide-react";
+
 import { toast } from "sonner";
 
 interface BorderRadiusDisplayProps {
@@ -15,7 +15,7 @@ export function BorderRadiusDisplay({ borderRadius }: BorderRadiusDisplayProps) 
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-      {Object.entries(borderRadius).map(([name, value], index) => (
+      {Object.entries(borderRadius).map(([name, value]) => (
         <button
           key={name}
           onClick={() => copyValue(value)}

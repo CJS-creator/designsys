@@ -7,16 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { MotionWrapper } from "@/components/animations/MotionWrapper";
 import { LoadingSpinner, ProgressBar, Skeleton } from "@/components/animations/LoadingSpinner";
 import { InteractiveButton, InteractiveCard, FeedbackIcon, Typewriter } from "@/components/animations/MicroInteractions";
-import { StaggerList, StaggerGrid } from "@/components/animations/StaggerList";
-import { duration, easing, easingCSS, springs, transitions } from "@/lib/animations/constants";
-import { fadeUp, scale, pop, slideLeft, modal, overlay } from "@/lib/animations/variants";
+import { StaggerList } from "@/components/animations/StaggerList";
+import { duration, easing, easingCSS, springs } from "@/lib/animations/constants";
+import { modal, overlay } from "@/lib/animations/variants";
 import { Play, Zap, Clock, Sparkles, Eye, Accessibility, Gauge, Code, Book, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export function AnimationSystemDocs() {
   const [showModal, setShowModal] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [listItems, setListItems] = useState(["Item 1", "Item 2", "Item 3"]);
 
   return (
     <div className="space-y-8">

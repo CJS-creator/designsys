@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, Info, Check, AlertTriangle } from "lucide-react";
+import { Eye, Info, Check, AlertTriangle } from "lucide-react";
 import { ColorPalette } from "@/types/designSystem";
 import {
   Tooltip,

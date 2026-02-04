@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,18 +10,18 @@ interface MotionGalleryProps {
 }
 
 export const MotionGallery = ({ designSystem }: MotionGalleryProps) => {
-    const { colors, animations, borderRadius } = designSystem;
+    const { colors, borderRadius } = designSystem;
     const [tapCount, setTapCount] = useState(0);
     const [isHearted, setIsHearted] = useState(false);
 
-    // Helper to map easing strings to framer-motion transition objects
-    const getTransition = (type: "spring" | "bounce" | "normal") => {
-        const easing = animations.easing[type === "normal" ? "easeInOut" : type];
-        return {
-            duration: parseFloat(animations.duration.normal) / 1000,
-            ease: "easeOut", // Custom bezier strings aren't directly supported as objects in framer-motion easily without parsing
-        };
-    };
+    // Helper to map easing strings to framer-motion transition objects (available for future use)
+    // const getTransition = (type: "spring" | "bounce" | "normal") => {
+    //     const easing = animations.easing[type === "normal" ? "easeInOut" : type];
+    //     return {
+    //         duration: parseFloat(animations.duration.normal) / 1000,
+    //         ease: "easeOut",
+    //     };
+    // };
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -33,13 +33,11 @@ export const MotionGallery = ({ designSystem }: MotionGalleryProps) => {
         }
     };
 
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1
-        }
-    };
+    // itemVariants available for future use
+    // const itemVariants = {
+    //     hidden: { y: 20, opacity: 0 },
+    //     visible: { y: 0, opacity: 1 }
+    // };
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">

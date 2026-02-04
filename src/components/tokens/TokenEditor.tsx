@@ -25,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Palette, Type, Square, Timer, Box, Layers, Image as ImageIcon } from "lucide-react";
+import { ColorPicker } from "@/components/ui/color-picker";
 
 const tokenSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -82,14 +83,9 @@ export function TokenEditor({ token, allTokens = [], onSave, onCancel }: TokenEd
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Color Value</FormLabel>
-                                    <div className="flex gap-2">
-                                        <FormControl>
-                                            <Input type="color" {...field} className="w-12 p-1 h-10" />
-                                        </FormControl>
-                                        <FormControl>
-                                            <Input {...field} placeholder="#000000 or hsl(0, 0%, 0%)" />
-                                        </FormControl>
-                                    </div>
+                                    <FormControl>
+                                        <ColorPicker color={field.value} onChange={field.onChange} />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -154,7 +150,7 @@ export function TokenEditor({ token, allTokens = [], onSave, onCancel }: TokenEd
             default:
                 return (
                     <div className="p-4 border border-dashed rounded-lg bg-muted/50 text-center">
-                        Editor for <strong>{selectedType}</strong> coming soon in Phase 1.
+                        Editor for <strong>{selectedType}</strong> coming soon.
                     </div>
                 );
         }

@@ -1,4 +1,4 @@
-import React from "react";
+
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -15,10 +15,10 @@ export const TextReveal = ({
 
     const container = {
         hidden: { opacity: 0 },
-        visible: (i = 1) => ({
+        visible: {
             opacity: 1,
-            transition: { staggerChildren: 0.1, delayChildren: delay * i },
-        }),
+            transition: { staggerChildren: 0.1, delayChildren: delay },
+        },
     };
 
     const child = {

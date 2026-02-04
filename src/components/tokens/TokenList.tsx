@@ -9,7 +9,8 @@ import {
     MoreVertical,
     Edit2,
     Trash2,
-    Copy
+    Copy,
+    GripVertical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,12 +20,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Reorder } from "framer-motion";
 
 interface TokenListProps {
     tokens: DesignToken[];
     onEdit: (token: DesignToken) => void;
     onDelete: (tokenPath: string) => void;
     onAdd: () => void;
+    onReorder?: (newTokens: DesignToken[]) => void;
 }
 
 export function TokenList({ tokens, onEdit, onDelete, onAdd }: TokenListProps) {
@@ -56,36 +59,87 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd }: TokenListProps) {
                 return (
                     <div className="flex items-center gap-2">
                         <div
-                            className="w-4 h-4 rounded border border-border"
+                            className="w-4 h-4 rounded border border-border shrink-0"
                             style={{ backgroundColor: typeof value === 'string' ? value : 'transparent' }}
                         />
-                        <code className="text-[10px] uppercase font-mono bg-muted px-1 rounded">{value}</code>
+                        <code className="text-[10px] uppercase font-mono bg-muted px-1 rounded truncate max-w-[80px]">{value}</code>
                         {isRef && (
-                            <span className="text-[9px] text-muted-foreground italic truncate max-w-[80px]">
+                            <span className="text-[9px] text-muted-foreground italic truncate max-w-[60px]">
                                 via {token.ref}
                             </span>
                         )}
                     </div>
                 );
-            case 'dimension':
+            case 'typography':
+                const typo = value as any;
+                if (!typo || typeof typo !== 'object') return null;
+                return (
+                    <div className="flex flex-col gap-1 max-w-[200px]">
+                        <span
+                            className="text-sm truncate"
+                            style={{
+                                fontFamily: typo.fontFamily,
+                                fontSize: typo.fontSize,
+                                fontWeight: typo.fontWeight,
+                                lineHeight: typo.lineHeight,
+                                letterSpacing: typo.letterSpacing,
+                                textTransform: typo.textCase as any,
+                                textDecoration: typo.textDecoration
+                            }}
+                        >
+                            Ag The quick brown fox
+                        </span>
+                        <div className="flex gap-2 text-[9px] text-muted-foreground font-mono">
+                            <span>{typo.fontSize}</span>
+                            <span>{typo.fontWeight}</span>
+                        </div>
+                    </div>
+                );
             case 'spacing':
+            case 'dimension':
+                return (
+                    <div className="flex items-center gap-2">
+                        <div
+                            className="h-2 bg-primary/20 rounded-full border border-primary/30"
+                            style={{ width: typeof value === 'string' ? value : '0px', maxWidth: '60px' }}
+                        />
+                        <code className="text-[10px] font-mono bg-muted px-1 rounded shrink-0">{value}</code>
+                    </div>
+                );
+            case 'border':
+                const border = value as any;
+                if (!border || typeof border !== 'object') return null;
+                return (
+                    <div className="flex items-center gap-2">
+                        <div
+                            className="w-8 h-4 rounded border"
+                            style={{
+                                borderColor: border.color,
+                                borderStyle: border.style,
+                                borderWidth: border.width
+                            }}
+                        />
+                        <code className="text-[10px] font-mono bg-muted px-1 rounded shrink-0">{border.width} {border.style}</code>
+                    </div>
+                );
             case 'borderRadius':
                 return (
                     <div className="flex items-center gap-2">
-                        <code className="text-[10px] font-mono bg-muted px-1 rounded">{value}</code>
-                        {isRef && (
-                            <span className="text-[9px] text-muted-foreground italic truncate max-w-[80px]">
-                                via {token.ref}
-                            </span>
-                        )}
+                        <div
+                            className="w-4 h-4 border border-dashed border-muted-foreground/50"
+                            style={{ borderRadius: typeof value === 'string' ? value : '0px' }}
+                        />
+                        <code className="text-[10px] font-mono bg-muted px-1 rounded shrink-0">{value}</code>
                     </div>
                 );
             default:
                 return (
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground italic">Complex</span>
+                        <span className="text-[10px] text-muted-foreground italic truncate max-w-[100px]">
+                            {typeof value === 'object' ? 'Structured' : value}
+                        </span>
                         {isRef && (
-                            <span className="text-[9px] text-muted-foreground italic truncate max-w-[80px]">
+                            <span className="text-[9px] text-muted-foreground italic truncate max-w-[60px]">
                                 via {token.ref}
                             </span>
                         )}
@@ -144,38 +198,47 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd }: TokenListProps) {
                             No tokens found matching your criteria.
                         </div>
                     ) : (
-                        <div className="divide-y">
+                        <Reorder.Group
+                            axis="y"
+                            values={filteredTokens}
+                            onReorder={onReorder || (() => { })}
+                            className="divide-y"
+                        >
                             {filteredTokens.map((token) => (
-                                <div
+                                <Reorder.Item
                                     key={token.path}
-                                    className="p-4 hover:bg-primary/5 transition-colors group flex items-center justify-between"
+                                    value={token}
+                                    className="p-4 hover:bg-primary/5 transition-colors group flex items-center justify-between bg-card"
                                 >
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-sm tracking-tight">{token.name}</span>
-                                            <Badge variant="outline" className="text-[9px] h-3.5 px-1 capitalize font-bold">
-                                                {token.type}
-                                            </Badge>
-                                            {token.ref && (
-                                                <Badge variant="secondary" className="text-[9px] h-3.5 px-1 bg-primary/10 text-primary border-primary/20">
-                                                    ALIAS
+                                    <div className="flex items-center gap-4 flex-1">
+                                        <GripVertical className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing shrink-0" />
+                                        <div className="space-y-1 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-semibold text-sm tracking-tight">{token.name}</span>
+                                                <Badge variant="outline" className="text-[9px] h-3.5 px-1 capitalize font-bold">
+                                                    {token.type}
                                                 </Badge>
-                                            )}
-                                            {token.status && (
-                                                <Badge
-                                                    variant="outline"
-                                                    className={`text-[9px] h-3.5 px-1 font-bold uppercase ${token.status === 'published' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                                                        token.status === 'deprecated' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
-                                                            'bg-gray-500/10 text-gray-500 border-gray-500/20'
-                                                        }`}
-                                                >
-                                                    {token.status}
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <code className="text-[11px] text-muted-foreground">{token.path}</code>
-                                            {renderTokenValue(token)}
+                                                {token.ref && (
+                                                    <Badge variant="secondary" className="text-[9px] h-3.5 px-1 bg-primary/10 text-primary border-primary/20">
+                                                        ALIAS
+                                                    </Badge>
+                                                )}
+                                                {token.status && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={`text-[9px] h-3.5 px-1 font-bold uppercase ${token.status === 'published' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                                                            token.status === 'deprecated' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                                                                'bg-gray-500/10 text-gray-500 border-gray-500/20'
+                                                            }`}
+                                                    >
+                                                        {token.status}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <code className="text-[11px] text-muted-foreground">{token.path}</code>
+                                                {renderTokenValue(token)}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -206,9 +269,9 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd }: TokenListProps) {
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                </div>
+                                </Reorder.Item>
                             ))}
-                        </div>
+                        </Reorder.Group>
                     )}
                 </div>
             </ScrollArea>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ColorPalette, DarkModeColors } from "@/types/designSystem";
 import { getContrastRatio, getWCAGCompliance, WCAGLevel } from "@/lib/colorUtils";
 import { CheckCircle, XCircle, AlertCircle, Eye, Sparkles } from "lucide-react";
-import { fixContrast, TextSize } from "@/lib/colorUtils";
+import { fixContrast } from "@/lib/colorUtils";
 
 interface AccessibilityCheckerProps {
   colors: ColorPalette;

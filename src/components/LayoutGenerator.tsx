@@ -1,6 +1,6 @@
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, ShoppingCart, CheckCircle2, Monitor, Layout as LayoutIcon, Briefcase } from "lucide-react";
+import { ArrowRight, ShoppingCart } from "lucide-react";
 
 interface LayoutGeneratorProps {
     designSystem: GeneratedDesignSystem;
@@ -15,7 +15,7 @@ export const LayoutGenerator = ({ designSystem, type, isDark = false }: LayoutGe
     const bgColor = isDark ? colors.background : colors.surface;
     const textColor = isDark ? "#ffffff" : colors.text;
     const mutedTextColor = isDark ? "rgba(255,255,255,0.7)" : colors.textSecondary;
-    const cardBg = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)";
+    // cardBg available for future use: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)"
 
     const containerStyle = {
         fontFamily: typography.fontFamily.body,

@@ -17,19 +17,19 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  AlertCircle, Bell, Check, ChevronRight, Heart, Loader2, Mail,
-  Moon, Search, Settings, ShoppingCart, Star, Sun, User, X, Zap,
+  AlertCircle, Check, ChevronRight, Heart, Loader2, Mail,
+  Moon, Search, Settings, ShoppingCart, Sun, X, Zap,
   Home, FileText, BarChart, Users, Calendar, Code,
 } from "lucide-react";
 import { CodeViewer } from "@/components/ui/CodeViewer";
-import { fadeUp, scale, staggerContainer, staggerItem } from "@/lib/animations/variants";
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations/variants";
 import { Spotlight } from "@/components/ui/spotlight";
 import { MovingBorderButton } from "@/components/ui/moving-border";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/card-3d";
 import { NumberTicker } from "@/components/ui/number-ticker";
-import { BackgroundBeams } from "@/components/ui/background-beams";
-import { spotlightCode, movingBorderCode, bentoGridCode, card3dCode, numberTickerCode, backgroundBeamsCode } from "@/data/component-codes";
+
+import { spotlightCode, movingBorderCode, bentoGridCode, card3dCode, numberTickerCode } from "@/data/component-codes";
 
 // Placeholder code snippets for component preview
 const buttonCode = `<button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -72,10 +72,10 @@ const dataCode = `<table className="min-w-full divide-y divide-gray-200">
 </table>`;
 
 interface ComponentLibraryPreviewProps {
-  designSystem: GeneratedDesignSystem;
+  designSystem?: GeneratedDesignSystem;
 }
 
-export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPreviewProps) {
+export function ComponentLibraryPreview(_props: ComponentLibraryPreviewProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeSection, setActiveSection] = useState("showcase");
   const [sliderValue, setSliderValue] = useState([50]);
@@ -697,7 +697,7 @@ export function ComponentLibraryPreview({ designSystem }: ComponentLibraryPrevie
                         { name: "Alice Johnson", email: "alice@example.com", status: "Active" },
                         { name: "Bob Smith", email: "bob@example.com", status: "Pending" },
                         { name: "Carol White", email: "carol@example.com", status: "Active" },
-                      ].map((user, i) => (
+                      ].map((user) => (
                         <motion.div
                           key={user.email}
                           whileHover={{ backgroundColor: "hsl(var(--muted))" }}

@@ -30,19 +30,22 @@ import {
   Smartphone,
   Component,
   FileText,
-  BookOpen
+  BookOpen,
+  Github,
+  RefreshCw
 } from "lucide-react";
+import { exportToGitHub } from "@/lib/git/sync";
 import { toast } from "sonner";
-import { convertToW3CTokens } from "@/lib/token-utils";
+// convertToW3CTokens - available for future use
 import { exportToFlutterPro as exportToFlutter } from "@/lib/exporters/flutter";
 import { exportToSwiftUIPro as exportToSwiftUI } from "@/lib/exporters/swiftui";
 import { exportToKotlinPro as exportToKotlin } from "@/lib/exporters/kotlin";
 import { exportToCSSJSPro as exportToCSSJS } from "@/lib/exporters/css-in-js";
 import { exportToFigmaVariables } from "@/lib/exporters/figma-variables";
-import { exportToStaticDocs } from "@/lib/exporters/static-docs";
-import { generateCLISyncScript } from "@/lib/cli/designforge-cli";
-import { exportToVSCodeSnippets } from "@/lib/exporters/vscode-snippets";
-import { generateGitHubAction } from "@/lib/exporters/ci-cd-templates";
+// exportToStaticDocs - available for future use
+
+
+// generateGitHubAction - available for future use
 import { exportToStorybookAdvanced } from "@/lib/exporters/storybook-advanced";
 import { exportToDTCG } from "@/lib/exporters/dtcg";
 import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
@@ -536,9 +539,10 @@ export const Default: Story = {};
 `;
 }
 
-const generateCompose = exportToKotlin;
-const generateSwiftUI = exportToSwiftUI;
-const generateFlutter = exportToFlutter;
+// Platform-specific aliases (available for future use)
+// const generateCompose = exportToKotlin;
+// const generateSwiftUI = exportToSwiftUI;
+// const generateFlutter = exportToFlutter;
 
 function generateStyleguideMD(ds: GeneratedDesignSystem): string {
   return `# Design System Styleguide: ${ds.name}
@@ -593,7 +597,7 @@ const exportOptions: ExportOption[] = [
   { id: "figma-variables", label: "Figma Variables", filename: "figma-variables.json", icon: <FileJson className="h-4 w-4" />, generator: (ds) => exportToFigmaVariables(ds), description: "Tokens compatible with Figma Variables REST API" },
   { id: "style-dictionary", label: "Style Dictionary", filename: "tokens.json", icon: <Layers className="h-4 w-4" />, generator: (ds) => generateStyleDictionary(ds), description: "Tokens for Style Dictionary framework" },
   { id: "storybook-pro", label: "Storybook Pro", filename: "storybook-theme.js", icon: <BookOpen className="h-4 w-4" />, generator: (ds) => exportToStorybookAdvanced(ds), description: "Advanced tokens + preview.js config" },
-  { id: "w3c", label: "DTCG (W3C Standard)", icon: <FileJson className="h-4 w-4" />, filename: "tokens.dtcg.json", description: "Design Tokens Community Group standard", generator: (ds, tokens) => exportToDTCG(tokens || []) },
+  { id: "w3c", label: "DTCG (W3C Standard)", icon: <FileJson className="h-4 w-4" />, filename: "tokens.dtcg.json", description: "Design Tokens Community Group standard", generator: (_ds, tokens) => exportToDTCG(tokens || []) },
 ];
 
 export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
@@ -603,10 +607,47 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
   const [previewFormat, setPreviewFormat] = useState<ExportOption | null>(null);
   const [previewContent, setPreviewContent] = useState("");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [, setIsDownloading] = useState(false);
   const [customTemplates, setCustomTemplates] = useState<any[]>([]);
   const [searchParams] = useSearchParams();
   const dsId = searchParams.get("id") || "";
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleGitHubSync = async () => {
+    if (!user) {
+      setAuthDialogOpen(true);
+      return;
+    }
+
+    // First check if git connection exists
+    const { data: connection } = await supabase
+      .from("git_connections" as any)
+      .select("repo_full_name, default_branch")
+      .eq("design_system_id", dsId)
+      .maybeSingle() as { data: { repo_full_name: string; default_branch: string } | null };
+
+    if (!connection) {
+      toast.error("GitHub not connected. Please go to Settings > Git to link a repository.");
+      return;
+    }
+
+    setIsSyncing(true);
+    const toastId = toast.loading(`Pushing to ${connection.repo_full_name}...`);
+
+    try {
+      const result = await exportToGitHub(dsId, tokens || [], connection.repo_full_name, connection.default_branch);
+
+      if (result.success) {
+        toast.success(result.message, { id: toastId });
+      } else {
+        toast.error(result.message, { id: toastId });
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred during sync", { id: toastId });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   useEffect(() => {
     const fetchCustomTemplates = async () => {
@@ -772,6 +813,16 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
           <DropdownMenuItem onClick={copyJSON}>
             {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
             Copy JSON
+          </DropdownMenuItem>
+          <Separator className="my-1" />
+          <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Git Integration</div>
+          <DropdownMenuItem
+            className="flex items-center gap-2 text-primary font-bold focus:text-primary"
+            onClick={handleGitHubSync}
+            disabled={isSyncing}
+          >
+            {isSyncing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Github className="h-4 w-4" />}
+            Push to GitHub
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

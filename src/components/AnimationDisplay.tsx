@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
 import { AnimationTokens } from "@/types/designSystem";
 import { Play, Clock, Zap, Focus } from "lucide-react";

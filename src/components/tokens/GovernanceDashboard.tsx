@@ -9,9 +9,8 @@ import {
     Activity,
     Link as LinkIcon,
     FileWarning,
-    CheckCircle2,
     RefreshCw,
-    Search,
+    CheckCircle2,
     Sparkles,
     Check
 } from "lucide-react";
@@ -26,6 +25,7 @@ interface GovernanceDashboardProps {
     onRestore: (path: string) => void;
     onPermanentDelete: (path: string) => void;
     onApplyAISuggestion?: (suggestion: AISuggestion) => void;
+    onApplyAllSuggestions?: (suggestions: AISuggestion[]) => void;
 }
 
 export function GovernanceDashboard({
@@ -33,9 +33,9 @@ export function GovernanceDashboard({
     onTokenClick,
     onRestore,
     onPermanentDelete,
-    onApplyAISuggestion
+    onApplyAISuggestion,
+    onApplyAllSuggestions
 }: GovernanceDashboardProps) {
-    const [isRefreshing, setIsRefreshing] = useState(false);
     const [isAuditing, setIsAuditing] = useState(false);
     const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
 
@@ -184,7 +184,19 @@ export function GovernanceDashboard({
                                 </CardTitle>
                                 <CardDescription>Intelligent recommendations for token consolidation and naming.</CardDescription>
                             </div>
-                            <Badge variant="secondary" className="bg-primary text-primary-foreground">BETA</Badge>
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    className="h-8 font-bold gap-2"
+                                    onClick={() => onApplyAllSuggestions?.(aiSuggestions)}
+                                    disabled={aiSuggestions.length === 0}
+                                >
+                                    <CheckCircle2 className="h-3.5 w-3.5" />
+                                    Apply All
+                                </Button>
+                                <Badge variant="secondary" className="bg-primary text-primary-foreground hidden sm:flex">BETA</Badge>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -253,7 +265,26 @@ export function GovernanceDashboard({
                                                     <div className="w-4 h-4 rounded border" style={{ backgroundColor: typeof dup.value === 'string' ? dup.value : 'transparent' }} />
                                                     <code className="text-xs font-mono">{JSON.stringify(dup.value)}</code>
                                                 </div>
-                                                <Badge variant="outline" className="text-[10px]">{dup.paths.length} tokens</Badge>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-6 text-[10px] font-bold gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                                                        onClick={() => {
+                                                            const newName = dup.paths[0].split('.').slice(0, -1).join('.') + '.consolidated';
+                                                            onApplyAISuggestion?.({
+                                                                type: 'consolidate',
+                                                                newName: newName,
+                                                                tokensToAlias: dup.paths,
+                                                                reason: "Consolidated identical values into a single source",
+                                                                value: dup.value
+                                                            });
+                                                        }}
+                                                    >
+                                                        <Sparkles className="h-3 w-3" /> Consolidate
+                                                    </Button>
+                                                    <Badge variant="outline" className="text-[10px]">{dup.paths.length} tokens</Badge>
+                                                </div>
                                             </div>
                                             <div className="flex flex-wrap gap-1">
                                                 {dup.paths.map(path => (

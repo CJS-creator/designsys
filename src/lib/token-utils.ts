@@ -1,5 +1,5 @@
 import { GeneratedDesignSystem } from "@/types/designSystem";
-import { DesignToken, TokenType } from "@/types/tokens";
+import { DesignToken } from "@/types/tokens";
 
 /**
  * Converts internal DesignToken array into W3C DTCG community group format.

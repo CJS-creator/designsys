@@ -162,6 +162,48 @@ class MonitoringService {
     public getBreadcrumbs() {
         return [...this.breadcrumbs];
     }
+
+    // ============================================
+    // PERFORMANCE TIMING
+    // ============================================
+    private timers: Map<string, number> = new Map();
+
+    /**
+     * Start a performance timer
+     */
+    public startTimer(label: string): void {
+        this.timers.set(label, performance.now());
+    }
+
+    /**
+     * End a timer and log the duration
+     */
+    public endTimer(label: string): number {
+        const start = this.timers.get(label);
+        if (!start) {
+            this.warn(`Timer "${label}" was never started`);
+            return 0;
+        }
+        const duration = performance.now() - start;
+        this.timers.delete(label);
+        this.info(`[Perf] ${label}`, { durationMs: Math.round(duration * 100) / 100 });
+        return duration;
+    }
+
+    /**
+     * Wrap an async function with timing
+     */
+    public async wrapWithTiming<T>(label: string, fn: () => Promise<T>): Promise<T> {
+        this.startTimer(label);
+        try {
+            const result = await fn();
+            this.endTimer(label);
+            return result;
+        } catch (error) {
+            this.endTimer(label);
+            throw error;
+        }
+    }
 }
 
 export const monitor = MonitoringService.getInstance();

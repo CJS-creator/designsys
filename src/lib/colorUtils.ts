@@ -263,10 +263,9 @@ export const getOnColor = (bgHex: string): string => {
 };
 
 export const getContainerColor = (hex: string, isDark: boolean = false): string => {
-  const { h, s, l } = hexToHsl(hex);
+  const { h, s, l: _l } = hexToHsl(hex);
   if (isDark) {
     return hslToString(h, Math.max(s - 20, 10), 20);
   }
   return hslToString(h, Math.max(s - 10, 5), 92);
 };
-

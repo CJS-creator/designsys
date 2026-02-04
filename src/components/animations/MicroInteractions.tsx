@@ -1,6 +1,6 @@
 import { motion, HTMLMotionProps } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { tap, hover, hoverLift, press } from "@/lib/animations/variants";
+
 import { ReactNode, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
@@ -58,11 +58,11 @@ interface InteractiveCardProps extends HTMLMotionProps<"div"> {
   interactive?: boolean;
 }
 
-export function InteractiveCard({ 
-  children, 
-  interactive = true, 
+export function InteractiveCard({
+  children,
+  interactive = true,
   className,
-  ...props 
+  ...props
 }: InteractiveCardProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -73,9 +73,9 @@ export function InteractiveCard({
         interactive && "cursor-pointer",
         className
       )}
-      whileHover={interactive && !prefersReducedMotion ? { 
-        y: -4, 
-        boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)" 
+      whileHover={interactive && !prefersReducedMotion ? {
+        y: -4,
+        boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)"
       } : {}}
       whileTap={interactive && !prefersReducedMotion ? { scale: 0.99 } : {}}
       transition={{ duration: 0.2 }}
@@ -147,7 +147,7 @@ interface FeedbackIconProps {
 
 export function FeedbackIcon({ type, size = "md" }: FeedbackIconProps) {
   const prefersReducedMotion = useReducedMotion();
-  
+
   const sizeClasses = {
     sm: "w-4 h-4",
     md: "w-6 h-6",
@@ -163,10 +163,10 @@ export function FeedbackIcon({ type, size = "md" }: FeedbackIconProps) {
 
   const icons = {
     success: (
-      <motion.svg 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
+      <motion.svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
         strokeWidth={2}
         className={cn(sizeClasses[size], colors[type])}
       >
@@ -181,10 +181,10 @@ export function FeedbackIcon({ type, size = "md" }: FeedbackIconProps) {
       </motion.svg>
     ),
     error: (
-      <motion.svg 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
+      <motion.svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
         strokeWidth={2}
         className={cn(sizeClasses[size], colors[type])}
       >
@@ -199,10 +199,10 @@ export function FeedbackIcon({ type, size = "md" }: FeedbackIconProps) {
       </motion.svg>
     ),
     warning: (
-      <motion.svg 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
+      <motion.svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
         strokeWidth={2}
         className={cn(sizeClasses[size], colors[type])}
         initial={{ scale: 0 }}
@@ -213,10 +213,10 @@ export function FeedbackIcon({ type, size = "md" }: FeedbackIconProps) {
       </motion.svg>
     ),
     info: (
-      <motion.svg 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
+      <motion.svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
         strokeWidth={2}
         className={cn(sizeClasses[size], colors[type])}
         initial={{ scale: 0 }}
@@ -253,10 +253,10 @@ interface CounterProps {
   formatter?: (value: number) => string;
 }
 
-export function Counter({ 
-  from = 0, 
-  to, 
-  duration = 1.5, 
+export function Counter({
+  from = 0,
+  to,
+  duration = 1.5,
   className,
   formatter = (v) => Math.round(v).toString()
 }: CounterProps) {

@@ -2,9 +2,9 @@ import { GeneratedDesignSystem } from "@/types/designSystem";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { getContrastRatio, getWCAGCompliance, fixContrast } from "@/lib/colorUtils";
+import { fixContrast } from "@/lib/colorUtils";
 import { DesignAuditEngine, AuditReport } from "@/lib/ai/auditEngine";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import {
     CheckCircle2, AlertCircle, Info, Activity, ShieldCheck, Zap, Sparkles,

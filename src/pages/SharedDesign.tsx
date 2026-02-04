@@ -14,7 +14,7 @@ import { BorderRadiusDisplay } from "@/components/BorderRadiusDisplay";
 import { ComponentLibraryPreview } from "@/components/ComponentLibraryPreview";
 import { LivePreview } from "@/components/LivePreview";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, Layers, Type, Grid3X3, Smartphone, Eye, Wand2 } from "lucide-react";
+import { Loader2, ArrowLeft, Wand2 } from "lucide-react";
 
 const SharedDesign = () => {
     const { id } = useParams<{ id: string }>();

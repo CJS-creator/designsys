@@ -6,18 +6,17 @@ import { ComponentSandbox } from "./ComponentSandbox";
 import { GovernanceDashboard } from "./GovernanceDashboard";
 import { ExportButton } from "../ExportButton";
 import { SemanticCopilot } from "./SemanticCopilot";
+import { SpacingGrid } from "./SpacingGrid";
 import { DesignToken } from "@/types/tokens";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { Button } from "@/components/ui/button";
 import {
-    Plus,
-    Settings,
-    Download,
     History,
     LayoutDashboard,
     Split,
     Shield,
-    Sparkles
+    Sparkles,
+    Layers
 } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
@@ -33,8 +32,8 @@ export function TokenManagementDashboard() {
     const designSystemId = searchParams.get("id");
     const {
         tokens,
-        loading,
         saveToken,
+        batchSaveTokens,
         deleteToken,
         restoreToken,
         permanentlyDeleteToken
@@ -45,6 +44,8 @@ export function TokenManagementDashboard() {
     const [editingToken, setEditingToken] = useState<DesignToken | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const [activeTab, setActiveTab] = useState<"tokens" | "history" | "sandbox" | "governance" | "copilot">("tokens");
+    const [localTokens, setLocalTokens] = useState<DesignToken[]>([]);
+    const [showSpacingGrid, setShowSpacingGrid] = useState(false);
 
     useEffect(() => {
         if (designSystemId) {
@@ -52,11 +53,17 @@ export function TokenManagementDashboard() {
         }
     }, [designSystemId]);
 
+    useEffect(() => {
+        if (tokens.length > 0) {
+            setLocalTokens(tokens.filter(t => t.status !== 'archived'));
+        }
+    }, [tokens]);
+
     const fetchDesignSystem = async () => {
         const { data, error } = await supabase
             .from("design_systems")
             .select("*")
-            .eq("id", designSystemId)
+            .eq("id", designSystemId as string)
             .single();
 
         if (data && !error) {
@@ -74,43 +81,98 @@ export function TokenManagementDashboard() {
         await deleteToken(path);
     };
 
+    const handleReorder = (newTokens: DesignToken[]) => {
+        setLocalTokens(newTokens);
+    };
+
     const handleApplyAISuggestion = async (suggestion: AISuggestion) => {
         try {
             if (suggestion.type === 'consolidate' || suggestion.type === 'new-token') {
-                // 1. If it's a new token, create it (base for others)
-                // We assume suggestion.value or the first token's value
+                const tokensToBatch: DesignToken[] = [];
                 let baseTokenValue = suggestion.value;
+
                 if (!baseTokenValue && suggestion.tokensToAlias && suggestion.tokensToAlias.length > 0) {
                     const firstToken = tokens.find(t => t.path === suggestion.tokensToAlias![0]);
                     baseTokenValue = firstToken?.value;
                 }
 
                 if (baseTokenValue) {
-                    await saveToken({
+                    tokensToBatch.push({
                         name: suggestion.newName.split('.').pop() || suggestion.newName,
                         path: suggestion.newName,
-                        type: 'color', // Default to color for now, AI should specify
+                        type: 'color',
                         value: baseTokenValue,
                         status: 'published'
                     });
                 }
 
-                // 2. Point all other tokens to this one
                 if (suggestion.tokensToAlias) {
                     for (const path of suggestion.tokensToAlias) {
                         const token = tokens.find(t => t.path === path);
                         if (token) {
-                            await saveToken({
+                            tokensToBatch.push({
                                 ...token,
                                 ref: `{${suggestion.newName}}`
                             });
                         }
                     }
                 }
-                toast.success(`Successfully applied AI suggestion: ${suggestion.newName}`);
+
+                if (tokensToBatch.length > 0) {
+                    await batchSaveTokens(tokensToBatch);
+                    toast.success(`Successfully applied AI suggestion: ${suggestion.newName}`);
+                }
             }
         } catch (error) {
             toast.error("Failed to apply AI suggestion");
+        }
+    };
+
+    const handleApplyAllSuggestions = async (suggestions: AISuggestion[]) => {
+        if (suggestions.length === 0) return;
+        toast.loading(`Applying ${suggestions.length} suggestions...`);
+        try {
+            const allTokensToUpdate: DesignToken[] = [];
+
+            for (const suggestion of suggestions) {
+                if (suggestion.type === 'consolidate' || suggestion.type === 'new-token') {
+                    let baseTokenValue = suggestion.value;
+                    if (!baseTokenValue && suggestion.tokensToAlias?.length) {
+                        baseTokenValue = tokens.find(t => t.path === suggestion.tokensToAlias![0])?.value;
+                    }
+
+                    if (baseTokenValue) {
+                        allTokensToUpdate.push({
+                            name: suggestion.newName.split('.').pop() || suggestion.newName,
+                            path: suggestion.newName,
+                            type: 'color',
+                            value: baseTokenValue,
+                            status: 'published'
+                        });
+                    }
+
+                    if (suggestion.tokensToAlias) {
+                        for (const path of suggestion.tokensToAlias) {
+                            const token = tokens.find(t => t.path === path);
+                            if (token) {
+                                allTokensToUpdate.push({
+                                    ...token,
+                                    ref: `{${suggestion.newName}}`
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (allTokensToUpdate.length > 0) {
+                await batchSaveTokens(allTokensToUpdate);
+                toast.dismiss();
+                toast.success(`Applied ${suggestions.length} suggestions successfully`);
+            }
+        } catch (error) {
+            toast.dismiss();
+            toast.error("Failed to apply all suggestions");
         }
     };
 
@@ -130,7 +192,6 @@ export function TokenManagementDashboard() {
 
     return (
         <div className="flex flex-col h-screen max-h-screen overflow-hidden bg-background">
-            {/* Dashboard Header */}
             <header className="flex items-center justify-between px-6 py-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-30">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
@@ -200,7 +261,6 @@ export function TokenManagementDashboard() {
                 </div>
             </header>
 
-            {/* Main Content Area */}
             <div className="flex-1 flex overflow-hidden p-6 gap-6">
                 {activeTab === "history" ? (
                     <div className="w-full animate-in fade-in slide-in-from-left duration-300">
@@ -227,6 +287,7 @@ export function TokenManagementDashboard() {
                             onRestore={restoreToken}
                             onPermanentDelete={permanentlyDeleteToken}
                             onApplyAISuggestion={handleApplyAISuggestion}
+                            onApplyAllSuggestions={handleApplyAllSuggestions}
                             onTokenClick={(path) => {
                                 const token = tokens.find(t => t.path === path);
                                 if (token) {
@@ -241,25 +302,49 @@ export function TokenManagementDashboard() {
                         <SemanticCopilot
                             designSystemId={designSystemId!}
                             tokens={tokens}
-                            brands={brands}
-                            onRefresh={() => {
-                                // Refresh logic - useTokens usually handles it but we can trigger it
-                            }}
+                            onRefresh={() => { }}
                         />
                     </div>
                 ) : (
                     <>
-                        {/* Token List Sidebar/Main (depending on scale) */}
-                        <div className={`transition-all duration-300 ${editingToken || isCreating ? 'w-1/2' : 'w-full'}`}>
+                        <div className={`transition-all duration-300 flex flex-col gap-6 ${editingToken || isCreating ? 'w-1/2' : 'w-full'}`}>
+                            <div className="flex items-center justify-between bg-card/10 p-2 rounded-lg border border-border/50">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-2">Visual Editors</span>
+                                <Button
+                                    variant={showSpacingGrid ? "secondary" : "ghost"}
+                                    size="sm"
+                                    className="h-8 gap-2 text-xs"
+                                    onClick={() => setShowSpacingGrid(!showSpacingGrid)}
+                                >
+                                    <Layers className="h-3.5 w-3.5" />
+                                    {showSpacingGrid ? "Hide Grid" : "Spacing Scale"}
+                                </Button>
+                            </div>
+
+                            {showSpacingGrid && (
+                                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                                    <SpacingGrid
+                                        tokens={tokens
+                                            .filter(t => t.type === 'spacing' || t.type === 'dimension')
+                                            .map(t => ({ path: t.path, value: t.value as string }))
+                                        }
+                                        onSelect={(path: string) => {
+                                            const token = tokens.find(t => t.path === path);
+                                            if (token) setEditingToken(token);
+                                        }}
+                                    />
+                                </div>
+                            )}
+
                             <TokenList
-                                tokens={tokens.filter(t => t.status !== 'archived')}
+                                tokens={localTokens}
                                 onEdit={setEditingToken}
                                 onDelete={handleDelete}
                                 onAdd={() => setIsCreating(true)}
+                                onReorder={handleReorder}
                             />
                         </div>
 
-                        {/* Editor Side Panel */}
                         {(editingToken || isCreating) && (
                             <div className="w-1/2 animate-in slide-in-from-right duration-300">
                                 <TokenEditor
@@ -276,6 +361,6 @@ export function TokenManagementDashboard() {
                     </>
                 )}
             </div>
-        </div >
+        </div>
     );
 }

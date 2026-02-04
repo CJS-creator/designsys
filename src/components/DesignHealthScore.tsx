@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { GeneratedDesignSystem } from "@/types/designSystem";
-import { DesignAuditEngine, AuditReport, AuditIssue } from "@/lib/ai/auditEngine";
+import { DesignAuditEngine, AuditReport } from "@/lib/ai/auditEngine";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, AlertTriangle, Info, CheckCircle, Activity, ArrowRight, Sparkles } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AlertTriangle, Info, CheckCircle, Activity, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface DesignHealthScoreProps {

@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutGenerator } from "./LayoutGenerator";
-import { Eye, Monitor, Layout as LayoutIcon, Briefcase, ShoppingBag } from "lucide-react";
+import { Eye, Monitor, Briefcase, ShoppingBag } from "lucide-react";
 
 interface LivePreviewProps {
   designSystem: GeneratedDesignSystem;
@@ -14,7 +14,7 @@ interface LivePreviewProps {
 export const LivePreview = ({ designSystem }: LivePreviewProps) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [layoutType, setLayoutType] = useState<"standard" | "saas" | "portfolio" | "ecommerce">("standard");
-  const { typography, borderRadius, shadows, animations } = designSystem;
+  const { typography, borderRadius, shadows } = designSystem;
   const colors = isDarkMode && designSystem.darkColors ? designSystem.darkColors : designSystem.colors;
 
   return (

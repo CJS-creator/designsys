@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Type, Copy, RefreshCw } from "lucide-react";
@@ -207,11 +206,10 @@ export function AdvancedTypographyScale({
               <button
                 key={ratio.name}
                 onClick={() => handleRatioChange(ratio.name)}
-                className={`h-8 flex-1 rounded transition-all ${
-                  selectedRatio === ratio.name
+                className={`h-8 flex-1 rounded transition-all ${selectedRatio === ratio.name
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted hover:bg-muted/80"
-                }`}
+                  }`}
                 title={`${ratio.name} (${ratio.ratio})`}
               >
                 <span className="text-xs">{ratio.ratio}</span>

@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { motion, useSpring, useTransform } from "framer-motion";
+import React, { useRef } from "react";
+import { motion, useSpring } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export const MagneticButton = ({
@@ -11,7 +11,7 @@ export const MagneticButton = ({
     className?: string;
     distance?: number;
 }) => {
-    const mouseRef = useRef({ x: 0, y: 0 });
+
     const containerRef = useRef<HTMLDivElement>(null);
 
     const x = useSpring(0, { stiffness: 150, damping: 15, mass: 0.1 });
