@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Twitter, Github, Linkedin, Slack, ArrowUp } from "lucide-react";
-import { motion } from "framer-motion";
 import { MagneticButton } from "@/components/animations/MagneticButton";
 
 const links = {

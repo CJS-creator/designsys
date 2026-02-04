@@ -1,6 +1,4 @@
-
 import { SpacingScale } from "@/types/designSystem";
-
 import { toast } from "sonner";
 
 interface SpacingDisplayProps {

@@ -1,6 +1,4 @@
-
 import { ShadowScale } from "@/types/designSystem";
-
 import { toast } from "sonner";
 
 interface ShadowDisplayProps {

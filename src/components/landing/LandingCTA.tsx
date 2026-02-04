@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight, Zap, Sparkles, Rocket } from "lucide-react";
+import { ArrowRight, Sparkles, Rocket } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MagneticButton } from "@/components/animations/MagneticButton";
 import { GradientOrbs } from "@/components/animations/GradientOrbs";

@@ -146,19 +146,16 @@ export function GitSettings({ designSystemId }: { designSystemId: string }) {
         const toastId = toast.loading("Syncing with GitHub...");
 
         try {
-            // 1. Fetch current tokens for export
-            const { data: tokensData } = await supabase
-                .from("design_tokens")
-                .select("*")
-                .eq("design_system_id", designSystemId);
+            // 1. Fetch current design system data which contains tokens
+            const { data: designSystemData } = await supabase
+                .from("design_systems")
+                .select("design_system_data")
+                .eq("id", designSystemId)
+                .single();
 
-            const tokens = (tokensData || []).map(row => ({
-                path: row.path,
-                name: row.name,
-                type: row.token_type,
-                value: row.value,
-                ref: row.alias_path
-            }));
+            // Extract tokens from design_system_data JSON
+            const dsData = designSystemData?.design_system_data as Record<string, unknown> | null;
+            const tokens = dsData?.tokens || [];
 
             // 2. Perform export
             const result = await exportToGitHub(

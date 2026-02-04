@@ -1,8 +1,6 @@
 import { useBrands, BrandTheme } from "@/hooks/useBrands";
-
 import { Button } from "@/components/ui/button";
 import { Plus, Globe, Moon, Sun, Contrast, ChevronDown, Check } from "lucide-react";
-
 import {
     DropdownMenu,
     DropdownMenuContent,

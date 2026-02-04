@@ -3,16 +3,13 @@ import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
+import { Input } from "@/components/ui/input";
 import {
     ShieldAlert,
     Users,
     Lock,
-    Unlock,
-    Settings2,
     Mail,
     UserPlus,
-    Trash2,
     MoreVertical
 } from "lucide-react";
 import { toast } from "sonner";

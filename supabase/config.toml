@@ -1,4 +1,7 @@
 project_id = "fzhzrdkojwrgdotrscug"
 
 [functions.generate-design-system]
-verify_jwt = true
+verify_jwt = false
+
+[functions.design-copilot]
+verify_jwt = false

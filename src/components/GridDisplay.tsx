@@ -1,6 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GridSystem } from "@/types/designSystem";
-import { Grid3X3, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 interface GridDisplayProps {
@@ -8,7 +6,8 @@ interface GridDisplayProps {
 }
 
 export function GridDisplay({ grid }: GridDisplayProps) {
-  const copyValue = (value: string) => {
+  const copyValue = (arg1: string, arg2?: string) => {
+    const value = arg2 ?? arg1;
     navigator.clipboard.writeText(value);
     toast.success(`Copied: ${value}`);
   };
