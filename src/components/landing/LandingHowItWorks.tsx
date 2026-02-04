@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { Sparkles, Palette, Share2, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/card-3d";
 import { cn } from "@/lib/utils";
 

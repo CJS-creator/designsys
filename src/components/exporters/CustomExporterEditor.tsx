@@ -32,7 +32,6 @@ export function CustomExporterEditor({ designSystemId, tokens }: CustomExporterE
     });
     const [previewContent, setPreviewContent] = useState("");
     const [isSaving, setIsSaving] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         fetchTemplates();
@@ -46,7 +45,6 @@ export function CustomExporterEditor({ designSystemId, tokens }: CustomExporterE
             .eq("design_system_id", designSystemId);
 
         if (data && !error) setTemplates(data as unknown as ExportTemplate[]);
-        setIsLoading(false);
     };
 
     const handlePreview = () => {

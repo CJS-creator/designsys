@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Maximize2, Grid3X3, Copy, RefreshCw } from "lucide-react";
+import { Maximize2, Grid3X3, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { SpacingScale, GridSystem } from "@/types/designSystem";
 

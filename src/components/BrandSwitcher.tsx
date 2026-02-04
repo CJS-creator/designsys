@@ -1,17 +1,6 @@
-import { useState } from "react";
 import { useBrands, BrandTheme } from "@/hooks/useBrands";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    SelectGroup,
-    SelectLabel
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Plus, Globe, Moon, Sun, Contrast, ChevronDown, Check } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,7 +17,6 @@ interface BrandSwitcherProps {
 
 export function BrandSwitcher({ designSystemId, onBrandChange }: BrandSwitcherProps) {
     const { brands, activeBrand, setActiveBrandId, createBrand, loading } = useBrands(designSystemId);
-    const [isCreating, setIsCreating] = useState(false);
 
     if (loading) return <div className="h-9 w-32 bg-muted animate-pulse rounded-md" />;
 

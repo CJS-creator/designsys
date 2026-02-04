@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -52,16 +52,61 @@ serve(async (req: Request) => {
     }
 
     try {
+        // Authentication check - verify user is authenticated
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            console.error('[design-copilot] Missing or invalid authorization header');
+            return new Response(
+                JSON.stringify({ error: 'Unauthorized', message: 'Authentication required' }), 
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        // Create Supabase client and verify the token
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+            global: { headers: { Authorization: authHeader } }
+        });
+
+        const token = authHeader.replace('Bearer ', '');
+        const { data: claimsData, error: claimsError } = await supabase.auth.getUser(token);
+        
+        if (claimsError || !claimsData?.user) {
+            console.error('[design-copilot] Invalid JWT token:', claimsError?.message);
+            return new Response(
+                JSON.stringify({ error: 'Unauthorized', message: 'Invalid or expired token' }), 
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        const userId = claimsData.user.id;
+        console.log(`[design-copilot] Authenticated user: ${userId}`);
+
+        // Parse and validate input
         const rawInput = await req.json();
         const validation = inputSchema.safeParse(rawInput);
 
         if (!validation.success) {
-            return new Response(JSON.stringify({ error: "Invalid input", details: validation.error }), { status: 400, headers: corsHeaders });
+            console.error('[design-copilot] Invalid input:', validation.error);
+            return new Response(
+                JSON.stringify({ error: "Invalid input", details: validation.error }), 
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
         }
 
         const { action, tokens, context } = validation.data;
-        // @ts-ignore: Deno global
+        console.log(`[design-copilot] Processing action: ${action} for user: ${userId}`);
+
         const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+        if (!LOVABLE_API_KEY) {
+            console.error('[design-copilot] LOVABLE_API_KEY not configured');
+            return new Response(
+                JSON.stringify({ error: "Service configuration error" }), 
+                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
 
         const userPrompt = `Action: ${action}
 Tokens: ${JSON.stringify(tokens)}
@@ -85,14 +130,29 @@ Please perform the requested action and return the appropriate JSON response.`;
             }),
         });
 
+        if (!response.ok) {
+            console.error(`[design-copilot] AI API error: ${response.status}`);
+            return new Response(
+                JSON.stringify({ error: "AI service temporarily unavailable" }), 
+                { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
         const data = await response.json();
         const content = data.choices[0].message.content;
+        
+        console.log(`[design-copilot] Successfully processed action: ${action}`);
 
         return new Response(content, {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
 
-    } catch (error: any) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('[design-copilot] Error:', errorMessage);
+        return new Response(
+            JSON.stringify({ error: errorMessage }), 
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
     }
 });

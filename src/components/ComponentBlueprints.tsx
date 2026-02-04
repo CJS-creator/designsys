@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Code2, Copy, Check, Terminal, Layout, Layers, Type, Sparkles, Smartphone, Box, BookOpen } from "lucide-react";
+import { Code2, Copy, Check, Terminal, Layout, Layers, Sparkles, Smartphone, Box, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { componentGenerator, Framework } from "@/lib/generators/componentGenerator";
 
@@ -35,7 +35,7 @@ export const ComponentBlueprints = ({ designSystem }: ComponentBlueprintsProps) 
     const components = [
         { id: "button", label: "Button", icon: Layers },
         { id: "card", label: "Card", icon: Layout },
-        { id: "input", label: "Input", icon: Type },
+        { id: "input", label: "Input", icon: Sparkles },
         { id: "badge", label: "Badge", icon: Box },
     ];
 

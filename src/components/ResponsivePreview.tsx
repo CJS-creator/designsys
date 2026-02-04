@@ -21,7 +21,7 @@ const devices: { type: DeviceType; icon: typeof Smartphone; label: string; width
 export const ResponsivePreview = ({ designSystem }: ResponsivePreviewProps) => {
   const [selectedDevice, setSelectedDevice] = useState<DeviceType>("mobile");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const { typography, borderRadius, shadows, animations } = designSystem;
+  const { typography, borderRadius, shadows } = designSystem;
   const colors = isDarkMode && designSystem.darkColors ? designSystem.darkColors : designSystem.colors;
   const device = devices.find((d) => d.type === selectedDevice)!;
   const scale = selectedDevice === "desktop" ? 0.6 : selectedDevice === "tablet" ? 0.5 : 0.8;

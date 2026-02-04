@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eye, Moon, Sun, Smartphone, Tablet, Monitor, Maximize2 } from "lucide-react";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 
@@ -23,7 +22,7 @@ const DEVICE_SIZES: Record<DeviceType, { width: string; height: string }> = {
   fullscreen: { width: "100%", height: "800px" },
 };
 
-export function RealTimePreview({ designSystem, formValues }: RealTimePreviewProps) {
+export function RealTimePreview({ designSystem }: RealTimePreviewProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [device, setDevice] = useState<DeviceType>("desktop");
 

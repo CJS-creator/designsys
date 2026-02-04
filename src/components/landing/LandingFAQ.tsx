@@ -4,8 +4,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { motion, AnimatePresence } from "framer-motion";
-import { HelpCircle, ChevronRight, Plus } from "lucide-react";
+import { motion } from "framer-motion";
 
 const faqs = [
     {

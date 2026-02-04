@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Play, Code, Palette, Github, Terminal, Cpu } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Play, Palette, Terminal, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { MovingBorderButton } from "@/components/ui/moving-border";
 import { GradientOrbs } from "@/components/animations/GradientOrbs";
 import { MagneticButton } from "@/components/animations/MagneticButton";

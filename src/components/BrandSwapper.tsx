@@ -27,7 +27,7 @@ interface BrandSwapperProps {
 
 export function BrandSwapper({ designSystemId, baseDesignSystem, onThemeChange }: BrandSwapperProps) {
     const [themes, setThemes] = useState<BrandTheme[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [_isLoading, setIsLoading] = useState(true);
     const [newThemeName, setNewThemeName] = useState("");
     const [activeThemeId, setActiveThemeId] = useState<string | null>(null);
     const [visualMode, setVisualMode] = useState<VisualMode>("default");
