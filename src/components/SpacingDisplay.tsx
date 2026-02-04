@@ -1,6 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SpacingScale } from "@/types/designSystem";
-import { Maximize2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface SpacingDisplayProps {
@@ -15,7 +13,7 @@ export function SpacingDisplay({ spacing }: SpacingDisplayProps) {
 
   return (
     <div className="grid gap-3">
-      {Object.entries(spacing.scale).map(([key, value], index) => (
+      {Object.entries(spacing.scale).map(([key, value]) => (
         <button
           key={key}
           onClick={() => copyValue(value)}

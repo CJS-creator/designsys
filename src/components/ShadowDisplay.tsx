@@ -1,6 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShadowScale } from "@/types/designSystem";
-import { Layers } from "lucide-react";
 import { toast } from "sonner";
 
 interface ShadowDisplayProps {
@@ -15,7 +13,7 @@ export function ShadowDisplay({ shadows }: ShadowDisplayProps) {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-      {Object.entries(shadows).map(([name, value], index) => (
+      {Object.entries(shadows).map(([name, value]) => (
         <button
           key={name}
           onClick={() => copyValue(value)}

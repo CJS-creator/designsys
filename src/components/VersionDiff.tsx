@@ -1,6 +1,5 @@
 import { DesignToken } from "@/types/tokens";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { GitCompare, ArrowRight, Check, X, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 

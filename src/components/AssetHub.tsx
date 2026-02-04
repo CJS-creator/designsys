@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { monitor } from "@/lib/monitoring";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
     Download,
-    FileArchive,
     FileType,
     FileText,
     Image as ImageIcon,
-    Check,
     Loader2,
     AlertCircle,
     ExternalLink,

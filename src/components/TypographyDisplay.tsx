@@ -1,6 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TypographyScale } from "@/types/designSystem";
-import { Type, Copy } from "lucide-react";
+import { Copy } from "lucide-react";
 import { toast } from "sonner";
 
 interface TypographyDisplayProps {

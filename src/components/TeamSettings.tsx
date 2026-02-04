@@ -1,22 +1,15 @@
 import { useState, useEffect } from "react";
 import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
-    Shield,
     ShieldAlert,
-    ShieldCheck,
     Users,
     Lock,
-    Unlock,
-    Settings2,
     Mail,
     UserPlus,
-    Trash2,
     MoreVertical
 } from "lucide-react";
 import { toast } from "sonner";

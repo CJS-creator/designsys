@@ -25,15 +25,18 @@ export function DesignSystemSettings({ designSystemId }: DesignSystemSettingsPro
 
     useEffect(() => {
         const fetchSettings = async () => {
-            const { data, error } = await supabase
+            // Note: is_public and share_id columns may not exist yet in the database
+            // Using design_system_data as a workaround to store sharing settings
+            const { data } = await supabase
                 .from("design_systems")
-                .select("is_public, share_id")
+                .select("design_system_data")
                 .eq("id", designSystemId)
                 .single();
 
-            if (data) {
-                setIsPublic(!!data.is_public);
-                setShareId(data.share_id);
+            if (data?.design_system_data) {
+                const dsData = data.design_system_data as Record<string, unknown>;
+                setIsPublic(!!dsData.is_public);
+                setShareId((dsData.share_id as string) || null);
             }
             setIsLoading(false);
         };
@@ -46,21 +49,35 @@ export function DesignSystemSettings({ designSystemId }: DesignSystemSettingsPro
         try {
             const newShareId = checked && !shareId ? crypto.randomUUID() : shareId;
 
-            const { error } = await supabase
+            // First get current design_system_data
+            const { data: currentData } = await supabase
+                .from("design_systems")
+                .select("design_system_data")
+                .eq("id", designSystemId)
+                .single();
+
+            const currentDsData = (currentData?.design_system_data as Record<string, unknown>) || {};
+            
+            // Update with sharing settings stored in design_system_data
+            const { error: updateError } = await supabase
                 .from("design_systems")
                 .update({
-                    is_public: checked,
-                    share_id: checked ? newShareId : shareId
-                } as any)
+                    design_system_data: {
+                        ...currentDsData,
+                        is_public: checked,
+                        share_id: checked ? newShareId : shareId
+                    }
+                })
                 .eq("id", designSystemId);
 
-            if (error) throw error;
+            if (updateError) throw updateError;
 
             setIsPublic(checked);
             if (checked) setShareId(newShareId);
 
             toast.success(checked ? "Documentation is now public!" : "Documentation is now private.");
-        } catch (error) {
+        } catch (err) {
+            console.error("Failed to update sharing settings:", err);
             toast.error("Failed to update sharing settings");
         } finally {
             setIsSaving(false);
