@@ -34,7 +34,7 @@ export function OnboardingCelebration() {
   useEffect(() => {
     if (!hasConfetti) {
       setHasConfetti(true);
-      
+
       // Fire confetti
       const duration = 2000;
       const animationEnd = Date.now() + duration;
@@ -121,7 +121,7 @@ export function OnboardingCelebration() {
         animate="visible"
         className="grid md:grid-cols-3 gap-4 mb-8"
       >
-        {nextSteps.map((step, index) => (
+        {nextSteps.map((step) => (
           <motion.div
             key={step.title}
             variants={staggerItem}

@@ -114,6 +114,14 @@ export function BrandSwapper({ designSystemId, baseDesignSystem, onThemeChange }
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="h-32 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+        );
+    }
+
     return (
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>

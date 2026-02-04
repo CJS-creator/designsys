@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    CheckCircle2,
     XCircle,
     Clock,
     ShieldCheck,
     ArrowRight,
     MessageSquare,
-    Eye,
     History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +34,7 @@ interface ApprovalRequest {
     changes: PendingChange[];
 }
 
-export const ApprovalWorkflow: React.FC<{ designSystemId?: string }> = ({ designSystemId }) => {
+export const ApprovalWorkflow: React.FC<{ designSystemId?: string }> = () => {
     const [requests, setRequests] = useState<ApprovalRequest[]>([
         {
             id: '1',

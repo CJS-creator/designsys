@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
 import { ColorPalette } from "@/types/designSystem";
 import { MousePointer, Hand, Ban, Focus } from "lucide-react";
 

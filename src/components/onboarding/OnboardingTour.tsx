@@ -2,9 +2,9 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useOnboarding } from "@/contexts/OnboardingContext";
-import { 
-  ArrowRight, ArrowLeft, Palette, Type, Grid3X3, 
-  Sun, Moon, Download, Eye, Play, Layers
+import {
+  ArrowRight, ArrowLeft, Palette, Type,
+  Sun, Moon, Download, Eye, Layers
 } from "lucide-react";
 import { fadeUp, scale } from "@/lib/animations/variants";
 
@@ -85,23 +85,23 @@ function TourVisual({ type }: { type: TourStep["visual"] }) {
     ),
     typography: (
       <div className="text-center space-y-2">
-        <motion.p 
-          initial={{ opacity: 0, y: 10 }} 
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-3xl font-bold"
         >
           Heading
         </motion.p>
-        <motion.p 
-          initial={{ opacity: 0, y: 10 }} 
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="text-lg"
         >
           Body text
         </motion.p>
-        <motion.code 
-          initial={{ opacity: 0, y: 10 }} 
+        <motion.code
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="text-sm font-mono bg-muted px-2 py-1 rounded"

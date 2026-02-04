@@ -21,7 +21,7 @@ const devices: { type: DeviceType; icon: typeof Smartphone; label: string; width
 export const ResponsivePreview = ({ designSystem }: ResponsivePreviewProps) => {
   const [selectedDevice, setSelectedDevice] = useState<DeviceType>("mobile");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const { typography, borderRadius, shadows, animations } = designSystem;
+  const { typography, borderRadius, shadows } = designSystem;
   const colors = isDarkMode && designSystem.darkColors ? designSystem.darkColors : designSystem.colors;
   const device = devices.find((d) => d.type === selectedDevice)!;
   const scale = selectedDevice === "desktop" ? 0.6 : selectedDevice === "tablet" ? 0.5 : 0.8;
@@ -64,8 +64,8 @@ export const ResponsivePreview = ({ designSystem }: ResponsivePreviewProps) => {
           {/* Device Frame */}
           <div
             className="relative bg-foreground rounded-[2.5rem] p-3 shadow-2xl transition-all duration-500"
-            style={{ 
-              width: device.width * scale + 24, 
+            style={{
+              width: device.width * scale + 24,
               minHeight: Math.min(device.height * scale + 24, 600),
             }}
           >
@@ -73,12 +73,12 @@ export const ResponsivePreview = ({ designSystem }: ResponsivePreviewProps) => {
             {selectedDevice === "mobile" && (
               <div className="absolute top-1 left-1/2 -translate-x-1/2 w-20 h-5 bg-foreground rounded-b-xl z-10" />
             )}
-            
+
             {/* Screen */}
             <div
               className="overflow-hidden rounded-[2rem] relative"
-              style={{ 
-                width: device.width * scale, 
+              style={{
+                width: device.width * scale,
                 height: Math.min(device.height * scale, 576),
                 background: colors.background,
               }}
@@ -156,7 +156,7 @@ export const ResponsivePreview = ({ designSystem }: ResponsivePreviewProps) => {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-4 text-center text-sm text-muted-foreground">
           {device.width} × {device.height}px
         </div>

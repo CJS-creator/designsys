@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { Check, X, Timer, Zap, FileSpreadsheet, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Timer, Zap, FileSpreadsheet, Sparkles } from "lucide-react";
+
 
 const comparisonData = [
     {

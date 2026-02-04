@@ -1,4 +1,4 @@
-import { GeneratedDesignSystem, ColorPalette, ShadowScale, BorderRadius } from "@/types/designSystem";
+import { GeneratedDesignSystem } from "@/types/designSystem";
 
 export type VisualMode = 'default' | 'brutalism' | 'glassmorphism' | 'minimalist' | 'high-contrast';
 

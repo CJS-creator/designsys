@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { Brain, Zap, Smartphone, Sparkles, Layout, Shield, Network, Orbit, RefreshCw, Terminal } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";

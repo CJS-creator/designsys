@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Code2, Play, Save, Trash2, HelpCircle, FileJson, FileCode, Copy } from "lucide-react";
+import { Code2, Save, Trash2, HelpCircle, FileJson, FileCode, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DesignToken } from "@/types/tokens";
 import { toast } from "sonner";
@@ -32,7 +32,7 @@ export function CustomExporterEditor({ designSystemId, tokens }: CustomExporterE
     });
     const [previewContent, setPreviewContent] = useState("");
     const [isSaving, setIsSaving] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+
 
     useEffect(() => {
         fetchTemplates();
@@ -46,7 +46,6 @@ export function CustomExporterEditor({ designSystemId, tokens }: CustomExporterE
             .eq("design_system_id", designSystemId);
 
         if (data && !error) setTemplates(data as unknown as ExportTemplate[]);
-        setIsLoading(false);
     };
 
     const handlePreview = () => {

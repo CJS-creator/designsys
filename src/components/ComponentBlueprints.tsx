@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Code2, Copy, Check, Terminal, Layout, Layers, Type, Sparkles, Smartphone, Box, BookOpen } from "lucide-react";

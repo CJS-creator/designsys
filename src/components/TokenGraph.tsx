@@ -6,13 +6,10 @@ import ReactFlow, {
     Node,
     Handle,
     Position,
-    ConnectionLineType,
     MarkerType
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { GeneratedDesignSystem } from '@/types/designSystem';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
 
 // Custom Node Components
 const PrimitiveNode = ({ data }: any) => (
@@ -83,7 +80,7 @@ export const TokenGraph: React.FC<TokenGraphProps> = ({ designSystem }) => {
             return { nodes: dsNodes, edges: dsEdges };
         }
 
-        const { tokens, collections } = designSystem.tokenStore;
+        const { tokens } = designSystem.tokenStore;
         const REF_REGEX = /\{([^}]+)\}/g;
 
         // Position tracking
@@ -92,7 +89,7 @@ export const TokenGraph: React.FC<TokenGraphProps> = ({ designSystem }) => {
         let componentCount = 0;
 
         Object.values(tokens).forEach((token) => {
-            const isFoundation = token.path.startsWith('colors.') || token.path.startsWith('spacing.') || token.path.startsWith('typography.');
+
             const isSemantic = token.path.startsWith('semantic.');
             const isComponent = token.path.startsWith('components.');
 

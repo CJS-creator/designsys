@@ -8,7 +8,7 @@ interface GridDisplayProps {
 }
 
 export function GridDisplay({ grid }: GridDisplayProps) {
-  const copyValue = (key: string, value: string) => {
+  const copyValue = (value: string) => {
     navigator.clipboard.writeText(value);
     toast.success(`Copied: ${value}`);
   };
@@ -27,7 +27,7 @@ export function GridDisplay({ grid }: GridDisplayProps) {
           ].map((item) => (
             <button
               key={item.label}
-              onClick={() => copyValue(item.key, String(item.value))}
+              onClick={() => copyValue(String(item.value))}
               className="p-4 bg-background rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
             >
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{item.label}</p>

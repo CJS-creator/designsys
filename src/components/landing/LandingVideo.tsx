@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Play, Pause, Maximize2 } from "lucide-react";
+import { Play } from "lucide-react";
 import { GlowingBorder } from "@/components/animations/GlowingBorder";
 import { MagneticButton } from "@/components/animations/MagneticButton";
 

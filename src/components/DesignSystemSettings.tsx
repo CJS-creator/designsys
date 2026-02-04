@@ -25,7 +25,7 @@ export function DesignSystemSettings({ designSystemId }: DesignSystemSettingsPro
 
     useEffect(() => {
         const fetchSettings = async () => {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from("design_systems")
                 .select("is_public, share_id")
                 .eq("id", designSystemId)
