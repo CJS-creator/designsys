@@ -1,17 +1,11 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
+// import { AuthProvider } from '@/contexts/AuthContext';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-// Mock Auth Context
-const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
-    return (
-        <AuthProvider>
-            {children}
-        </AuthProvider>
-    );
-};
+// Mock Auth Context - Unused
+// const MockAuthProvider = ({ children }: { children: React.ReactNode }) => { ... };
 
 // AllTheProviders wrapper
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {

@@ -346,6 +346,38 @@ export type Database = {
           }
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          design_system_id: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          design_system_id: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          design_system_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -354,7 +386,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "editor" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never

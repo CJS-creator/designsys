@@ -301,6 +301,7 @@ export function TokenManagementDashboard() {
                         <div className="w-full h-full animate-in fade-in slide-in-from-right duration-500 overflow-y-auto pr-2">
                             <GovernanceDashboard
                                 tokens={tokens}
+                                designSystemId={designSystemId!}
                                 onRestore={restoreToken}
                                 onPermanentDelete={permanentlyDeleteToken}
                                 onApplyAISuggestion={handleApplyAISuggestion}

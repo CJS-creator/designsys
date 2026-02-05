@@ -22,6 +22,7 @@ import { AuditLogViewer } from "../AuditLogViewer";
 
 interface GovernanceDashboardProps {
     tokens: DesignToken[];
+    designSystemId: string;
     onTokenClick: (path: string) => void;
     onRestore: (path: string) => void;
     onPermanentDelete: (path: string) => void;
@@ -31,6 +32,7 @@ interface GovernanceDashboardProps {
 
 export function GovernanceDashboard({
     tokens,
+    designSystemId,
     onTokenClick,
     onRestore,
     onPermanentDelete,
@@ -388,7 +390,7 @@ export function GovernanceDashboard({
                 </CardContent>
             </Card>
 
-            <AuditLogViewer designSystemId={tokens[0]?.design_system_id} />
+            <AuditLogViewer designSystemId={designSystemId} />
         </div>
     );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { monitor } from "@/lib/monitoring";
 import { Link, useSearchParams } from "react-router-dom";
 import { BrandSwitcher } from "@/components/BrandSwitcher";
@@ -23,7 +23,8 @@ import { InteractiveColorsDisplay } from "@/components/InteractiveColorsDisplay"
 import { DesignSystemPresets } from "@/components/DesignSystemPresets";
 import { useOnboarding } from "@/contexts/OnboardingContext";
 import { GitSettings } from "@/components/GitSettings";
-import { TeamSettings, UserRole } from "@/components/TeamSettings";
+import { useUserRole } from "@/hooks/useUserRole";
+import { TeamSettings } from "@/components/TeamSettings";
 import { AIAdvisor } from "@/components/AIAdvisor";
 import { BrandSwapper } from "@/components/BrandSwapper";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
@@ -44,6 +45,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Spotlight } from "@/components/ui/spotlight";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { useDesignSystemShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useUserRole } from "@/hooks/useUserRole";
 import { ShortcutOverlay } from "@/components/ShortcutOverlay";
 import { FeatureTour } from "@/components/FeatureTour";
 import { DesignSystemSkeleton } from "@/components/DesignSystemSkeleton";
@@ -80,7 +82,8 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
   const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [userRole, setUserRole] = useState<UserRole>("owner");
+  // const [userRole, setUserRole] = useState<UserRole>("owner"); // TODO: Implement in Phase 2
+  const { role: userRole } = useUserRole(designSystem?.id || "");
   const [showGuestBanner, setShowGuestBanner] = useState(() => {
     return !sessionStorage.getItem("guest_banner_dismissed");
   });
@@ -251,7 +254,7 @@ const Index = () => {
               <ModeToggle />
               <div className="h-6 w-px bg-border/40 mx-2" />
               {designSystem && (
-                <BrandSwitcher designSystemId={designSystem.id} />
+                <BrandSwitcher designSystemId={designSystem.id || ""} />
               )}
               <div id="tour-export">
                 {designSystem && <ExportButton designSystem={designSystem} />}
@@ -505,7 +508,7 @@ const Index = () => {
 
                   <TabsContent value="team" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <TeamSettings designSystemId={designSystem?.id || ""} />
+                      <TeamSettings designSystemId={designSystem?.id || ""} currentUserRole={userRole} />
                     </Suspense>
                   </TabsContent>
 

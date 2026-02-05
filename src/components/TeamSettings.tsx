@@ -20,6 +20,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export type UserRole = "owner" | "editor" | "viewer";
 
@@ -32,9 +33,10 @@ interface TeamMember {
 
 interface TeamSettingsProps {
     designSystemId: string;
+    currentUserRole?: UserRole | null;
 }
 
-export const TeamSettings = ({ designSystemId }: TeamSettingsProps) => {
+export const TeamSettings = ({ designSystemId, currentUserRole }: TeamSettingsProps) => {
     const [isLocked, setIsLocked] = useState(false);
     const [members, setMembers] = useState<TeamMember[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -45,12 +47,12 @@ export const TeamSettings = ({ designSystemId }: TeamSettingsProps) => {
         setIsLoading(true);
         try {
             const { data, error } = await supabase
-                .from("user_roles" as any)
+                .from("user_roles")
                 .select("*")
                 .eq("design_system_id", designSystemId);
 
             if (error) throw error;
-            setMembers((data as any) || []);
+            setMembers((data as unknown as TeamMember[]) || []);
         } catch (error) {
             monitor.error("Error fetching members", error as Error);
         } finally {
@@ -59,15 +61,23 @@ export const TeamSettings = ({ designSystemId }: TeamSettingsProps) => {
     };
 
     const handleInvite = async () => {
+        if (currentUserRole !== "owner") {
+            toast.error("Only owners can invite members");
+            return;
+        }
         if (!inviteEmail) return;
         toast.info(`Invitation sent to ${inviteEmail} (Simulation)`);
         setInviteEmail("");
     };
 
     const updateMemberRole = async (userId: string, newRole: UserRole) => {
+        if (currentUserRole !== "owner") {
+            toast.error("Only owners can manage roles");
+            return;
+        }
         try {
             const { error } = await supabase
-                .from("user_roles" as any)
+                .from("user_roles")
                 .update({ role: newRole })
                 .eq("user_id", userId)
                 .eq("design_system_id", designSystemId);
@@ -81,9 +91,13 @@ export const TeamSettings = ({ designSystemId }: TeamSettingsProps) => {
     };
 
     const removeMember = async (userId: string) => {
+        if (currentUserRole !== "owner") {
+            toast.error("Only owners can remove members");
+            return;
+        }
         try {
             const { error } = await supabase
-                .from("user_roles" as any)
+                .from("user_roles")
                 .delete()
                 .eq("user_id", userId)
                 .eq("design_system_id", designSystemId);
@@ -143,7 +157,7 @@ export const TeamSettings = ({ designSystemId }: TeamSettingsProps) => {
                                             </div>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Member actions">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Member actions" disabled={currentUserRole !== "owner"}>
                                                         <MoreVertical className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
@@ -178,7 +192,7 @@ export const TeamSettings = ({ designSystemId }: TeamSettingsProps) => {
                                         onChange={(e) => setInviteEmail(e.target.value)}
                                     />
                                 </div>
-                                <Button onClick={handleInvite} className="gap-2">
+                                <Button onClick={handleInvite} className="gap-2" disabled={currentUserRole !== "owner"}>
                                     Invite
                                 </Button>
                             </div>
@@ -223,6 +237,7 @@ export const TeamSettings = ({ designSystemId }: TeamSettingsProps) => {
                                 variant={isLocked ? "destructive" : "outline"}
                                 size="sm"
                                 className="w-full h-8 text-[10px]"
+                                disabled={currentUserRole === "viewer"}
                                 onClick={() => setIsLocked(!isLocked)}
                             >
                                 {isLocked ? "Unfreeze Project" : "Freeze Project"}

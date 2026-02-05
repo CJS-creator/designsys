@@ -36,4 +36,4 @@ CREATE POLICY "Users can manage their own figma connections"
 CREATE TRIGGER set_figma_connections_updated_at
   BEFORE UPDATE ON public.figma_connections
   FOR EACH ROW
-  EXECUTE FUNCTION public.handle_updated_at();
+  EXECUTE FUNCTION public.update_updated_at_column();

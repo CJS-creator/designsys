@@ -29,7 +29,7 @@ export const createStyles = (styleBuilder) => StyleSheet.create(styleBuilder(the
         Object.entries(typography.sizes).forEach(([key, value]) => {
             result[key] = {
                 fontSize: parseInt(String(value).replace('px', '').replace('rem', '')) * 16, // Rough conversion
-                fontFamily: typography.fontFamily.primary
+                fontFamily: typography.fontFamily.body
             };
         });
 

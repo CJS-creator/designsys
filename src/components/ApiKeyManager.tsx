@@ -44,7 +44,7 @@ export function ApiKeyManager({ designSystemId }: ApiKeyManagerProps) {
             console.error("Error fetching keys:", error);
             toast.error("Failed to load API keys");
         } else {
-            setKeys(data as ApiKey[]);
+            setKeys((data as unknown) as ApiKey[]);
         }
         setIsLoading(false);
     };

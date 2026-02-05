@@ -250,20 +250,30 @@ export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
                     <Button
                         onClick={async () => {
                             if (!connection) return;
-                            const { error } = await supabase
-                                .from("figma_connections" as any)
-                                .update({
-                                    figma_token: connection.figma_token,
-                                    figma_file_key: connection.figma_file_key
-                                })
-                                .eq("id", connection.id);
+                            setIsLoading(true);
+                            try {
+                                const { error } = await supabase.functions.invoke('save-connection', {
+                                    body: {
+                                        type: 'figma',
+                                        designSystemId,
+                                        token: connection.figma_token,
+                                        figmaFileKey: connection.figma_file_key
+                                    }
+                                });
 
-                            if (error) toast.error("Failed to save credentials");
-                            else toast.success("Credentials saved!");
+                                if (error) throw error;
+                                toast.success("Credentials saved securely!");
+                                fetchConnection(); // Refresh
+                            } catch (error: any) {
+                                toast.error("Failed to save credentials: " + error.message);
+                            } finally {
+                                setIsLoading(false);
+                            }
                         }}
                         className="w-full"
+                        disabled={isLoading}
                     >
-                        Save Connection
+                        {isLoading ? "Encrypting & Saving..." : "Save Secure Connection"}
                     </Button>
                 </CardContent>
             </Card>

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "./test-utils";
+import { render, screen } from "./test-utils";
 import { TokenManagementDashboard } from "@/components/tokens/TokenManagementDashboard";
 import * as useTokensHook from "@/hooks/useTokens";
 import * as useBrandsHook from "@/hooks/useBrands";
 import { DesignToken } from "@/types/tokens";
-import React from "react";
+// import React from "react";
 
 // Mocks
 vi.mock("@/integrations/supabase/client", () => ({
