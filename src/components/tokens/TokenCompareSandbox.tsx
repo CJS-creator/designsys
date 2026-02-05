@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { DesignToken } from "@/types/tokens";
 import { BrandTheme } from "@/hooks/useBrands";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import {
     Layers,
     MousePointer2,
@@ -23,15 +23,15 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-interface ComponentSandboxProps {
+interface TokenCompareSandboxProps {
     allTokens: DesignToken[];
     brands: BrandTheme[];
     onTokenClick?: (path: string) => void;
 }
 
-export function ComponentSandbox({ allTokens, brands, onTokenClick }: ComponentSandboxProps) {
+export function TokenCompareSandbox({ allTokens, brands, onTokenClick }: TokenCompareSandboxProps) {
     const [primaryBrandId, setPrimaryBrandId] = useState<string | null>(brands[0]?.id || null);
     const [comparisonBrandId, setComparisonBrandId] = useState<string | null>(brands[1]?.id || null);
     const [hoveredTokenPath, setHoveredTokenPath] = useState<string | null>(null);

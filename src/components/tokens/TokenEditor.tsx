@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { DesignToken, TokenType } from "@/types/tokens";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Badge } from "@/components/ui/badge";
 import { Palette, Type, Square, Timer, Box, Layers, Image as ImageIcon } from "lucide-react";
 import { ColorPicker } from "@/components/ui/color-picker";

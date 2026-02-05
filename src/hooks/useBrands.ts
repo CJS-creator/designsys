@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { recordAuditLog } from "@/lib/auditLogs";
 
 export interface BrandTheme {
     id: string;
@@ -67,6 +68,16 @@ export function useBrands(designSystemId?: string) {
                 .single();
 
             if (error) throw error;
+
+            // Audit
+            recordAuditLog({
+                design_system_id: designSystemId,
+                action: "CREATE",
+                entity_type: "BRAND",
+                entity_id: data.id,
+                metadata: { name, mode, summary: `Created brand ${name} (${mode})` }
+            });
+
             toast.success("Brand created");
             fetchBrands();
             return data;

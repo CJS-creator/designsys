@@ -1,4 +1,4 @@
-import { UnifiedTokenStore, DesignToken, TokenType } from "@/types/tokens";
+import { UnifiedTokenStore, TokenType } from "@/types/tokens";
 
 const REF_REGEX = /^\{([^}]+)\}$/;
 

@@ -13,7 +13,7 @@ import { GridDisplay } from "@/components/GridDisplay";
 import { BorderRadiusDisplay } from "@/components/BorderRadiusDisplay";
 import { ExportButton } from "@/components/ExportButton";
 import { Button } from "@/components/ui/button";
-import { AuthRequiredWrapper } from "@/components/AuthRequiredWrapper";
+
 import { Tabs, TabsContent, TabsList, AnimatedTabsTrigger } from "@/components/ui/animated-tabs";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
@@ -28,15 +28,15 @@ import { AIAdvisor } from "@/components/AIAdvisor";
 import { BrandSwapper } from "@/components/BrandSwapper";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { trackEvent } from "@/lib/analytics";
-import { Icon } from "@/components/ui/icon-registry";
-import { MagneticButton } from "@/components/animations/MagneticButton";
-import { TextReveal } from "@/components/animations/TextReveal";
+
+
+
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Activity, Box, Layers, Type, Settings as SettingsIcon, Users, Grid3X3, Palette, Eye, Smartphone, Code2, HelpCircle, Zap, X, Search, Lock, Layout, GitCompare, Shield, BookOpen, ExternalLink, Ruler, Maximize, Cast, Menu, BarChart3, ShieldCheck, ShoppingBag, Package } from "lucide-react";
+import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Box, Layers, Type, Settings as SettingsIcon, Users, Grid3X3, Palette, Eye, HelpCircle, Zap, X, Lock, Shield, ExternalLink, Ruler, Cast, Menu, BarChart3, ShieldCheck, ShoppingBag, Package } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
 import { useTokens } from "@/hooks/useTokens";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
-import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
+
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ModeToggle } from "@/components/mode-toggle";
 import { toast } from "sonner";

@@ -15,10 +15,19 @@ export function usePresence(designSystemId: string, onUpdate?: (data: any) => vo
     const channelRef = useRef<RealtimeChannel | null>(null);
     const onUpdateRef = useRef(onUpdate);
 
+    const isMounted = useRef(true);
+
     // Keep onUpdateRef in sync without triggering effects
     useEffect(() => {
         onUpdateRef.current = onUpdate;
     }, [onUpdate]);
+
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         if (!designSystemId || !user) return;
@@ -50,15 +59,17 @@ export function usePresence(designSystemId: string, onUpdate?: (data: any) => vo
                     }
                 });
 
-                setOnlineUsers(users);
+                if (isMounted.current) {
+                    setOnlineUsers(users);
+                }
             })
             .on("broadcast", { event: "token-update" }, (payload) => {
-                if (onUpdateRef.current && payload.payload.user_id !== user.id) {
+                if (isMounted.current && onUpdateRef.current && payload.payload.user_id !== user.id) {
                     onUpdateRef.current(payload.payload.designSystem);
                 }
             })
             .subscribe(async (status) => {
-                if (status === "SUBSCRIBED") {
+                if (status === "SUBSCRIBED" && isMounted.current) {
                     await channel.track({
                         online_at: new Date().toISOString(),
                         email: user.email,

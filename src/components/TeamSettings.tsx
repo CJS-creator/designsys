@@ -19,6 +19,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 
 export type UserRole = "owner" | "editor" | "viewer";
 
@@ -225,6 +226,34 @@ export const TeamSettings = ({ designSystemId }: TeamSettingsProps) => {
                                 onClick={() => setIsLocked(!isLocked)}
                             >
                                 {isLocked ? "Unfreeze Project" : "Freeze Project"}
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="glass-card">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                <ShieldAlert className="h-4 w-4" />
+                                Enterprise Security
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <Label className="text-xs font-bold">SSO Enforcement</Label>
+                                    <p className="text-[10px] text-muted-foreground">Require SAML/OIDC login.</p>
+                                </div>
+                                <Switch disabled checked={false} aria-label="Toggle SSO" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <Label className="text-xs font-bold">Audit Logs</Label>
+                                    <p className="text-[10px] text-muted-foreground">Track all changes.</p>
+                                </div>
+                                <Switch disabled checked={true} aria-label="Toggle Audit Logs" />
+                            </div>
+                            <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => toast.info("Contact sales to enable Enterprise SSO")}>
+                                Configure SSO
                             </Button>
                         </CardContent>
                     </Card>

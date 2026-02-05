@@ -30,15 +30,30 @@ interface TokenListProps {
     onReorder?: (newTokens: DesignToken[]) => void;
 }
 
-export function TokenList({ tokens, onEdit, onDelete, onAdd }: TokenListProps) {
+import { VectorTokenSearch } from "@/lib/ai/VectorTokenSearch";
+
+// ...
+
+export function TokenList({ tokens, onEdit, onDelete, onAdd, onReorder }: TokenListProps) {
     const [search, setSearch] = useState("");
     const [filterType, setFilterType] = useState<TokenType | "all">("all");
 
-    const filteredTokens = tokens.filter(t => {
-        const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase()) ||
-            t.path.toLowerCase().includes(search.toLowerCase());
+    // Use Vector Search for smarter filtering
+    const searchEngine = new VectorTokenSearch(tokens);
+    let filteredTokens = tokens;
+
+    if (search) {
+        const results = searchEngine.search(search);
+        // Map back to original tokens
+        filteredTokens = results
+            .map(r => tokens.find(t => t.path === r.path)!)
+            .filter(Boolean);
+    }
+
+    // Apply Type Filter on top
+    filteredTokens = filteredTokens.filter(t => {
         const matchesType = filterType === "all" || t.type === filterType;
-        return matchesSearch && matchesType;
+        return matchesType;
     });
 
     const resolveValue = (token: DesignToken): any => {

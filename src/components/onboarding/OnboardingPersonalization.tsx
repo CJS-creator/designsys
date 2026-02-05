@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useOnboarding, OnboardingPreferences } from "@/contexts/OnboardingContext";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 import { ArrowRight, ArrowLeft, User, Target, BookOpen } from "lucide-react";
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations/variants";
 
@@ -35,8 +35,8 @@ export function OnboardingPersonalization() {
   const [learningStyle, setLearningStyle] = useState<"visual" | "text" | "both">("both");
 
   const toggleGoal = (goalId: string) => {
-    setGoals(prev => 
-      prev.includes(goalId) 
+    setGoals(prev =>
+      prev.includes(goalId)
         ? prev.filter(g => g !== goalId)
         : [...prev, goalId]
     );
@@ -72,7 +72,7 @@ export function OnboardingPersonalization() {
         <p className="text-muted-foreground">Help us tailor DesignForge to your needs</p>
       </div>
 
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"

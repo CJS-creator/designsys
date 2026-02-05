@@ -4,9 +4,7 @@ import { DesignToken } from "@/types/tokens";
  * Styled Components / Emotion Exporter
  */
 export function exportToCSSJSPro(tokens: DesignToken[], dsName: string): string {
-  const normalizeKey = (path: string) => {
-    return path.replace(/[.-]/g, '_');
-  };
+
 
   const groupedTokens: Record<string, any> = {};
 

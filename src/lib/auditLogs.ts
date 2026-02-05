@@ -1,35 +1,40 @@
 import { supabase } from "@/integrations/supabase/client";
 import { monitor } from "./monitoring";
 
+export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "PUBLISH" | "ARCHIVE" | "RESTORE";
+export type EntityType = "TOKEN" | "BRAND" | "GROUP" | "SYSTEM";
+
 export interface AuditLogEntry {
-    id: string;
     design_system_id: string;
-    user_email: string;
-    action: string;
-    summary: string;
-    created_at: string;
+    action: AuditAction;
+    entity_type: EntityType;
+    entity_id?: string;
+    old_value?: any;
+    new_value?: any;
+    metadata?: any;
 }
 
 /**
  * Records an action in the design audit logs.
  */
-export const recordAuditLog = async (
-    designSystemId: string,
-    userEmail: string,
-    action: string,
-    summary: string
-) => {
-    monitor.info(`[Audit Log] Recording: ${action}`, { summary, userEmail });
+export const recordAuditLog = async (entry: AuditLogEntry) => {
+    monitor.info(`[Audit Log] ${entry.action} on ${entry.entity_type}`, {
+        entity_id: entry.entity_id,
+        summary: entry.metadata?.summary
+    });
 
     try {
-        const { error } = await (supabase
-            .from("design_audit_logs" as any) as any)
+        const { error } = await supabase
+            .from("audit_logs" as any)
             .insert([
                 {
-                    design_system_id: designSystemId,
-                    user_email: userEmail,
-                    action: action,
-                    summary: summary,
+                    design_system_id: entry.design_system_id,
+                    action: entry.action,
+                    entity_type: entry.entity_type,
+                    entity_id: entry.entity_id,
+                    old_value: entry.old_value,
+                    new_value: entry.new_value,
+                    metadata: entry.metadata,
                 },
             ]);
 

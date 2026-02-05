@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, Code2, Zap, Clock, Globe2, Rocket, TrendingUp } from "lucide-react";
+import { Code2, Zap, Rocket, TrendingUp } from "lucide-react";
 import { NumberTicker } from "@/components/ui/number-ticker";
 
 const stats = [

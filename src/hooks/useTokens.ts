@@ -4,6 +4,7 @@ import { DesignToken, TokenType } from "@/types/tokens";
 import { toast } from "sonner";
 import { monitor } from "@/lib/monitoring";
 import { useAuth } from "@/contexts/AuthContext";
+import { recordAuditLog } from "@/lib/auditLogs";
 
 export function useTokens(designSystemId?: string) {
     const [tokens, setTokens] = useState<DesignToken[]>([]);
@@ -117,6 +118,18 @@ export function useTokens(designSystemId?: string) {
 
             if (error) throw error;
 
+            // Audit
+            const oldToken = tokens.find(t => t.path === token.path);
+            recordAuditLog({
+                design_system_id: designSystemId,
+                action: oldToken ? "UPDATE" : "CREATE",
+                entity_type: "TOKEN",
+                entity_id: token.path,
+                old_value: oldToken?.value,
+                new_value: token.value,
+                metadata: { name: token.name, summary: `${oldToken ? 'Updated' : 'Created'} token ${token.path}` }
+            });
+
             // Trigger webhooks in background
             triggerWebhooks(token);
 
@@ -172,6 +185,15 @@ export function useTokens(designSystemId?: string) {
 
             if (error) throw error;
 
+            // Audit
+            recordAuditLog({
+                design_system_id: designSystemId,
+                action: "ARCHIVE",
+                entity_type: "TOKEN",
+                entity_id: path,
+                metadata: { summary: `Archived token ${path}` }
+            });
+
             toast.success("Token archived");
             fetchTokens();
         } catch (error: any) {
@@ -192,6 +214,15 @@ export function useTokens(designSystemId?: string) {
 
             if (error) throw error;
 
+            // Audit
+            recordAuditLog({
+                design_system_id: designSystemId,
+                action: "RESTORE",
+                entity_type: "TOKEN",
+                entity_id: path,
+                metadata: { summary: `Restored token ${path}` }
+            });
+
             toast.success("Token restored");
             fetchTokens();
         } catch (error: any) {
@@ -211,6 +242,15 @@ export function useTokens(designSystemId?: string) {
                 .eq("path", path);
 
             if (error) throw error;
+
+            // Audit
+            recordAuditLog({
+                design_system_id: designSystemId,
+                action: "DELETE",
+                entity_type: "TOKEN",
+                entity_id: path,
+                metadata: { summary: `Permanently deleted token ${path}` }
+            });
 
             toast.success("Token permanently deleted");
             fetchTokens();

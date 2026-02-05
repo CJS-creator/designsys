@@ -18,6 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { runAICopilot, AISuggestion } from "@/lib/ai";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AuditLogViewer } from "../AuditLogViewer";
 
 interface GovernanceDashboardProps {
     tokens: DesignToken[];
@@ -386,6 +387,8 @@ export function GovernanceDashboard({
                     </div>
                 </CardContent>
             </Card>
+
+            <AuditLogViewer designSystemId={tokens[0]?.design_system_id} />
         </div>
     );
 }

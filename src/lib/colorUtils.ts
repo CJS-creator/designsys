@@ -70,8 +70,11 @@ export function getRelativeLuminance(r: number, g: number, b: number): number {
 
 // Calculate contrast ratio between two colors
 export function getContrastRatio(color1: string, color2: string): number {
-  const hsl1 = parseHslString(color1);
-  const hsl2 = parseHslString(color2);
+  let hsl1 = parseHslString(color1);
+  let hsl2 = parseHslString(color2);
+
+  if (!hsl1 && color1.startsWith('#')) hsl1 = hexToHsl(color1);
+  if (!hsl2 && color2.startsWith('#')) hsl2 = hexToHsl(color2);
 
   if (!hsl1 || !hsl2) return 1;
 

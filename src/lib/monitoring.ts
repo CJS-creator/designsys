@@ -39,15 +39,16 @@ class MonitoringService {
     }
 
     private initSentry() {
-        // Uncomment when @sentry/react is installed:
-        // import * as Sentry from "@sentry/react";
-        // Sentry.init({
-        //     dsn: import.meta.env.VITE_SENTRY_DSN,
-        //     environment: import.meta.env.MODE,
-        //     integrations: [Sentry.browserTracingIntegration()],
-        //     tracesSampleRate: this.isProduction ? 0.1 : 1.0,
-        // });
-        this.info("Sentry monitoring initialized", { environment: import.meta.env.MODE });
+        if (this.sentryEnabled) {
+            // In a real implementation, we would import Sentry here
+            // import * as Sentry from "@sentry/react";
+
+            // For now, we simulate initialization
+            this.info("Sentry monitoring initialized (Simulated)", {
+                environment: import.meta.env.MODE,
+                dsn: "Simulated DSN"
+            });
+        }
     }
 
     /**
@@ -93,10 +94,18 @@ class MonitoringService {
             );
         }
 
-        // Uncomment when Sentry is installed:
-        // if (this.sentryEnabled && event.level === "error" && event.error) {
-        //     Sentry.captureException(event.error, { extra: event.context });
-        // }
+        // Simulate Sentry capture for errors
+        if (this.sentryEnabled && event.level === "error" && event.error) {
+            this.mockSentryCaptureException(event.error, { extra: event.context });
+        }
+    }
+
+    // Mock Sentry methods for simulation
+    private mockSentryCaptureException(error: Error, context?: any) {
+        if (this.isProduction) {
+            // In production this would be sent to Sentry
+            console.log("[Sentry-Sim] Capturing Exception:", error.message, context);
+        }
     }
 
     public debug(message: string, context?: Record<string, unknown>) {
@@ -132,15 +141,13 @@ class MonitoringService {
 
         this.error(error.message, error, context);
 
-        // Uncomment when Sentry is installed:
-        // if (this.sentryEnabled) {
-        //     Sentry.withScope((scope) => {
-        //         if (options?.user) scope.setUser(options.user);
-        //         if (options?.tags) Object.entries(options.tags).forEach(([k, v]) => scope.setTag(k, v));
-        //         if (options?.fingerprint) scope.setFingerprint(options.fingerprint);
-        //         Sentry.captureException(error);
-        //     });
-        // }
+        if (this.sentryEnabled) {
+            this.mockSentryCaptureException(error, {
+                user: options?.user,
+                tags: options?.tags,
+                fingerprint: options?.fingerprint
+            });
+        }
     }
 
     /**

@@ -19,6 +19,8 @@ interface FigmaConnection {
     access_token: string;
     last_sync_at: string | null;
     sync_status: string;
+    figma_token?: string;
+    figma_file_key?: string;
 }
 
 export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
@@ -209,6 +211,62 @@ export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
                     </CardContent>
                 </Card>
             </div>
+            <Card className="glass-card mt-6">
+                <CardHeader>
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                        <ShieldCheck className="h-5 w-5 text-primary" />
+                        Figma Account Connection
+                    </CardTitle>
+                    <CardDescription>
+                        Connect your Figma account to import variables directly.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="figma-pat">Personal Access Token</Label>
+                        <Input
+                            id="figma-pat"
+                            type="password"
+                            placeholder="figd_..."
+                            value={connection?.figma_token || ""}
+                            onChange={(e) => setConnection(prev => prev ? ({ ...prev, figma_token: e.target.value }) : null)}
+                        />
+                        <p className="text-[10px] text-muted-foreground">
+                            Generate this in Figma Settings {'>'} Security {'>'} Personal Access Tokens
+                        </p>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="file-key">Figma File Key</Label>
+                        <Input
+                            id="file-key"
+                            placeholder="e.g. 8Kj9..."
+                            value={connection?.figma_file_key || ""}
+                            onChange={(e) => setConnection(prev => prev ? ({ ...prev, figma_file_key: e.target.value }) : null)}
+                        />
+                        <p className="text-[10px] text-muted-foreground">
+                            Found in the URL of your Figma file: figma.com/file/KEY/...
+                        </p>
+                    </div>
+                    <Button
+                        onClick={async () => {
+                            if (!connection) return;
+                            const { error } = await supabase
+                                .from("figma_connections" as any)
+                                .update({
+                                    figma_token: connection.figma_token,
+                                    figma_file_key: connection.figma_file_key
+                                })
+                                .eq("id", connection.id);
+
+                            if (error) toast.error("Failed to save credentials");
+                            else toast.success("Credentials saved!");
+                        }}
+                        className="w-full"
+                    >
+                        Save Connection
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
     );
 };

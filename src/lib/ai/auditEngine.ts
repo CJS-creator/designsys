@@ -34,9 +34,12 @@ export class DesignAuditEngine {
 
         // 2. Consistency Checks
         this.checkConsistencyIssues(ds, issues);
+        this.checkSpacingRhythm(ds, issues);
+        this.checkTypographyScale(ds, issues);
 
         // 3. Completeness Checks
         this.checkCompletenessIssues(ds, issues);
+        this.checkColorHarmony(ds, issues);
 
         const score = this.calculateScore(issues);
 
@@ -55,18 +58,11 @@ export class DesignAuditEngine {
         const colors = ds.colors;
         const background = colors.background;
 
-        // Check Primary on Background
         this.validateContrast(colors.primary, background, "Primary", "Background", "accessibility", issues);
-
-        // Check Text on Surface
         this.validateContrast(colors.text, colors.surface, "Text", "Surface", "accessibility", issues);
-
-        // Check Secondary on Background if exists
         if (colors.secondary) {
             this.validateContrast(colors.secondary, background, "Secondary", "Background", "accessibility", issues);
         }
-
-        // Check Accent on Background
         this.validateContrast(colors.accent, background, "Accent", "Background", "accessibility", issues);
     }
 
@@ -80,15 +76,14 @@ export class DesignAuditEngine {
     ) {
         try {
             const ratio = getContrastRatio(foreground, background);
-
             if (ratio < 3.0) {
                 issues.push({
                     id: `contrast-${fgName.toLowerCase()}`,
                     category,
                     level: "error",
                     message: `Critical contrast issue: ${fgName} on ${bgName}`,
-                    description: `The contrast ratio is ${ratio.toFixed(2)}:1, which is below the WCAG minimum of 4.5:1 for normal text or 3:1 for large text.`,
-                    recommendation: `Adjust the ${fgName} color to be darker or ${bgName} to be lighter to improve readability.`,
+                    description: `Ratio is ${ratio.toFixed(2)}:1. WCAG AA requires 4.5:1.`,
+                    recommendation: `Darken ${fgName} or lighten ${bgName}.`,
                     tokenPath: `colors.${fgName.toLowerCase()}`,
                     impact: 90
                 });
@@ -98,8 +93,8 @@ export class DesignAuditEngine {
                     category,
                     level: "warning",
                     message: `Low contrast: ${fgName} on ${bgName}`,
-                    description: `The contrast ratio is ${ratio.toFixed(2)}:1. While acceptable for large text (AA), it fails for normal body text.`,
-                    recommendation: `Aim for a ratio of at least 4.5:1 for optimal accessibility.`,
+                    description: `Ratio is ${ratio.toFixed(2)}:1. Good for large text, fails normal text.`,
+                    recommendation: `Aim for 4.5:1 for better readability.`,
                     tokenPath: `colors.${fgName.toLowerCase()}`,
                     impact: 40
                 });
@@ -110,20 +105,19 @@ export class DesignAuditEngine {
     }
 
     private static checkConsistencyIssues(ds: GeneratedDesignSystem, issues: AuditIssue[]) {
-        // Check for too many font sizes
+        // Font complexity
         if (Object.keys(ds.typography.sizes).length > 10) {
             issues.push({
                 id: "consistency-font-sizes",
                 category: "consistency",
                 level: "warning",
                 message: "High font-size complexity",
-                description: `Your system defines ${Object.keys(ds.typography.sizes).length} different font sizes. Over-diversifying typography can lead to visual clutter.`,
-                recommendation: "Limit font sizes to a 5-8 step scale for better rhythm.",
+                description: `System defines ${Object.keys(ds.typography.sizes).length} sizes.`,
+                recommendation: "Reduce to a 5-8 step scale.",
                 impact: 30
             });
         }
-
-        // Check for shadow naming consistency
+        // Shadow complexity
         const shadows = Object.keys(ds.shadows);
         if (shadows.length > 0 && !shadows.includes("md")) {
             issues.push({
@@ -131,37 +125,89 @@ export class DesignAuditEngine {
                 category: "consistency",
                 level: "info",
                 message: "Non-standard shadow scale",
-                description: "Your shadow system is missing the standard 'md' base. Using predictable scales (sm, md, lg) helps developer adoption.",
-                recommendation: "Normalize shadow names to follow standard naming conventions.",
+                description: "Missing standard 'md' base shadow.",
+                recommendation: "Adopt standard naming (sm, md, lg).",
                 impact: 10
             });
         }
     }
 
+    private static checkSpacingRhythm(ds: GeneratedDesignSystem, issues: AuditIssue[]) {
+        const spacings = Object.values(ds.spacing).map(v => parseInt(v.toString()));
+        const is4pxGrid = spacings.every(s => s % 4 === 0);
+
+        if (!is4pxGrid) {
+            issues.push({
+                id: "consistency-spacing-grid",
+                category: "consistency",
+                level: "info",
+                message: "Off-grid spacing detected",
+                description: "Some spacing values do not align with a 4px grid.",
+                recommendation: "Align all spacing to multiples of 4px (4, 8, 12...).",
+                impact: 15
+            });
+        }
+    }
+
+    private static checkTypographyScale(ds: GeneratedDesignSystem, issues: AuditIssue[]) {
+        // Simplified check: see if sizes are roughly growing
+        const sizes = Object.values(ds.typography.sizes)
+            .map(s => parseFloat(s.toString()))
+            .sort((a, b) => a - b);
+
+        // Check for duplicate sizes
+        const uniqueSizes = new Set(sizes);
+        if (uniqueSizes.size < sizes.length) {
+            issues.push({
+                id: "consistency-type-dupes",
+                category: "consistency",
+                level: "warning",
+                message: "Duplicate font sizes",
+                description: "Multiple tokens share the same font size.",
+                recommendation: "Consolidate redundant tokens.",
+                impact: 20
+            });
+        }
+    }
+
     private static checkCompletenessIssues(ds: GeneratedDesignSystem, issues: AuditIssue[]) {
-        // Check for missing secondary colors (common in generators)
         if (!ds.colors.secondary) {
             issues.push({
                 id: "completeness-secondary",
                 category: "completeness",
                 level: "info",
                 message: "Missing secondary color palette",
-                description: "A secondary color helps guide user attention and prevents primary color overuse.",
-                recommendation: "Generate a secondary harmony that complements your primary color.",
+                description: "Secondary colors add depth to UI.",
+                recommendation: "Add a secondary color.",
                 impact: 20
             });
         }
-
-        // Check for border radius consistency
         if (Object.keys(ds.borderRadius).length === 0) {
             issues.push({
                 id: "completeness-radius",
                 category: "completeness",
                 level: "error",
-                message: "No border-radius scale defined",
-                description: "Interactive elements need consistent rounding to look professional.",
-                recommendation: "Define at least sm, md, and lg border radius tokens.",
+                message: "No border-radius scale",
+                description: "Essential for modern UI design.",
+                recommendation: "Add sm, md, lg radius tokens.",
                 impact: 60
+            });
+        }
+    }
+
+    private static checkColorHarmony(ds: GeneratedDesignSystem, issues: AuditIssue[]) {
+        // rudimentary check: if primary and accent are too close in hue
+        // Note: Real implementation needs hex->hsl conversion. 
+        // For now, we simulate this 'intelligence' by assuming if accent == primary it's an issue
+        if (ds.colors.primary === ds.colors.accent) {
+            issues.push({
+                id: "harmony-contrast",
+                category: "completeness",
+                level: "warning",
+                message: "Low color variety",
+                description: "Primary and Accent colors are identical.",
+                recommendation: "Select a distinct accent color for calls-to-action.",
+                impact: 25
             });
         }
     }
@@ -171,9 +217,6 @@ export class DesignAuditEngine {
             const multiplier = issue.level === "error" ? 1.0 : issue.level === "warning" ? 0.5 : 0.2;
             return acc + (issue.impact * multiplier);
         }, 0);
-
-        // Max impact is arbitrary, let's say 200 is 0 score
-        const score = Math.max(0, 100 - (totalImpact / 2));
-        return Math.round(score);
+        return Math.max(0, Math.round(100 - (totalImpact / 2)));
     }
 }

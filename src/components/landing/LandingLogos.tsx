@@ -1,5 +1,5 @@
-import { useRef, useEffect } from "react";
-import { motion, useAnimation, useInView } from "framer-motion";
+
+import { motion } from "framer-motion";
 import {
     Figma,
     Slack,
@@ -18,7 +18,7 @@ import {
     Cloud,
     Database
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 
 const logos = [
     { name: "Figma", icon: Figma },

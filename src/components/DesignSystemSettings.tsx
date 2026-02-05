@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CustomExporterEditor } from "./exporters/CustomExporterEditor";
 import { useTokens } from "@/hooks/useTokens";
+import { ApiKeyManager } from "./ApiKeyManager";
+import { Key } from "lucide-react";
 
 interface DesignSystemSettingsProps {
     designSystemId: string;
@@ -100,14 +102,21 @@ export function DesignSystemSettings({ designSystemId }: DesignSystemSettingsPro
     return (
         <div className="max-w-6xl mx-auto space-y-6">
             <Tabs defaultValue="sharing" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
+                <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto mb-8">
                     <TabsTrigger value="sharing" className="gap-2">
                         <Share2 className="h-4 w-4" /> Sharing & Distribution
                     </TabsTrigger>
                     <TabsTrigger value="exporters" className="gap-2">
                         <Code2 className="h-4 w-4" /> Custom Exporters
                     </TabsTrigger>
+                    <TabsTrigger value="api" className="gap-2">
+                        <Key className="h-4 w-4" /> API Access
+                    </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="api" className="animate-in fade-in duration-500">
+                    <ApiKeyManager designSystemId={designSystemId} />
+                </TabsContent>
 
                 <TabsContent value="sharing" className="space-y-6 animate-in fade-in duration-500">
                     <Card className="border-primary/20 bg-primary/5">

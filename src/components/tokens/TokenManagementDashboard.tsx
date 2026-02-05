@@ -2,14 +2,18 @@ import { TokenList } from "./TokenList";
 import { TokenEditor } from "./TokenEditor";
 import { BrandSwitcher } from "../BrandSwitcher";
 import { VersionManager } from "../VersionManager";
-import { ComponentSandbox } from "./ComponentSandbox";
+import { TokenCompareSandbox } from "./TokenCompareSandbox";
 import { GovernanceDashboard } from "./GovernanceDashboard";
 import { ExportButton } from "../ExportButton";
 import { SemanticCopilot } from "./SemanticCopilot";
 import { SpacingGrid } from "./SpacingGrid";
+import { DashboardSkeleton } from "../skeletons/DashboardSkeleton";
+import { TokenListSkeleton } from "../skeletons/TokenListSkeleton";
+import { SandboxSkeleton } from "../skeletons/SandboxSkeleton";
 import { DesignToken } from "@/types/tokens";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { Button } from "@/components/ui/button";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import {
     History,
     LayoutDashboard,
@@ -32,6 +36,7 @@ export function TokenManagementDashboard() {
     const designSystemId = searchParams.get("id");
     const {
         tokens,
+        loading: isLoadingTokens,
         saveToken,
         batchSaveTokens,
         deleteToken,
@@ -41,6 +46,7 @@ export function TokenManagementDashboard() {
     const { brands } = useBrands(designSystemId || undefined);
 
     const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
+    const [isLoadingDS, setIsLoadingDS] = useState(false);
     const [editingToken, setEditingToken] = useState<DesignToken | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const [activeTab, setActiveTab] = useState<"tokens" | "history" | "sandbox" | "governance" | "copilot">("tokens");
@@ -60,6 +66,7 @@ export function TokenManagementDashboard() {
     }, [tokens]);
 
     const fetchDesignSystem = async () => {
+        setIsLoadingDS(true);
         const { data, error } = await supabase
             .from("design_systems")
             .select("*")
@@ -69,6 +76,7 @@ export function TokenManagementDashboard() {
         if (data && !error) {
             setDesignSystem(data.design_system_data as unknown as GeneratedDesignSystem);
         }
+        setIsLoadingDS(false);
     };
 
     const handleSave = async (token: DesignToken) => {
@@ -190,6 +198,10 @@ export function TokenManagementDashboard() {
         );
     }
 
+    if (isLoadingDS) {
+        return <DashboardSkeleton />;
+    }
+
     return (
         <div className="flex flex-col h-screen max-h-screen overflow-hidden bg-background">
             <header className="flex items-center justify-between px-6 py-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-30">
@@ -204,13 +216,15 @@ export function TokenManagementDashboard() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {designSystemId && (
-                        <BrandSwitcher designSystemId={designSystemId} />
-                    )}
-                    <div className="h-6 w-px bg-border/40 mx-2" />
-                    {designSystem && (
-                        <ExportButton designSystem={designSystem} tokens={tokens} />
-                    )}
+                    <ErrorBoundary variant="mini">
+                        {designSystemId && (
+                            <BrandSwitcher designSystemId={designSystemId} />
+                        )}
+                        <div className="h-6 w-px bg-border/40 mx-2" />
+                        {designSystem && (
+                            <ExportButton designSystem={designSystem} tokens={tokens} />
+                        )}
+                    </ErrorBoundary>
                     <div className="flex bg-muted/30 p-1 rounded-lg border border-border/50">
                         <Button
                             variant={activeTab === "tokens" ? "secondary" : "ghost"}
@@ -262,104 +276,112 @@ export function TokenManagementDashboard() {
             </header>
 
             <div className="flex-1 flex overflow-hidden p-6 gap-6">
-                {activeTab === "history" ? (
-                    <div className="w-full animate-in fade-in slide-in-from-left duration-300">
-                        <VersionManager designSystemId={designSystemId} />
-                    </div>
-                ) : activeTab === "sandbox" ? (
-                    <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <ComponentSandbox
-                            allTokens={tokens}
-                            brands={brands}
-                            onTokenClick={(path) => {
-                                const token = tokens.find(t => t.path === path);
-                                if (token) {
-                                    setEditingToken(token);
-                                    setActiveTab("tokens");
-                                }
-                            }}
-                        />
-                    </div>
-                ) : activeTab === "governance" ? (
-                    <div className="w-full h-full animate-in fade-in slide-in-from-right duration-500 overflow-y-auto pr-2">
-                        <GovernanceDashboard
-                            tokens={tokens}
-                            onRestore={restoreToken}
-                            onPermanentDelete={permanentlyDeleteToken}
-                            onApplyAISuggestion={handleApplyAISuggestion}
-                            onApplyAllSuggestions={handleApplyAllSuggestions}
-                            onTokenClick={(path) => {
-                                const token = tokens.find(t => t.path === path);
-                                if (token) {
-                                    setEditingToken(token);
-                                    setActiveTab("tokens");
-                                }
-                            }}
-                        />
-                    </div>
-                ) : activeTab === "copilot" ? (
-                    <div className="w-full h-full animate-in fade-in slide-in-from-right duration-500 overflow-y-auto pr-2">
-                        <SemanticCopilot
-                            designSystemId={designSystemId!}
-                            tokens={tokens}
-                            onRefresh={() => { }}
-                        />
-                    </div>
-                ) : (
-                    <>
-                        <div className={`transition-all duration-300 flex flex-col gap-6 ${editingToken || isCreating ? 'w-1/2' : 'w-full'}`}>
-                            <div className="flex items-center justify-between bg-card/10 p-2 rounded-lg border border-border/50">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-2">Visual Editors</span>
-                                <Button
-                                    variant={showSpacingGrid ? "secondary" : "ghost"}
-                                    size="sm"
-                                    className="h-8 gap-2 text-xs"
-                                    onClick={() => setShowSpacingGrid(!showSpacingGrid)}
-                                >
-                                    <Layers className="h-3.5 w-3.5" />
-                                    {showSpacingGrid ? "Hide Grid" : "Spacing Scale"}
-                                </Button>
+                <ErrorBoundary variant="component">
+                    {activeTab === "history" ? (
+                        <div className="w-full animate-in fade-in slide-in-from-left duration-300">
+                            <VersionManager designSystemId={designSystemId} />
+                        </div>
+                    ) : activeTab === "sandbox" ? (
+                        isLoadingTokens ? <SandboxSkeleton /> : (
+                            <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <TokenCompareSandbox
+                                    allTokens={tokens}
+                                    brands={brands}
+                                    onTokenClick={(path) => {
+                                        const token = tokens.find(t => t.path === path);
+                                        if (token) {
+                                            setEditingToken(token);
+                                            setActiveTab("tokens");
+                                        }
+                                    }}
+                                />
+                            </div>
+                        )
+                    ) : activeTab === "governance" ? (
+                        <div className="w-full h-full animate-in fade-in slide-in-from-right duration-500 overflow-y-auto pr-2">
+                            <GovernanceDashboard
+                                tokens={tokens}
+                                onRestore={restoreToken}
+                                onPermanentDelete={permanentlyDeleteToken}
+                                onApplyAISuggestion={handleApplyAISuggestion}
+                                onApplyAllSuggestions={handleApplyAllSuggestions}
+                                onTokenClick={(path) => {
+                                    const token = tokens.find(t => t.path === path);
+                                    if (token) {
+                                        setEditingToken(token);
+                                        setActiveTab("tokens");
+                                    }
+                                }}
+                            />
+                        </div>
+                    ) : activeTab === "copilot" ? (
+                        <div className="w-full h-full animate-in fade-in slide-in-from-right duration-500 overflow-y-auto pr-2">
+                            <SemanticCopilot
+                                designSystemId={designSystemId!}
+                                tokens={tokens}
+                                onRefresh={() => { }}
+                            />
+                        </div>
+                    ) : (
+                        <>
+                            <div className={`transition-all duration-300 flex flex-col gap-6 ${editingToken || isCreating ? 'w-1/2' : 'w-full'}`}>
+                                <div className="flex items-center justify-between bg-card/10 p-2 rounded-lg border border-border/50">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-2">Visual Editors</span>
+                                    <Button
+                                        variant={showSpacingGrid ? "secondary" : "ghost"}
+                                        size="sm"
+                                        className="h-8 gap-2 text-xs"
+                                        onClick={() => setShowSpacingGrid(!showSpacingGrid)}
+                                    >
+                                        <Layers className="h-3.5 w-3.5" />
+                                        {showSpacingGrid ? "Hide Grid" : "Spacing Scale"}
+                                    </Button>
+                                </div>
+
+                                {showSpacingGrid && (
+                                    <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                                        <SpacingGrid
+                                            tokens={tokens
+                                                .filter(t => t.type === 'spacing' || t.type === 'dimension')
+                                                .map(t => ({ path: t.path, value: t.value as string }))
+                                            }
+                                            onSelect={(path: string) => {
+                                                const token = tokens.find(t => t.path === path);
+                                                if (token) setEditingToken(token);
+                                            }}
+                                        />
+                                    </div>
+                                )}
+
+                                {isLoadingTokens ? (
+                                    <TokenListSkeleton />
+                                ) : (
+                                    <TokenList
+                                        tokens={localTokens}
+                                        onEdit={setEditingToken}
+                                        onDelete={handleDelete}
+                                        onAdd={() => setIsCreating(true)}
+                                        onReorder={handleReorder}
+                                    />
+                                )}
                             </div>
 
-                            {showSpacingGrid && (
-                                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-                                    <SpacingGrid
-                                        tokens={tokens
-                                            .filter(t => t.type === 'spacing' || t.type === 'dimension')
-                                            .map(t => ({ path: t.path, value: t.value as string }))
-                                        }
-                                        onSelect={(path: string) => {
-                                            const token = tokens.find(t => t.path === path);
-                                            if (token) setEditingToken(token);
+                            {(editingToken || isCreating) && (
+                                <div className="w-1/2 animate-in slide-in-from-right duration-300">
+                                    <TokenEditor
+                                        token={editingToken || undefined}
+                                        allTokens={tokens}
+                                        onSave={handleSave}
+                                        onCancel={() => {
+                                            setEditingToken(null);
+                                            setIsCreating(false);
                                         }}
                                     />
                                 </div>
                             )}
-
-                            <TokenList
-                                tokens={localTokens}
-                                onEdit={setEditingToken}
-                                onDelete={handleDelete}
-                                onAdd={() => setIsCreating(true)}
-                                onReorder={handleReorder}
-                            />
-                        </div>
-
-                        {(editingToken || isCreating) && (
-                            <div className="w-1/2 animate-in slide-in-from-right duration-300">
-                                <TokenEditor
-                                    token={editingToken || undefined}
-                                    allTokens={tokens}
-                                    onSave={handleSave}
-                                    onCancel={() => {
-                                        setEditingToken(null);
-                                        setIsCreating(false);
-                                    }}
-                                />
-                            </div>
-                        )}
-                    </>
-                )}
+                        </>
+                    )}
+                </ErrorBoundary>
             </div>
         </div>
     );
