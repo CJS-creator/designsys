@@ -50,6 +50,27 @@ export const AuditLogViewer = ({ designSystemId }: AuditLogViewerProps) => {
         };
 
         fetchLogs();
+
+        // Realtime Subscription
+        const channel = supabase
+            .channel('audit-logs-realtime')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'audit_logs',
+                    filter: `design_system_id=eq.${designSystemId}`
+                },
+                (payload) => {
+                    setLogs(prev => [payload.new as AuditLog, ...prev]);
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [designSystemId]);
 
     const getActionColor = (action: string) => {

@@ -183,6 +183,26 @@ export interface AnimationTokens {
 
 import { UnifiedTokenStore } from "./tokens";
 
+export interface ComponentState {
+  default: Record<string, string>;
+  hover?: Record<string, string>;
+  active?: Record<string, string>;
+  focus?: Record<string, string>;
+  disabled?: Record<string, string>;
+}
+
+export interface ComponentVariant {
+  name: string;
+  styles: ComponentState;
+}
+
+export interface ComponentDefinition {
+  name: string;
+  description?: string;
+  variants: Record<string, ComponentVariant>;
+  properties: Record<string, string[]>; // e.g. { size: ['sm', 'md', 'lg'], variant: ['primary', 'secondary'] }
+}
+
 export interface GeneratedDesignSystem {
   id?: string;
   name: string;
@@ -196,4 +216,9 @@ export interface GeneratedDesignSystem {
   borderRadius: BorderRadius;
   animations: AnimationTokens;
   tokenStore?: UnifiedTokenStore;
+  components?: Record<string, ComponentDefinition>;
+  // Governance
+  is_published?: boolean;
+  version_number?: string;
+  live_version_id?: string;
 }

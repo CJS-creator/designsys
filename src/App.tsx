@@ -18,6 +18,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SharedDesign = lazy(() => import("./pages/SharedDesign"));
 const Landing = lazy(() => import("./pages/Landing"));
+const Settings = lazy(() => import("./pages/Settings"));
 // Named export lazy loading
 const PublicDocViewer = lazy(() => import("./components/docs/PublicDocViewer").then(module => ({ default: module.PublicDocViewer })));
 
@@ -52,6 +53,14 @@ const App = () => (
                         element={
                           <ProtectedRoute>
                             <Index />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/settings"
+                        element={
+                          <ProtectedRoute>
+                            <Settings />
                           </ProtectedRoute>
                         }
                       />

@@ -11,6 +11,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -103,12 +107,16 @@ export const ApprovalWorkflow: React.FC<{ designSystemId?: string }> = ({ design
 
     const updateStatus = async (id: string, status: ApprovalStatus) => {
         try {
-            const { error } = await supabase
-                .from('approval_requests')
-                .update({ status })
-                .eq('id', id);
-
-            if (error) throw error;
+            if (status === 'PUBLISHED') {
+                const { error } = await supabase.rpc('publish_design_system', { request_id: id });
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('approval_requests')
+                    .update({ status })
+                    .eq('id', id);
+                if (error) throw error;
+            }
 
             toast.success(`Request ${status.toLowerCase().replace('_', ' ')}`);
 
@@ -117,9 +125,9 @@ export const ApprovalWorkflow: React.FC<{ designSystemId?: string }> = ({ design
             if (selectedRequest?.id === id) {
                 setSelectedRequest(prev => prev ? { ...prev, status } : null);
             }
-        } catch (error) {
-            monitor.error("Error updating status", error as Error);
-            toast.error("Failed to update status");
+        } catch (error: any) {
+            monitor.error("Error updating status", error);
+            toast.error("Failed to update status: " + error.message);
         }
     };
 
@@ -135,16 +143,73 @@ export const ApprovalWorkflow: React.FC<{ designSystemId?: string }> = ({ design
 
     const canApprove = role === 'owner' || role === 'editor';
 
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [newVersion, setNewVersion] = useState('');
+    const [newDesc, setNewDesc] = useState('');
+
+    const createRequest = async () => {
+        if (!designSystemId || !newVersion || !newDesc) {
+            toast.error("Please fill in all fields");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // 1. Create Request
+            const { data: request, error: reqError } = await supabase
+                .from('approval_requests')
+                .insert({
+                    design_system_id: designSystemId,
+                    version_number: newVersion,
+                    description: newDesc,
+                    author_id: user?.id,
+                    status: 'PENDING_REVIEW'
+                })
+                .select()
+                .single();
+
+            if (reqError) throw reqError;
+
+            // 2. Snapshot current state as "Changes" (Simplified for MVP: Just 1 generic change for now)
+            // In a real app, we would differ against live.
+            // For now, we just say "System Update"
+            const { error: changeError } = await supabase
+                .from('approval_changes')
+                .insert({
+                    approval_request_id: request.id,
+                    token_path: 'Global System',
+                    change_type: 'UPDATE',
+                    old_value: { status: 'Previous' },
+                    new_value: { status: 'New Version' }
+                });
+
+            if (changeError) throw changeError;
+
+            toast.success("Review requested!");
+            setIsCreateOpen(false);
+            fetchRequests();
+
+        } catch (e: any) {
+            monitor.error("Failed to create request", e);
+            toast.error(e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
             {/* Sidebar: Requests List */}
             <div className="lg:col-span-1 border-2 border-primary/10 rounded-[2rem] bg-card/30 backdrop-blur-xl overflow-hidden flex flex-col">
-                <div className="p-6 border-b border-primary/10 bg-primary/5">
-                    <div className="flex items-center gap-2 mb-1">
-                        <ShieldCheck className="w-5 h-5 text-primary" />
-                        <h3 className="font-bold text-lg">Governance</h3>
+                <div className="flex items-center justify-between p-4 border-b border-primary/10">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 mb-1">
+                            <ShieldCheck className="w-5 h-5 text-primary" />
+                            <h3 className="font-bold text-lg">Governance</h3>
+                        </div>
+                        <p className="text-xs text-muted-foreground font-medium">Review and approve system changes</p>
                     </div>
-                    <p className="text-xs text-muted-foreground font-medium">Review and approve system changes</p>
+                    <Button size="sm" onClick={() => setIsCreateOpen(true)}>Request Review</Button>
                 </div>
 
                 <ScrollArea className="flex-1">
@@ -309,6 +374,40 @@ export const ApprovalWorkflow: React.FC<{ designSystemId?: string }> = ({ design
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
             </div>
+
+            {/* Create Dialog */}
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Request Approval</DialogTitle>
+                        <DialogDescription>
+                            Create a new version candidate for review.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Version Number</Label>
+                            <Input
+                                placeholder="1.0.1"
+                                value={newVersion}
+                                onChange={e => setNewVersion(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Description</Label>
+                            <Textarea
+                                placeholder="Describe your changes..."
+                                value={newDesc}
+                                onChange={e => setNewDesc(e.target.value)}
+                            />
+                        </div>
+                        <Button className="w-full" onClick={createRequest} disabled={loading}>
+                            {loading ? <Loader2 className="animate-spin mr-2" /> : null}
+                            Submit Request
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

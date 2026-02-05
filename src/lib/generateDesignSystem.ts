@@ -101,12 +101,20 @@ function ensureCompleteDesignSystem(aiSystem: Partial<GeneratedDesignSystem>, in
   };
 
   // Add tokenStore for semantic resolution
-  result.tokenStore = TokenEngine.fromDesignSystem(result);
+  result.tokenStore = organizeTokens(result);
+
+  // Add component variants
+  result.components = generateComponentVariants(result);
+
+  // Legacy fallback for engine (optional, can be removed if Engine uses store)
+  // result.tokenStore = TokenEngine.fromDesignSystem(result); 
 
   return result;
 }
 
-import { TokenEngine } from "./theming/tokenEngine";
+// import { TokenEngine } from "./theming/tokenEngine";
+import { generateComponentVariants } from "./componentVariants";
+import { organizeTokens } from "./tokenCollections";
 
 // Helper Functions
 function generateSemanticColors(primary: string, secondary: string, accent: string): SemanticColors {

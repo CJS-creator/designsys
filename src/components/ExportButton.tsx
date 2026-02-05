@@ -42,7 +42,7 @@ import { exportToSwiftUIPro as exportToSwiftUI } from "@/lib/exporters/swiftui";
 import { exportToKotlinPro as exportToKotlin } from "@/lib/exporters/kotlin";
 import { exportToCSSJSPro as exportToCSSJS } from "@/lib/exporters/css-in-js";
 import { exportToFigmaVariables } from "@/lib/exporters/figma-variables";
-// exportToStaticDocs - available for future use
+import { exportToStaticDocs } from "@/lib/exporters/static-docs";
 
 
 // generateGitHubAction - available for future use
@@ -598,6 +598,7 @@ const exportOptions: ExportOption[] = [
   { id: "style-dictionary", label: "Style Dictionary", filename: "tokens.json", icon: <Layers className="h-4 w-4" />, generator: (ds) => generateStyleDictionary(ds), description: "Tokens for Style Dictionary framework" },
   { id: "storybook-pro", label: "Storybook Pro", filename: "storybook-theme.js", icon: <BookOpen className="h-4 w-4" />, generator: (ds) => exportToStorybookAdvanced(ds), description: "Advanced tokens + preview.js config" },
   { id: "w3c", label: "DTCG (W3C Standard)", icon: <FileJson className="h-4 w-4" />, filename: "tokens.dtcg.json", description: "Design Tokens Community Group standard", generator: (_ds, tokens) => exportToDTCG(tokens || []) },
+  { id: "styleguide", label: "HTML Documentation", filename: "docs.html", icon: <FileText className="h-4 w-4" />, generator: (ds) => exportToStaticDocs(ds), description: "Self-contained HTML documentation" },
 ];
 
 export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
@@ -755,9 +756,17 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
             <Download className="h-4 w-4" />
             Export
             {!user && <Lock className="h-3 w-3 ml-1" />}
+            {user && !designSystem.is_published && (
+              <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-yellow-500/20 text-yellow-500 border border-yellow-500/30">DRAFT</span>
+            )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
+          {user && !designSystem.is_published && (
+            <div className="p-2 m-1 mb-2 rounded bg-yellow-500/10 border border-yellow-500/20 text-[10px] text-yellow-600">
+              <strong>Warning:</strong> You are exporting a Draft version. This has not been approved for production.
+            </div>
+          )}
           {customOptions.length > 0 && (
             <>
               <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Custom Exporters</div>
