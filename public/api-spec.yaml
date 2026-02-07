@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  title: DesignSys API
+  description: API for generating unrestricted, production-ready design systems using AI.
+  version: 1.0.0
+servers:
+  - url: https://project-ref.functions.supabase.co/v1-api
+    description: Production Server
+paths:
+  /v1/generate:
+    post:
+      summary: Generate a Design System
+      description: Generates a complete design system based on industry, mood, and platform.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerationInput'
+      responses:
+        '200':
+          description: Successful generation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/DesignSystem'
+        '401':
+          description: Unauthorized - Invalid or missing API Key
+        '400':
+          description: Bad Request - Invalid input
+        '429':
+          description: Rate Limit Exceeded
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+
+  schemas:
+    GenerationInput:
+      type: object
+      required:
+        - industry
+        - brandMood
+      properties:
+        appType:
+          type: string
+          enum: [mobile, web, both]
+          default: web
+        industry:
+          type: string
+          example: "Fintech"
+        brandMood:
+          type: array
+          items:
+            type: string
+          example: ["Trustworthy", "Professional", "Blue"]
+        primaryColor:
+          type: string
+          example: "#0f172a"
+        description:
+          type: string
+          example: "A banking application for professionals."
+
+    DesignSystem:
+      type: object
+      properties:
+        name:
+          type: string
+        colors:
+          type: object
+        typography:
+          type: object
+        spacing:
+          type: object
+        shadows:
+          type: object
+        borderRadius:
+          type: object
