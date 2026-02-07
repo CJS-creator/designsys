@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, inputSchema, generateWithAI } from "../_shared/design-system.ts";
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -22,7 +22,7 @@ serve(async (req) => {
     if (!validationResult.success) {
       return new Response(JSON.stringify({
         error: "Invalid input",
-        details: validationResult.error.errors.map(e => ({
+        details: validationResult.error.errors.map((e: any) => ({
           field: e.path.join('.'),
           message: e.message
         }))

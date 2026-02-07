@@ -45,7 +45,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Spotlight } from "@/components/ui/spotlight";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { useDesignSystemShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { useUserRole } from "@/hooks/useUserRole";
 import { ShortcutOverlay } from "@/components/ShortcutOverlay";
 import { FeatureTour } from "@/components/FeatureTour";
 import { DesignSystemSkeleton } from "@/components/DesignSystemSkeleton";
@@ -492,7 +491,7 @@ const Index = () => {
 
                   <TabsContent value="components" className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <ComponentSandbox designSystem={designSystem} />
+                      <ComponentSandbox />
                       <ComponentLibraryPreview designSystem={designSystem} />
                       <ComponentBlueprints designSystem={designSystem} />
                     </Suspense>

@@ -1,13 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
 } from "@/components/ui/card";
 import {
     Dialog,
@@ -22,6 +18,11 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Plus, Trash2, Key, AlertTriangle, Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+
+interface DesignSystem {
+    id: string;
+    name: string;
+}
 
 interface APIKey {
     id: string;
@@ -39,11 +40,28 @@ export function APIKeys() {
     const [generatedKey, setGeneratedKey] = useState<string | null>(null);
     const [isRevokeOpen, setIsRevokeOpen] = useState(false);
     const [keyToRevoke, setKeyToRevoke] = useState<APIKey | null>(null);
+    const [designSystems, setDesignSystems] = useState<DesignSystem[]>([]);
     const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
-        fetchKeys();
+        const init = async () => {
+            await fetchDesignSystems();
+            await fetchKeys();
+        };
+        init();
     }, []);
+
+    const fetchDesignSystems = async () => {
+        try {
+            const { data, error } = await supabase
+                .from("design_systems")
+                .select("id, name");
+            if (error) throw error;
+            setDesignSystems(data || []);
+        } catch (error) {
+            console.error("Error fetching design systems:", error);
+        }
+    };
 
     const fetchKeys = async () => {
         try {
@@ -90,11 +108,19 @@ export function APIKeys() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error("No user found");
 
-            // 4. Insert into DB
+            // 4. Get design system ID (use the first one found or error)
+            const dsId = designSystems[0]?.id;
+            if (!dsId) {
+                toast.error("Please create a design system first");
+                return;
+            }
+
+            // 5. Insert into DB
             const { error } = await supabase.from("api_keys").insert({
                 name: newKeyName,
                 key_hash: keyHash,
                 user_id: user.id,
+                design_system_id: dsId,
             });
 
             if (error) throw error;

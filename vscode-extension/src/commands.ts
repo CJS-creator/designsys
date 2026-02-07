@@ -71,7 +71,7 @@ export async function pullDesignSystem(context: vscode.ExtensionContext) {
             location: vscode.ProgressLocation.Notification,
             title: "DesignSys: Generating Tokens...",
             cancellable: false
-        }, async (progress) => {
+        }, async (_progress) => {
             try {
                 const response = await axios.post(apiUrl, config, {
                     headers: { 'x-api-key': apiKey }

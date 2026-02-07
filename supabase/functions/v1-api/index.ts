@@ -12,7 +12,7 @@ async function hashKey(key: string): Promise<string> {
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
         return new Response(null, { headers: corsHeaders });
     }
