@@ -57,7 +57,7 @@ serve(async (req: Request) => {
         if (!authHeader?.startsWith('Bearer ')) {
             console.error('[design-copilot] Missing or invalid authorization header');
             return new Response(
-                JSON.stringify({ error: 'Unauthorized', message: 'Authentication required' }), 
+                JSON.stringify({ error: 'Unauthorized', message: 'Authentication required' }),
                 { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
@@ -65,24 +65,24 @@ serve(async (req: Request) => {
         // Create Supabase client and verify the token
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-        
+
         const supabase = createClient(supabaseUrl, supabaseAnonKey, {
             global: { headers: { Authorization: authHeader } }
         });
 
         const token = authHeader.replace('Bearer ', '');
         const { data: claimsData, error: claimsError } = await supabase.auth.getUser(token);
-        
+
         if (claimsError || !claimsData?.user) {
             console.error('[design-copilot] Invalid JWT token:', claimsError?.message);
             return new Response(
-                JSON.stringify({ error: 'Unauthorized', message: 'Invalid or expired token' }), 
+                JSON.stringify({ error: 'Unauthorized', message: 'Invalid or expired token' }),
                 { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
 
         const userId = claimsData.user.id;
-        console.log(`[design-copilot] Authenticated user: ${userId}`);
+
 
         // Parse and validate input
         const rawInput = await req.json();
@@ -91,19 +91,19 @@ serve(async (req: Request) => {
         if (!validation.success) {
             console.error('[design-copilot] Invalid input:', validation.error);
             return new Response(
-                JSON.stringify({ error: "Invalid input", details: validation.error }), 
+                JSON.stringify({ error: "Invalid input", details: validation.error }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
 
         const { action, tokens, context } = validation.data;
-        console.log(`[design-copilot] Processing action: ${action} for user: ${userId}`);
+
 
         const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
         if (!LOVABLE_API_KEY) {
             console.error('[design-copilot] LOVABLE_API_KEY not configured');
             return new Response(
-                JSON.stringify({ error: "Service configuration error" }), 
+                JSON.stringify({ error: "Service configuration error" }),
                 { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
@@ -133,15 +133,15 @@ Please perform the requested action and return the appropriate JSON response.`;
         if (!response.ok) {
             console.error(`[design-copilot] AI API error: ${response.status}`);
             return new Response(
-                JSON.stringify({ error: "AI service temporarily unavailable" }), 
+                JSON.stringify({ error: "AI service temporarily unavailable" }),
                 { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
 
         const data = await response.json();
         const content = data.choices[0].message.content;
-        
-        console.log(`[design-copilot] Successfully processed action: ${action}`);
+
+
 
         return new Response(content, {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -151,7 +151,7 @@ Please perform the requested action and return the appropriate JSON response.`;
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('[design-copilot] Error:', errorMessage);
         return new Response(
-            JSON.stringify({ error: errorMessage }), 
+            JSON.stringify({ error: errorMessage }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }

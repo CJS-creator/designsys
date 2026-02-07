@@ -1,7 +1,7 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { corsHeaders, inputSchema, generateWithAI } from "../_shared/design-system.ts";
+import { openApiSpec } from "./openapi.ts";
 
 // Helper to hash key (match client side logic)
 async function hashKey(key: string): Promise<string> {
@@ -12,12 +12,44 @@ async function hashKey(key: string): Promise<string> {
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+// Basic Rate Limiter (In-Memory, Per Instance)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const LIMIT = 100; // Requests
+const WINDOW = 60 * 1000; // 1 Minute
+
+function checkRateLimit(keyHash: string): boolean {
+    const now = Date.now();
+    const limitData = rateLimitMap.get(keyHash) || { count: 0, resetTime: now + WINDOW };
+
+    if (now > limitData.resetTime) {
+        // Reset
+        limitData.count = 1;
+        limitData.resetTime = now + WINDOW;
+    } else {
+        limitData.count++;
+    }
+
+    rateLimitMap.set(keyHash, limitData);
+    return limitData.count <= LIMIT;
+}
+
 serve(async (req: Request) => {
+    // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return new Response(null, { headers: corsHeaders });
     }
 
     try {
+        const url = new URL(req.url);
+        const path = url.pathname.replace("/v1-api", "");
+
+        // Endpoint: GET /v1/docs (OpenAPI Spec) - Public Access
+        if ((path === "/v1/docs" || path === "/docs" || path === "/openapi.json") && req.method === "GET") {
+            return new Response(JSON.stringify(openApiSpec), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+        }
+
         // 1. Authenticate Request
         const apiKey = req.headers.get("x-api-key");
         if (!apiKey) {
@@ -29,15 +61,24 @@ serve(async (req: Request) => {
 
         const keyHash = await hashKey(apiKey);
 
+        // 2. Rate Limiting
+        if (!checkRateLimit(keyHash)) {
+            return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+                status: 429,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+        }
+
         // Init Admin Client to check keys
         const supabaseAdmin = createClient(
             Deno.env.get("SUPABASE_URL") ?? "",
             Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
         );
 
+        // 3. Validate Key & Scopes
         const { data: keyData, error: keyError } = await supabaseAdmin
             .from("api_keys")
-            .select("id, user_id, last_used_at")
+            .select("id, user_id, last_used_at, design_system_id, scopes")
             .eq("key_hash", keyHash)
             .single();
 
@@ -48,22 +89,48 @@ serve(async (req: Request) => {
             });
         }
 
-        // Update last used asynchronously (fire and forget to not block)
+        // Update last used asynchronously (fire and forget)
         supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", keyData.id).then();
 
-        // 2. Rate Limiting (Simple Check using Supabase for now)
-        // For MVP, we'll skip complex rate limiting (Redis/Upstash) and rely on edge function limits
-        // or we could add a simple counter in a DB table if needed.
-        // Proceeding without for now as per plan focus on "Productization" first.
+        // 4. Routing & Logic
 
-        // 3. Routing
-        const url = new URL(req.url);
-        const path = url.pathname.replace("/v1-api", ""); // Strip prefix if routing via rewrite, or use relative
+        // Endpoint: GET /v1/tokens
+        if ((path === "/v1/tokens" || path === "/tokens") && req.method === "GET") {
+            // Check Scope
+            if (!keyData.scopes?.includes("tokens:read")) {
+                return new Response(JSON.stringify({ error: "Insufficient permissions. Required: tokens:read" }), {
+                    status: 403,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                });
+            }
 
-        // Supabase routing: https://project.functions.supabase.co/v1-api/v1/generate
-        // Path inside function will be /v1/generate
+            // Fetch tokens for this design system
+            const { data: tokens, error: tokensError } = await supabaseAdmin
+                .from("design_tokens")
+                .select("*")
+                .eq("design_system_id", keyData.design_system_id);
 
-        if (path === "/v1/generate" || path === "/generate") { // Handle both just in case
+            if (tokensError) {
+                return new Response(JSON.stringify({ error: "Failed to fetch tokens" }), {
+                    status: 500,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                });
+            }
+
+            return new Response(JSON.stringify({
+                success: true,
+                meta: {
+                    design_system_id: keyData.design_system_id,
+                    count: tokens.length
+                },
+                data: tokens
+            }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+        }
+
+        // Endpoint: POST /v1/generate (Previous functionality)
+        if ((path === "/v1/generate" || path === "/generate") && req.method === "POST") {
             let rawInput;
             try {
                 rawInput = await req.json();

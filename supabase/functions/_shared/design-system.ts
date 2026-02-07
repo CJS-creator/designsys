@@ -2,8 +2,8 @@
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 export const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-api-key',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-api-key',
 };
 
 export const systemPrompt = `You are an expert design system architect. Generate comprehensive, production-ready design systems based on user requirements.
@@ -176,53 +176,53 @@ Design Guidelines:
    - Web apps = 12 columns`;
 
 export const inputSchema = z.object({
-    appType: z.enum(['mobile', 'web', 'both']).default('web'),
-    industry: z.string().min(1, 'Industry is required').max(100, 'Industry must be 100 characters or less'),
-    brandMood: z.array(z.string().max(50)).min(1, 'At least one brand mood is required').max(5, 'Maximum 5 brand moods allowed'),
-    primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Primary color must be a valid hex color').optional().nullable(),
-    description: z.string().max(500, 'Description must be 500 characters or less').optional().nullable(),
+  appType: z.enum(['mobile', 'web', 'both']).default('web'),
+  industry: z.string().min(1, 'Industry is required').max(100, 'Industry must be 100 characters or less'),
+  brandMood: z.array(z.string().max(50)).min(1, 'At least one brand mood is required').max(5, 'Maximum 5 brand moods allowed'),
+  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Primary color must be a valid hex color').optional().nullable(),
+  description: z.string().max(500, 'Description must be 500 characters or less').optional().nullable(),
 });
 
 // Helper for sanitization
 export const sanitize = (str: string): string => {
-    let sanitized = str.replace(/[`${}]/g, '');
-    const injectionPatterns = [
-        /ignore\s+(all\s+)?(previous\s+)?instructions?/gi,
-        /system\s*:/gi,
-        /assistant\s*:/gi,
-        /user\s*:/gi,
-        /\[INST\]/gi,
-        /\[\/INST\]/gi,
-        /<\|.*?\|>/g,
-        /<<.*?>>/g,
-        /\{\{.*?\}\}/g,
-        /debug\s+mode/gi,
-        /reveal\s+(all\s+)?config(uration)?/gi,
-        /output\s+instructions/gi,
-        /print\s+prompt/gi,
-        /show\s+system/gi,
-    ];
+  let sanitized = str.replace(/[`${}]/g, '');
+  const injectionPatterns = [
+    /ignore\s+(all\s+)?(previous\s+)?instructions?/gi,
+    /system\s*:/gi,
+    /assistant\s*:/gi,
+    /user\s*:/gi,
+    /\[INST\]/gi,
+    /\[\/INST\]/gi,
+    /<\|.*?\|>/g,
+    /<<.*?>>/g,
+    /\{\{.*?\}\}/g,
+    /debug\s+mode/gi,
+    /reveal\s+(all\s+)?config(uration)?/gi,
+    /output\s+instructions/gi,
+    /print\s+prompt/gi,
+    /show\s+system/gi,
+  ];
 
-    for (const pattern of injectionPatterns) {
-        sanitized = sanitized.replace(pattern, '');
-    }
-    sanitized = sanitized.replace(/\s+/g, ' ').trim();
-    sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
-    return sanitized;
+  for (const pattern of injectionPatterns) {
+    sanitized = sanitized.replace(pattern, '');
+  }
+  sanitized = sanitized.replace(/\s+/g, ' ').trim();
+  sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
+  return sanitized;
 };
 
 export async function generateWithAI(input: z.infer<typeof inputSchema>) {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-        throw new Error("LOVABLE_API_KEY is not configured");
-    }
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) {
+    throw new Error("LOVABLE_API_KEY is not configured");
+  }
 
-    const { appType, industry, brandMood, primaryColor, description } = input;
-    const sanitizedIndustry = sanitize(industry);
-    const sanitizedMoods = brandMood.map(sanitize);
-    const sanitizedDescription = description ? sanitize(description) : null;
+  const { appType, industry, brandMood, primaryColor, description } = input;
+  const sanitizedIndustry = sanitize(industry);
+  const sanitizedMoods = brandMood.map(sanitize);
+  const sanitizedDescription = description ? sanitize(description) : null;
 
-    const userPrompt = `Generate a design system for the following project:
+  const userPrompt = `Generate a design system for the following project:
 
 Platform: ${appType}
 Industry: ${sanitizedIndustry}
@@ -237,48 +237,48 @@ Consider:
 - If a primary color is provided, build the palette around it
 - Make the design system feel cohesive and professional`;
 
-    console.log("Generating design system with AI...");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt }
-            ],
-        }),
-    });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+
+  if (!content) {
+    throw new Error("No content in AI response");
+  }
+
+  let designSystem;
+  try {
+    let jsonStr = content;
+    if (content.includes("```json")) {
+      jsonStr = content.split("```json")[1].split("```")[0].trim();
+    } else if (content.includes("```")) {
+      jsonStr = content.split("```")[1].split("```")[0].trim();
     }
+    designSystem = JSON.parse(jsonStr);
+  } catch (parseError) {
+    console.error("Failed to parse AI response as JSON:", parseError);
+    throw new Error("Failed to parse design system from AI response");
+  }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-
-    if (!content) {
-        throw new Error("No content in AI response");
-    }
-
-    let designSystem;
-    try {
-        let jsonStr = content;
-        if (content.includes("```json")) {
-            jsonStr = content.split("```json")[1].split("```")[0].trim();
-        } else if (content.includes("```")) {
-            jsonStr = content.split("```")[1].split("```")[0].trim();
-        }
-        designSystem = JSON.parse(jsonStr);
-    } catch (parseError) {
-        console.error("Failed to parse AI response as JSON:", parseError);
-        throw new Error("Failed to parse design system from AI response");
-    }
-
-    return designSystem;
+  return designSystem;
 }
