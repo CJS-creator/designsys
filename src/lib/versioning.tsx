@@ -9,6 +9,7 @@
  */
 
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 // Version types
 export interface Version {
@@ -169,7 +170,7 @@ export function calculateDiff(
 }
 
 // Version history hook
-export function useVersionHistory(componentName: string) {
+export function useVersionHistory(_componentName: string) {
   const [versions, setVersions] = React.useState<Version[]>([]);
   const [currentVersion, setCurrentVersion] = React.useState('1.0.0');
 
@@ -234,7 +235,7 @@ export interface VersionManagerProps {
 
 export const VersionDisplay: React.FC<VersionManagerProps> = ({
   component,
-  onVersionChange,
+  onVersionChange: _onVersionChange,
   className,
 }) => {
   const latestVersion = component.versions[0];

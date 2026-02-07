@@ -170,7 +170,7 @@ interface CodeEditorProps {
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
     value,
-    language,
+    language: _language,
     onChange,
     readOnly = false,
     className,
@@ -379,7 +379,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = (props) => {
         onCodeChange,
         className,
     } = props;
-    const [language, setLanguage] = React.useState<SupportedLanguage>(initialLanguage);
+    const [language, _setLanguage] = React.useState<SupportedLanguage>(initialLanguage);
     const [code, setCode] = React.useState(initialCode || codeTemplates[initialLanguage]);
     const [isFullscreen, setIsFullscreen] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState('code');

@@ -1,6 +1,7 @@
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { UnifiedTokenStore, TokenGroup, DesignToken } from "@/types/tokens";
-import { v4 as uuidv4 } from "uuid";
+// Use native crypto.randomUUID() instead of importing uuid
+const uuidv4 = () => crypto.randomUUID();
 
 export function organizeTokens(system: GeneratedDesignSystem): UnifiedTokenStore {
     const store: UnifiedTokenStore = {
