@@ -31,11 +31,23 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { runAICopilot, AISuggestion } from "@/lib/ai";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { isValidColor } from "@/lib/security";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuditLogViewer } from "../AuditLogViewer";
-import { isValidColor } from "@/lib/security";
+
+// Helper function to check if a value is a valid color
+function isValidColor(value: unknown): boolean {
+    if (typeof value !== 'string') return false;
+    // Check for hex, rgb, rgba, hsl, hsla, or named colors
+    const colorPatterns = [
+        /^#([0-9A-Fa-f]{3}){1,2}$/,
+        /^#([0-9A-Fa-f]{4}){1,2}$/,
+        /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/,
+        /^rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)$/,
+        /^hsl\(\s*\d+\s*,\s*[\d.]+%\s*,\s*[\d.]+%\s*\)$/,
+        /^hsla\(\s*\d+\s*,\s*[\d.]+%\s*,\s*[\d.]+%\s*,\s*[\d.]+\s*\)$/
+    ];
+    return colorPatterns.some(pattern => pattern.test(value));
+}
 
 interface GovernanceDashboardProps {
     tokens: DesignToken[];

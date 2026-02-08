@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useApprovals, ApprovalRequest, ApprovalChange } from "@/hooks/useApprovals";
+import { useState } from "react";
+import { useApprovals, ApprovalChange } from "@/hooks/useApprovals";
 import {
     Card,
     CardContent,
@@ -15,7 +15,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Check, X, Clock, ArrowRight } from "lucide-react";
+import { Check, X, ArrowRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface ApprovalQueueProps {

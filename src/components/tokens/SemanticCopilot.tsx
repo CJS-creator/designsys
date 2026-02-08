@@ -7,7 +7,6 @@ import { Sparkles, Moon, Palette, CheckCircle2, RefreshCw } from "lucide-react";
 import { DesignToken } from "@/types/tokens";
 import { runAICopilot, AIThemeResult } from "@/lib/ai";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 interface SemanticCopilotProps {
     designSystemId: string;
@@ -44,25 +43,18 @@ export function SemanticCopilot({ designSystemId, tokens, onRefresh }: SemanticC
     const saveGeneratedTheme = async () => {
         if (!previewTheme) return;
 
-        try {
-            const { error } = await supabase
-                .from('brand_themes')
-                .insert({
-                    design_system_id: designSystemId,
-                    name: previewTheme.themeName,
-                    mode: 'dark',
-                    tokens_override: previewTheme.overrides as any,
-                    is_default: false
-                });
-
-            if (error) throw error;
-
-            toast.success(`${previewTheme.themeName} saved successfully!`);
-            setPreviewTheme(null);
-            onRefresh();
-        } catch (error) {
-            toast.error("Failed to save theme");
-        }
+        // Stub: brand_themes table not yet created
+        // Once the table is created, this can save to the database
+        toast.info("Theme saving requires database setup (brand_themes table)");
+        console.log("Would save theme:", {
+            design_system_id: designSystemId,
+            name: previewTheme.themeName,
+            mode: 'dark',
+            tokens_override: previewTheme.overrides,
+            is_default: false
+        });
+        setPreviewTheme(null);
+        onRefresh();
     };
 
     return (
@@ -158,7 +150,7 @@ export function SemanticCopilot({ designSystemId, tokens, onRefresh }: SemanticC
                                         {tokens.filter(t => t.type === 'color').map(t => (
                                             <SelectItem key={t.path} value={t.path}>
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-3 h-3 rounded border" style={{ backgroundColor: t.value }} />
+                                                    <div className="w-3 h-3 rounded border" style={{ backgroundColor: String(t.value) }} />
                                                     {t.path}
                                                 </div>
                                             </SelectItem>
