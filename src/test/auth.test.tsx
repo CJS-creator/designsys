@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -92,10 +92,10 @@ describe("AuthContext", () => {
     });
 
     it("updates state on auth change", async () => {
-        let authChangeListener: (event: string, session: any) => void = () => { };
+        let authChangeListener: (event: unknown, session: unknown) => void = () => { };
 
-        vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
-            authChangeListener = callback;
+        vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback: unknown) => {
+            authChangeListener = callback as (event: unknown, session: unknown) => void;
             return { data: { subscription: { unsubscribe: vi.fn() } } } as any;
         });
 
@@ -126,9 +126,9 @@ describe("AuthContext", () => {
             error: null
         } as any);
 
-        let authChangeListener: (event: string, session: any) => void = () => { };
-        vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
-            authChangeListener = callback;
+        let authChangeListener: (event: unknown, session: unknown) => void = () => { };
+        vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback: unknown) => {
+            authChangeListener = callback as (event: unknown, session: unknown) => void;
             return { data: { subscription: { unsubscribe: vi.fn() } } } as any;
         });
 

@@ -23,15 +23,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         // Detect session expiry
-        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-          // Note: 'user' here might be stale due to empty dependency array, 
-          // but we prioritize avoiding infinite re-render loops.
-          if (event === 'SIGNED_OUT') {
-            // Session was active and is now gone - likely expired
-            import('sonner').then(({ toast }) => {
-              // toast.warning("Session expired", ...); 
-            });
-          }
+        if (event === 'SIGNED_OUT') {
+          // Session was active and is now gone - likely expired
+          // Could show a toast notification here if needed
         }
 
         setSession(session);
