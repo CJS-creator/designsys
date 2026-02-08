@@ -31,9 +31,17 @@ import { useBrands } from "@/hooks/useBrands";
 import { useSearchParams } from "react-router-dom";
 import { AISuggestion } from "@/lib/ai";
 
-export function TokenManagementDashboard() {
+interface TokenManagementDashboardProps {
+    designSystem?: GeneratedDesignSystem | null;
+    designSystemId?: string;
+}
+
+export function TokenManagementDashboard({
+    designSystem: propDesignSystem,
+    designSystemId: propDesignSystemId
+}: TokenManagementDashboardProps) {
     const [searchParams] = useSearchParams();
-    const designSystemId = searchParams.get("id");
+    const designSystemId = propDesignSystemId || searchParams.get("id") || "";
     const {
         tokens,
         loading: isLoadingTokens,
@@ -45,7 +53,10 @@ export function TokenManagementDashboard() {
     } = useTokens(designSystemId || undefined);
     const { brands } = useBrands(designSystemId || undefined);
 
-    const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
+    // Use prop designSystem if provided, otherwise fetch from API
+    const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(
+        propDesignSystem || null
+    );
     const [isLoadingDS, setIsLoadingDS] = useState(false);
     const [editingToken, setEditingToken] = useState<DesignToken | null>(null);
     const [isCreating, setIsCreating] = useState(false);
@@ -53,11 +64,12 @@ export function TokenManagementDashboard() {
     const [localTokens, setLocalTokens] = useState<DesignToken[]>([]);
     const [showSpacingGrid, setShowSpacingGrid] = useState(false);
 
+    // Fetch design system if not provided via props and we have an ID
     useEffect(() => {
-        if (designSystemId) {
+        if (designSystemId && !propDesignSystem) {
             fetchDesignSystem();
         }
-    }, [designSystemId]);
+    }, [designSystemId, propDesignSystem]);
 
     useEffect(() => {
         if (tokens.length > 0) {
@@ -184,7 +196,9 @@ export function TokenManagementDashboard() {
         }
     };
 
-    if (!designSystemId) {
+    // Show empty state only if no designSystemId and no prop designSystem
+    // For newly generated systems, propDesignSystem will be provided even without ID
+    if (!designSystemId && !propDesignSystem) {
         return (
             <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-4">
                 <div className="p-4 bg-muted rounded-full">

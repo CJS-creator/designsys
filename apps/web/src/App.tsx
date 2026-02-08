@@ -20,7 +20,9 @@ const SharedDesign = lazy(() => import("./pages/SharedDesign"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Settings = lazy(() => import("./pages/Settings"));
 // Named export lazy loading
-const PublicDocViewer = lazy(() => import("./components/docs/PublicDocViewer").then(module => ({ default: module.PublicDocViewer })));
+const PublicDocViewer = lazy(() =>
+  import("./components/docs/PublicDocViewer").then(module => ({ default: module.PublicDocViewer }))
+);
 
 
 const queryClient = new QueryClient();
@@ -48,11 +50,45 @@ const App = () => (
                       <Route path="/auth" element={<Auth />} />
                       <Route path="/share/:id" element={<SharedDesign />} />
                       <Route path="/docs/:shareId" element={<PublicDocViewer />} />
+                      {/* Main app routes with tab navigation */}
                       <Route
                         path="/app"
                         element={
                           <ProtectedRoute>
                             <Index />
+                          </ProtectedRoute>
+                        }
+                      />
+                      {/* Route aliases for deep linking */}
+                      <Route
+                        path="/app/tokens"
+                        element={
+                          <ProtectedRoute>
+                            <Index />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/app/governance"
+                        element={
+                          <ProtectedRoute>
+                            <Index />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/app/settings"
+                        element={
+                          <ProtectedRoute>
+                            <Index />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/app/api-keys"
+                        element={
+                          <ProtectedRoute>
+                            <Settings />
                           </ProtectedRoute>
                         }
                       />

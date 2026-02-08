@@ -43,8 +43,22 @@ export const TeamSettings = ({ designSystemId, currentUserRole }: TeamSettingsPr
     const [inviteEmail, setInviteEmail] = useState("");
 
     const fetchMembers = async () => {
-        if (!designSystemId) return;
+        if (!designSystemId) {
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
+
+        // Add a timeout to prevent infinite loading in case of network issues
+        const timeoutId = setTimeout(() => {
+            if (isLoading) {
+                setIsLoading(false);
+                toast.error("Fetch members timed out. Please refresh.");
+                monitor.error("Team members fetch timed out", new Error("Timeout"));
+            }
+        }, 8000);
+
         try {
             const { data, error } = await supabase
                 .from("user_roles")
@@ -55,7 +69,9 @@ export const TeamSettings = ({ designSystemId, currentUserRole }: TeamSettingsPr
             setMembers((data as unknown as TeamMember[]) || []);
         } catch (error) {
             monitor.error("Error fetching members", error as Error);
+            toast.error("Failed to load team members");
         } finally {
+            clearTimeout(timeoutId);
             setIsLoading(false);
         }
     };

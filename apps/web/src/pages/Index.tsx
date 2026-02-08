@@ -467,7 +467,10 @@ const Index = () => {
 
                   <TabsContent value="tokens" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <TokenManagementDashboard />
+                      <TokenManagementDashboard
+                        designSystem={designSystem}
+                        designSystemId={designSystem?.id || searchParams.get("id") || ""}
+                      />
                     </Suspense>
                   </TabsContent>
 

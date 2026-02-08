@@ -30,3 +30,11 @@ dist-ssr
 plans/
 lint_errors.txt
 
+
+# Test Output & Temporary Files
+test_output*.txt
+*_result.txt
+*_errors.txt
+build_log.txt
+coverage/
+tsc_errors.txt

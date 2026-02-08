@@ -181,7 +181,7 @@ export interface AnimationTokens {
   };
 }
 
-import { UnifiedTokenStore } from "./shared-tokens";
+import { UnifiedTokenStore } from "./tokens";
 
 export interface ComponentState {
   default: Record<string, string>;

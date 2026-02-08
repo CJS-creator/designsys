@@ -179,7 +179,7 @@ export function PublicDocViewer() {
                                 <div key={token.id} className="p-4 rounded-xl border bg-card/50 hover:border-primary/30 transition-colors group">
                                     <div className="flex items-center gap-3 mb-3">
                                         {token.type === 'color' ? (
-                                            <div className="w-8 h-8 rounded-lg border shadow-sm" style={{ backgroundColor: token.value }} />
+                                            <div className="w-8 h-8 rounded-lg border shadow-sm" style={{ backgroundColor: isValidColor(token.value) ? token.value : 'transparent' }} />
                                         ) : (
                                             <div className="w-8 h-8 rounded-lg border bg-muted flex items-center justify-center">
                                                 <Box className="h-4 w-4 text-muted-foreground" />

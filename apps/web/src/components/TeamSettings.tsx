@@ -45,17 +45,39 @@ export const TeamSettings = ({ designSystemId, currentUserRole }: TeamSettingsPr
     const fetchMembers = async () => {
         if (!designSystemId) return;
         setIsLoading(true);
+
+        // Add timeout to prevent infinite loading (max 10 seconds)
+        const timeoutId = setTimeout(() => {
+            if (isLoading) {
+                setIsLoading(false);
+                console.warn("Team members fetch timed out after 10 seconds");
+            }
+        }, 10000);
+
         try {
             const { data, error } = await supabase
                 .from("user_roles")
                 .select("*")
                 .eq("design_system_id", designSystemId);
 
-            if (error) throw error;
-            setMembers((data as unknown as TeamMember[]) || []);
-        } catch (error) {
+            if (error) {
+                // Handle missing table gracefully
+                if (error.code === '42P01') { // undefined_table
+                    console.warn("user_roles table not found - showing empty state");
+                    setMembers([]);
+                } else {
+                    throw error;
+                }
+            } else {
+                setMembers((data as unknown as TeamMember[]) || []);
+            }
+        } catch (error: any) {
             monitor.error("Error fetching members", error as Error);
+            console.error("Failed to fetch team members:", error.message);
+            // Show empty state on error instead of hanging
+            setMembers([]);
         } finally {
+            clearTimeout(timeoutId);
             setIsLoading(false);
         }
     };

@@ -19,12 +19,17 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
+      // Prevent console.log in production code (allow warn/error)
+      "no-console": ["warn", { allow: ["warn", "error"] }],
     },
-  }
+  },
+  // Allow console in test files and CLI
+  {
+    files: ["**/tests/**", "**/test/**", "**/*.test.{ts,tsx}", "**/cli/**"],
+    rules: {
+      "no-console": "off",
+    },
+  },
 );

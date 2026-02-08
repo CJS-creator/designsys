@@ -25,12 +25,16 @@ import { formatDistanceToNow } from "date-fns";
 type APIKey = Database['public']['Tables']['api_keys']['Row'];
 type DesignSystem = Database['public']['Tables']['design_systems']['Row'];
 
+interface APIKeysProps {
+    designSystemId?: string;
+}
+
 const AVAILABLE_SCOPES = [
     { id: "tokens:read", label: "Read Tokens", description: "Read access to all design tokens" },
     { id: "tokens:write", label: "Write Tokens", description: "Create and update design tokens" },
 ];
 
-export function APIKeys() {
+export function APIKeys({ designSystemId }: APIKeysProps = {}) {
     const [keys, setKeys] = useState<APIKey[]>([]);
     const [loading, setLoading] = useState(true);
     const [isGenerateOpen, setIsGenerateOpen] = useState(false);

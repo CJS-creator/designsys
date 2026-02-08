@@ -15,7 +15,6 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@designsys/shared": "*",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/merriweather": "^5.2.11",

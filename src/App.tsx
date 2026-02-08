@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { TabRedirect } from "./components/TabRedirect";
 
 // Lazy load pages for bundle optimization
 const Index = lazy(() => import("./pages/Index"));
@@ -53,6 +54,14 @@ const App = () => (
                         element={
                           <ProtectedRoute>
                             <Index />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/app/:tabId"
+                        element={
+                          <ProtectedRoute>
+                            <TabRedirect />
                           </ProtectedRoute>
                         }
                       />

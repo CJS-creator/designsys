@@ -117,6 +117,84 @@ interface DesignSystemFormProps {
 
 const FORM_STORAGE_KEY = 'designsys-form-state';
 
+// XSS prevention: Sanitize input to prevent script injection
+const sanitizeInput = (input: string): string => {
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+};
+
+// Validate hex color format
+const isValidHexColor = (color: string): boolean => {
+  return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
+};
+
+// Validate email format
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Form validation helper
+interface FormValidation {
+  isValid: boolean;
+  errors: Record<string, string>;
+}
+
+const validateForm = (
+  industry: string,
+  brandMood: string[],
+  primaryColor: string,
+  description: string
+): FormValidation => {
+  const errors: Record<string, string> = {};
+
+  // Industry validation
+  if (!industry || industry.trim() === '') {
+    errors.industry = 'Please select an industry';
+  }
+
+  // Brand mood validation (at least 1 required)
+  if (brandMood.length === 0) {
+    errors.brandMood = 'Please select at least one brand mood';
+  }
+
+  // Primary color validation (if provided)
+  if (primaryColor && !isValidHexColor(primaryColor)) {
+    errors.primaryColor = 'Please enter a valid hex color (#RRGGBB or #RGB)';
+  }
+
+  // Description validation
+  if (description.length > 1000) {
+    errors.description = 'Description must be less than 1000 characters';
+  }
+
+  // XSS prevention: Check for potentially dangerous patterns
+  const dangerousPatterns = [
+    /<script[\s>]/i,
+    /javascript:/i,
+    /on\w+=/i,
+    /<iframe/i,
+    /<object/i,
+    /<embed/i,
+  ];
+
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(description)) {
+      errors.description = 'Description contains invalid characters';
+      break;
+    }
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
+
 export function DesignSystemForm({ onGenerate, isLoading, initialValues }: DesignSystemFormProps) {
   // Load from localStorage or use initialValues
   const loadSavedState = () => {
@@ -152,6 +230,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
   const [description, setDescription] = useState(savedState.description);
   const [progress, setProgress] = useState(0);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Save form state to localStorage whenever it changes
   useEffect(() => {
@@ -260,16 +339,20 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
   }, [isLoading]);
 
   const toggleMood = (mood: string) => {
-    if (brandMood.includes(mood)) {
-      setBrandMood(brandMood.filter((m) => m !== mood));
-    } else if (brandMood.length < 3) {
-      setBrandMood([...brandMood, mood]);
-    } else {
-      // Show feedback when limit reached
-      toast.info("Maximum 3 moods selected. Deselect one to choose another.", {
-        icon: "ℹ️"
-      });
-    }
+    // Use functional update to ensure latest state
+    setBrandMood(prev => {
+      if (prev.includes(mood)) {
+        return prev.filter((m) => m !== mood);
+      } else if (prev.length < 3) {
+        return [...prev, mood];
+      } else {
+        // Show feedback when limit reached
+        toast.info("Maximum 3 moods selected. Deselect one to choose another.", {
+          icon: "ℹ️"
+        });
+        return prev;
+      }
+    });
   };
 
   const handleRandomPrompt = () => {
@@ -288,12 +371,34 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Clear previous validation errors
+    setValidationErrors({});
+
+    // Validate form
+    const validation = validateForm(industry, brandMood, primaryColor, description);
+
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+
+      // Show first error as toast
+      const firstError = Object.values(validation.errors)[0];
+      toast.error("Form Validation Failed", {
+        description: firstError
+      });
+
+      return;
+    }
+
+    // Sanitize description before submission
+    const sanitizedDescription = sanitizeInput(description);
+
     onGenerate({
       appType,
       industry,
       brandMood,
       primaryColor: primaryColor || undefined,
-      description,
+      description: sanitizedDescription,
     });
   };
 
@@ -364,7 +469,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
               Industry
             </Label>
             <Select value={industry} onValueChange={setIndustry}>
-              <SelectTrigger className="h-12 bg-background border-2 border-border text-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all rounded-xl hover:border-primary/50 hover:shadow-sm font-medium">
+              <SelectTrigger className="h-12 bg-background border-2 border-input text-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all rounded-xl hover:border-primary/50 hover:shadow-sm font-medium">
                 <SelectValue placeholder="Select your industry" />
               </SelectTrigger>
               <SelectContent className="bg-popover/95 backdrop-blur-xl border-2 border-border text-popover-foreground rounded-xl shadow-2xl">
@@ -375,13 +480,16 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                 ))}
               </SelectContent>
             </Select>
+            {validationErrors.industry && (
+              <p className="text-xs text-destructive mt-1">{validationErrors.industry}</p>
+            )}
           </motion.div>
 
           {/* Brand Mood */}
           <motion.div variants={itemVariants} className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-base font-medium text-foreground">
-                Brand Mood <span className="text-neutral-500 text-sm">({brandMood.length}/3 selected)</span>
+                Brand Mood <span key={`mood-counter-${brandMood.length}`} className="text-neutral-500 text-sm transition-all duration-200">({brandMood.length}/3 selected)</span>
               </Label>
               {industry && INDUSTRY_MOOD_SUGGESTIONS[industry] && (
                 <span className="text-xs text-primary/80 flex items-center gap-1">
@@ -397,19 +505,29 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                   <Badge
                     key={mood}
                     variant={brandMood.includes(mood) ? "default" : "outline"}
-                    className={`cursor-pointer px-5 py-2.5 text-sm transition-all duration-300 capitalize rounded-full select-none font-medium ${brandMood.includes(mood)
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 scale-[1.02] border-transparent"
-                      : isSuggested
-                        ? "bg-primary/5 border-2 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50"
-                        : "bg-muted/50 border-2 border-border text-muted-foreground hover:bg-muted hover:text-foreground hover:border-primary/30"
+                    className={`cursor-pointer px-5 py-2.5 text-sm transition-all duration-200 capitalize rounded-full select-none font-medium
+                      ${brandMood.includes(mood)
+                        ? "bg-primary text-primary-foreground hover:bg-primary/80 shadow-lg shadow-primary/20 scale-[1.02] active:scale-[0.98] border-transparent"
+                        : isSuggested
+                          ? "bg-primary/5 border-2 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 hover:scale-[1.02] active:scale-[0.98]"
+                          : "bg-muted/50 border-2 border-border text-muted-foreground hover:bg-muted hover:text-foreground hover:border-primary/30 hover:scale-[1.02] active:scale-[0.98]"
                       }`}
                     onClick={() => toggleMood(mood)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "scale(1.02)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "scale(1)";
+                    }}
                   >
                     {mood}
                   </Badge>
                 );
               })}
             </div>
+            {validationErrors.brandMood && (
+              <p className="text-xs text-destructive mt-1">{validationErrors.brandMood}</p>
+            )}
           </motion.div>
 
           {/* Primary Color */}
@@ -431,7 +549,12 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                     aria-label="Pick brand color"
                     value={primaryColor || "#6366f1"}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="h-[150%] w-[150%] -translate-x-[25%] -translate-y-[25%] p-0 border-0 cursor-pointer"
+                    className="h-[150%] w-[150%] -translate-x-[25%] -translate-y-[25%] p-0 border-0 cursor-pointer opacity-0 absolute inset-0"
+                  />
+                  {/* Visual preview swatch */}
+                  <div
+                    className="h-full w-full rounded-xl transition-all duration-200"
+                    style={{ backgroundColor: primaryColor || "#6366f1" }}
                   />
                 </div>
               </div>
@@ -444,6 +567,10 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                 className="h-12 flex-1 font-mono bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all rounded-xl hover:bg-muted/30"
               />
             </div>
+            {/* Color validation feedback */}
+            {primaryColor && !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(primaryColor) && (
+              <p className="text-xs text-destructive">Invalid hex color format. Use #RRGGBB or #RGB format.</p>
+            )}
           </motion.div>
 
           {/* Description */}

@@ -31,8 +31,11 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { runAICopilot, AISuggestion } from "@/lib/ai";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { isValidColor } from "@/lib/security";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuditLogViewer } from "../AuditLogViewer";
+import { isValidColor } from "@/lib/security";
 
 interface GovernanceDashboardProps {
     tokens: DesignToken[];
@@ -319,7 +322,7 @@ export function GovernanceDashboard({
                                         <div key={i} className="p-3 rounded-lg border bg-muted/30 space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-4 h-4 rounded border" style={{ backgroundColor: typeof dup.value === 'string' ? dup.value : 'transparent' }} />
+                                                    <div className="w-3 h-3 rounded border" style={{ backgroundColor: isValidColor(dup.value) ? dup.value : 'transparent' }} />
                                                     <code className="text-xs font-mono">{JSON.stringify(dup.value)}</code>
                                                 </div>
                                                 <div className="flex items-center gap-2">

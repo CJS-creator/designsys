@@ -104,6 +104,22 @@ export function useTokens(designSystemId?: string) {
             return;
         }
 
+        // --- Validation ---
+        if (!token.name || token.name.trim().length === 0) {
+            toast.error("Token name is required");
+            return;
+        }
+        if (!token.path || !/^[a-zA-Z0-9._-]+$/.test(token.path)) {
+            toast.error("Invalid token path. Use only alphanumeric characters, dots, underscores, and hyphens.");
+            return;
+        }
+        // Basic XSS check for string values (not exhaustive but safe for style injection)
+        if (typeof token.value === 'string' && (token.value.includes('<script') || token.value.toLowerCase().includes('javascript:'))) {
+            toast.error("Malicious content detected in token value");
+            return;
+        }
+        // ------------------
+
         try {
             const existingToken = tokens.find(t => t.path === token.path);
             const isUpdate = !!existingToken;
