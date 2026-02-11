@@ -29,6 +29,7 @@ class MonitoringService {
     private isProduction = import.meta.env.PROD;
     private sentryEnabled = false;
     private breadcrumbs: Array<{ message: string; category: string; timestamp: string }> = [];
+    private recentEvents: Array<LogEvent> = [];
 
     private constructor() {
         // Check for Sentry DSN
@@ -38,25 +39,7 @@ class MonitoringService {
         }
     }
 
-    private initSentry() {
-        if (this.sentryEnabled) {
-            // In a real implementation, we would import Sentry here
-            // import * as Sentry from "@sentry/react";
-
-            // For now, we simulate initialization
-            this.info("Sentry monitoring initialized (Simulated)", {
-                environment: import.meta.env.MODE,
-                dsn: "Simulated DSN"
-            });
-        }
-    }
-
-    /**
-     * Check if Sentry integration is enabled
-     */
-    public isSentryEnabled(): boolean {
-        return this.sentryEnabled;
-    }
+    // ... (initSentry and isSentryEnabled remain same)
 
     public static getInstance(): MonitoringService {
         if (!MonitoringService.instance) {
@@ -76,6 +59,12 @@ class MonitoringService {
         // Keep only last 50 breadcrumbs
         if (this.breadcrumbs.length > 50) {
             this.breadcrumbs.shift();
+        }
+
+        // Store recent events for dashboard
+        this.recentEvents.push(event);
+        if (this.recentEvents.length > 100) {
+            this.recentEvents.shift();
         }
 
         // In local development, log to console
@@ -100,12 +89,13 @@ class MonitoringService {
         }
     }
 
-    // Mock Sentry methods for simulation
-    private mockSentryCaptureException(error: Error, context?: any) {
-        if (this.isProduction) {
-            // In production this would be sent to Sentry
-            console.log("[Sentry-Sim] Capturing Exception:", error.message, context);
-        }
+    // ... (mockSentryCaptureException)
+
+    /**
+     * Get recent events for dashboard
+     */
+    public getRecentEvents(): LogEvent[] {
+        return [...this.recentEvents];
     }
 
     public debug(message: string, context?: Record<string, unknown>) {

@@ -33,7 +33,7 @@ export const ComparisonView = ({ baseInput, initialSystem }: ComparisonViewProps
       setVariations((prev) => [...prev, variation]);
       toast.success(`Variation ${variations.length + 1} generated!`);
     } catch (error) {
-      const fallback = generateDesignSystemFallback({
+      const fallback = await generateDesignSystemFallback({
         ...baseInput,
         primaryColor: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}`,
       });

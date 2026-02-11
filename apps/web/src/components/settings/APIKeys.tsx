@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Plus, Trash2, Key, AlertTriangle, Check, Copy } from "lucide-react";
-import { toast } from "sonner";
+import { toast as toastService } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
 type APIKey = Database['public']['Tables']['api_keys']['Row'];
@@ -34,7 +34,7 @@ const AVAILABLE_SCOPES = [
     { id: "tokens:write", label: "Write Tokens", description: "Create and update design tokens" },
 ];
 
-export function APIKeys({ designSystemId }: APIKeysProps = {}) {
+export function APIKeys({ designSystemId: _designSystemId }: APIKeysProps = {}) {
     const [keys, setKeys] = useState<APIKey[]>([]);
     const [loading, setLoading] = useState(true);
     const [isGenerateOpen, setIsGenerateOpen] = useState(false);
@@ -77,7 +77,7 @@ export function APIKeys({ designSystemId }: APIKeysProps = {}) {
             setKeys(data || []);
         } catch (error) {
             console.error("Error fetching keys:", error);
-            toast.error("Failed to load API keys and please create the api keys table in supabase");
+            toastService.error("Failed to load API keys and please create the api keys table in supabase");
         } finally {
             setLoading(false);
         }
@@ -85,12 +85,12 @@ export function APIKeys({ designSystemId }: APIKeysProps = {}) {
 
     const generateKey = async () => {
         if (!newKeyName.trim()) {
-            toast.error("Please enter a name for the key");
+            toastService.error("Please enter a name for the key");
             return;
         }
 
         if (selectedScopes.length === 0) {
-            toast.error("Please select at least one scope");
+            toastService.error("Please select at least one scope");
             return;
         }
 
@@ -119,7 +119,7 @@ export function APIKeys({ designSystemId }: APIKeysProps = {}) {
             // 4. Get design system ID (use the first one found or error)
             const dsId = designSystems[0]?.id;
             if (!dsId) {
-                toast.error("Please create a design system first");
+                toastService.error("Please create a design system first");
                 return;
             }
 
@@ -129,7 +129,7 @@ export function APIKeys({ designSystemId }: APIKeysProps = {}) {
                 key_hash: keyHash,
                 user_id: user.id,
                 design_system_id: dsId,
-                scopes: selectedScopes,
+                scopes: selectedScopes as any,
             });
 
             if (error) throw error;
@@ -138,10 +138,10 @@ export function APIKeys({ designSystemId }: APIKeysProps = {}) {
             setNewKeyName("");
             setSelectedScopes(["tokens:read"]);
             fetchKeys();
-            toast.success("API Key generated successfully");
+            toastService.success("API Key generated successfully");
         } catch (error) {
             console.error("Error generating key:", error);
-            toast.error("Failed to generate API Key");
+            toastService.error("Failed to generate API Key");
         } finally {
             setActionLoading(false);
         }
@@ -162,10 +162,10 @@ export function APIKeys({ designSystemId }: APIKeysProps = {}) {
             setKeys(keys.filter((k) => k.id !== keyToRevoke.id));
             setIsRevokeOpen(false);
             setKeyToRevoke(null);
-            toast.success("API Key revoked");
+            toastService.success("API Key revoked");
         } catch (error: any) {
             console.error("Error revoking key:", error);
-            toast.error(error.message || "Failed to revoke API Key");
+            toastService.error(error.message || "Failed to revoke API Key");
         } finally {
             setActionLoading(false);
         }
@@ -173,7 +173,7 @@ export function APIKeys({ designSystemId }: APIKeysProps = {}) {
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        toast.success("Copied to clipboard");
+        toastService.success("Copied to clipboard");
     };
 
     const toggleScope = (scopeId: string) => {
@@ -228,7 +228,7 @@ export function APIKeys({ designSystemId }: APIKeysProps = {}) {
                                         <h4 className="font-medium text-sm flex items-center gap-2">
                                             {key.name}
                                             <div className="flex gap-1">
-                                                {key.scopes?.map(scope => (
+                                                {(key.scopes as string[])?.map(scope => (
                                                     <Badge key={scope} variant="outline" className="text-[10px] h-4 px-1">
                                                         {scope}
                                                     </Badge>

@@ -28,9 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // but we prioritize avoiding infinite re-render loops.
           if (event === 'SIGNED_OUT') {
             // Session was active and is now gone - likely expired
-            import('sonner').then(({ toast }) => {
-              // toast.warning("Session expired", ...); 
-            });
+
           }
         }
 

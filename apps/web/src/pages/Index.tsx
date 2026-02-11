@@ -117,7 +117,7 @@ const Index = () => {
       });
     } catch (error) {
       monitor.error("AI generation failed, using fallback", error as Error);
-      const fallbackSystem = generateDesignSystemFallback(input);
+      const fallbackSystem = await generateDesignSystemFallback(input);
       setDesignSystem(fallbackSystem);
       toast.warning("Generated with fallback algorithm", {
         description: error instanceof Error ? error.message : "AI generation unavailable",

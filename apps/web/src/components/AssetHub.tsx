@@ -210,7 +210,7 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                                         variant="ghost"
                                         size="icon"
                                         className="h-8 w-8 rounded-full"
-                                        onClick={() => format.type ? downloadIndividual(format.type as any) : toast.info("Download available in bundle")}
+                                        onClick={() => (format.type === 'pdf' || format.type === 'docx') ? downloadIndividual(format.type) : toast.info("Download available in bundle")}
                                     >
                                         <Download className="h-4 w-4" />
                                     </Button>

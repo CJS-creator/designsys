@@ -1,7 +1,29 @@
 import { GeneratedDesignSystem, ComponentDefinition } from "@/types/designSystem";
+import { patternRepository } from "./patterns/repository";
+import { buttonPatterns } from "./patterns/definitions/components/buttons";
 
-export function generateComponentVariants(system: GeneratedDesignSystem): Record<string, ComponentDefinition> {
+
+export async function generateComponentVariants(system: GeneratedDesignSystem): Promise<Record<string, ComponentDefinition>> {
     const { colors, typography, borderRadius, spacing, shadows } = system;
+
+    // Register component patterns
+    patternRepository.registerPatterns(buttonPatterns);
+
+    // Try to find a button pattern
+    // In a real scenario, we might pass mood tags from the design system input, but 'system' object 
+    // doesn't currently store the raw input tags directly, although we could infer or pass them.
+    // For now, let's assume we can try to find patterns generally or based on loose matching if possible.
+    // However, without input tags, we can't search effectively.
+    // TODO: Pass 'input' or 'tags' to this function.
+    // For now, we will skip pattern lookup if we don't have tags, OR we can try to infer from system name or properties?
+    // Actually, 'ensureCompleteDesignSystem' has access to 'input'. We should pass 'tags' to this function.
+
+    // Let's assume we will pass tags in the future. For now, we use defaults to keep signature simple until we update it.
+    // OR we can just use the provided override mechanisms from the caller?
+
+    // Better approach: The caller (ensureCompleteDesignSystem) has already fetched patterns if needed.
+    // But for components, there are many types. fetching all might be extensive.
+    // Let's keep it simple for Tier 1: Just definitions here.
 
     // Button Component
     const button: ComponentDefinition = {

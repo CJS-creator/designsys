@@ -1,61 +1,136 @@
-import { supabase } from "@/integrations/supabase/client";
-import { DesignSystemInput, GeneratedDesignSystem, SemanticColors, ColorPalette, DarkModeColors, AnimationTokens } from "@/types/designSystem";
-import { generateInteractiveStates, hslToString, parseHslString, hexToHsl, getOnColor, getContainerColor } from "./colorUtils";
-import { monitor } from "./monitoring";
+import { invokeWithRetry } from "./utils";
 
-async function invokeWithRetry(name: string, options: any, retries = 2, delay = 1500): Promise<any> {
-  const result = await supabase.functions.invoke(name, options);
+import { patternRepository } from "./patterns/repository";
+import { aiCircuitBreaker } from "./circuitBreaker";
+import { typographyPatterns, getTypeScaleRatio, generateTypeScale } from "./patterns/definitions/typography";
+import { colorPatterns, moodColorMappings } from "./patterns/definitions/colors";
+import { spacingPatterns } from "./patterns/definitions/spacing";
+import { trackGeneration } from "./metrics";
 
-  // Retry on network errors or 5xx/429 status codes if possible to detect
-  // supabase-js error object usually contains status
-  const status = (result.error as any)?.status;
-  const shouldRetry = result.error && (retries > 0) && (!status || status >= 500 || status === 429);
-
-  if (shouldRetry) {
-    monitor.warn(`Function ${name} failed with status ${status}, retrying... (${retries} left)`);
-    await new Promise(resolve => setTimeout(resolve, delay));
-    return invokeWithRetry(name, options, retries - 1, delay * 2);
-  }
-
-  return result;
+export function initializePatterns() {
+  patternRepository.registerPatterns(typographyPatterns);
+  patternRepository.registerPatterns(colorPatterns);
+  patternRepository.registerPatterns(spacingPatterns);
 }
 
 export async function generateDesignSystemWithAI(input: DesignSystemInput): Promise<GeneratedDesignSystem> {
+  const startTime = performance.now();
   monitor.debug("Calling AI to generate design system...", { input });
 
-  const { data, error } = await invokeWithRetry("generate-design-system", {
-    body: {
-      appType: input.appType,
+  try {
+    // Start AI Generation in parallel with Pattern matching
+    const aiPromise = aiCircuitBreaker.execute(() => invokeWithRetry("generate-design-system", {
+      body: {
+        appType: input.appType,
+        industry: input.industry,
+        brandMood: input.brandMood,
+        primaryColor: input.primaryColor,
+        description: input.description,
+      },
+    }));
+
+    // Initialize Pattern Repository with Tier 1 patterns
+    initializePatterns();
+
+    // Start Pattern Fetches immediately
+    const typographyPromise = patternRepository.findPatterns({
+      category: "typography",
+      tags: input.brandMood
+    });
+
+    const colorPromise = !input.primaryColor
+      ? patternRepository.findPatterns({ category: "colors", tags: input.brandMood })
+      : Promise.resolve([]);
+
+    const spacingPromise = patternRepository.findPatterns({
+      category: "spacing",
+      tags: input.brandMood
+    });
+
+    // Await all results
+    const [aiResult, typographyCandidates, colorCandidates, spacingCandidates] = await Promise.all([
+      aiPromise,
+      typographyPromise,
+      colorPromise,
+      spacingPromise
+    ]);
+
+    const { data, error } = aiResult;
+
+    if (error) {
+      throw new Error(error.message || "Failed to generate design system after retries");
+    }
+
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+
+    if (!data?.designSystem) {
+      throw new Error("No design system returned from AI");
+    }
+
+    monitor.debug("AI generated design system", { designSystem: data.designSystem });
+
+    const bestTypographyMatch = typographyCandidates[0]?.data;
+    const bestColorMatch = colorCandidates[0]?.data;
+    const bestSpacingMatch = spacingCandidates[0]?.data;
+
+    const aiSystem = data.designSystem;
+
+    // A/B Test: Log comparison between AI and Pattern suggestions
+    monitor.info("[A/B Test] Tier 1 Generation Comparison", {
       industry: input.industry,
-      brandMood: input.brandMood,
-      primaryColor: input.primaryColor,
-      description: input.description,
-    },
-  });
+      mood: input.brandMood,
+      typography: {
+        ai: aiSystem.typography?.fontFamily,
+        pattern: bestTypographyMatch?.typography?.fontFamily,
+        match: aiSystem.typography?.fontFamily?.heading === bestTypographyMatch?.typography?.fontFamily?.heading
+      },
+      colors: {
+        aiPrimary: aiSystem.colors?.primary,
+        patternPrimary: bestColorMatch?.colors?.primary,
+        match: aiSystem.colors?.primary === bestColorMatch?.colors?.primary
+      },
+      spacing: {
+        aiUnit: aiSystem.spacing?.unit,
+        patternUnit: bestSpacingMatch?.spacing?.unit
+      }
+    });
 
-  if (error) {
-    monitor.error("Edge function error", error);
-    throw new Error(error.message || "Failed to generate design system after retries");
+    // Ensure the AI response has all required fields, fill in missing ones
+    const result = await ensureCompleteDesignSystem(aiSystem, input, bestTypographyMatch, bestColorMatch, bestSpacingMatch);
+
+    trackGeneration({
+      source: "ai",
+      durationMs: performance.now() - startTime,
+      success: true,
+      metadata: { industry: input.industry }
+    });
+
+    return result;
+
+  } catch (err: any) {
+    trackGeneration({
+      source: "ai",
+      durationMs: performance.now() - startTime,
+      success: false,
+      error: err.message,
+      metadata: { industry: input.industry }
+    });
+    monitor.error("AI Generation failed, falling back...", err);
+    throw err;
   }
-
-  if (data?.error) {
-    monitor.error("AI generation error", new Error(data.error));
-    throw new Error(data.error);
-  }
-
-  if (!data?.designSystem) {
-    throw new Error("No design system returned from AI");
-  }
-
-  monitor.debug("AI generated design system", { designSystem: data.designSystem });
-
-  // Ensure the AI response has all required fields, fill in missing ones
-  const aiSystem = data.designSystem;
-  return ensureCompleteDesignSystem(aiSystem, input);
 }
 
-function ensureCompleteDesignSystem(aiSystem: Partial<GeneratedDesignSystem>, input: DesignSystemInput): GeneratedDesignSystem {
-  const fallback = generateDesignSystemFallback(input);
+async function ensureCompleteDesignSystem(
+  aiSystem: Partial<GeneratedDesignSystem>,
+  input: DesignSystemInput,
+  typographyOverride?: any,
+  colorOverride?: any,
+  spacingOverride?: any
+): Promise<GeneratedDesignSystem> {
+  const fallback = await generateDesignSystemFallback(input, typographyOverride, colorOverride, spacingOverride); // This is effectively our base pattern  
+
 
   // Merge colors with interactive states
   const colors: ColorPalette = {
@@ -104,7 +179,7 @@ function ensureCompleteDesignSystem(aiSystem: Partial<GeneratedDesignSystem>, in
   result.tokenStore = organizeTokens(result);
 
   // Add component variants
-  result.components = generateComponentVariants(result);
+  result.components = await generateComponentVariants(result);
 
   // Legacy fallback for engine (optional, can be removed if Engine uses store)
   // result.tokenStore = TokenEngine.fromDesignSystem(result); 
@@ -205,127 +280,47 @@ function generateAnimationTokens(brandMood: string[]): AnimationTokens {
 
 import { generatePaletteFromMood } from "./colorUtils";
 
-// Extended Mood Mapping (for primary color selection)
-const moodColorMappings: Record<string, { hue: number; saturation: number }> = {
-  modern: { hue: 220, saturation: 85 },
-  playful: { hue: 340, saturation: 80 },
-  professional: { hue: 215, saturation: 60 },
-  elegant: { hue: 280, saturation: 30 },
-  minimalist: { hue: 0, saturation: 0 },
-  bold: { hue: 10, saturation: 90 },
-  calm: { hue: 190, saturation: 40 },
-  energetic: { hue: 35, saturation: 95 },
-  luxurious: { hue: 45, saturation: 70 },
-  friendly: { hue: 150, saturation: 60 },
-  trust: { hue: 210, saturation: 65 },
-  creative: { hue: 260, saturation: 75 },
-};
-
-// Phase 3: Smart Font Pairing Library
-// Categorized by style and suitable moods
-const fontLibrary = {
-  sans: [
-    { name: "Inter", mood: ["modern", "minimalist", "professional", "technology"] },
-    { name: "DM Sans", mood: ["friendly", "modern", "creative"] },
-    { name: "Outfit", mood: ["modern", "creative", "bold"] },
-    { name: "Nunito", mood: ["friendly", "playful", "healthcare"] },
-    { name: "Open Sans", mood: ["professional", "neutral", "education"] },
-    { name: "Lato", mood: ["professional", "corporate", "fitness"] },
-    { name: "Roboto", mood: ["neutral", "technology", "ecommerce"] },
-  ],
-  serif: [
-    { name: "Playfair Display", mood: ["elegant", "luxurious", "fashion"] },
-    { name: "Merriweather", mood: ["trust", "professional", "education"] },
-    { name: "Lora", mood: ["calm", "elegant", "creative"] },
-  ],
-  display: [
-    { name: "Oswald", mood: ["bold", "fitness", "energetic"] },
-    { name: "Montserrat", mood: ["modern", "bold", "food"] },
-    { name: "Quicksand", mood: ["friendly", "playful", "modern"] },
-    { name: "Josefin Sans", mood: ["elegant", "creative", "travel"] },
-    { name: "Raleway", mood: ["minimalist", "elegant", "creative"] },
-  ],
-  mono: [
-    { name: "JetBrains Mono", mood: ["technology"] },
-    { name: "Fira Code", mood: ["technology"] },
-  ]
-};
-
-function selectSmartFontPair(industry: string, moods: string[]): { heading: string; body: string } {
-  // Determine primary mood match
-
-  // Strategy: 
-  // - "Elegant"/"Luxury" -> Serif Heading + Sans Body
-  // - "Creative" -> Display Heading + Sans Body
-  // - "Tech"/"Modern" -> Sans Heading + Sans Body
-  // - "Bold" -> Heavy Sans Heading + Neutral Sans Body
-
-  let headingFont = "Inter";
-  let bodyFont = "Inter";
-
-  // Check for specific industry overrides first (legacy support)
-  const isSerifIndustry = ["finance", "education", "fashion", "legal"].includes(industry.toLowerCase());
-  const isDisplayIndustry = ["food", "fitness", "travel", "music"].includes(industry.toLowerCase());
-
-  if (moods.includes("elegant") || moods.includes("luxurious") || isSerifIndustry) {
-    // Serif + Sans pairing
-    const serifOption = fontLibrary.serif.find(f => f.mood.some(m => moods.includes(m))) || fontLibrary.serif[0];
-    const sansOption = fontLibrary.sans.find(f => f.mood.some(m => moods.includes(m))) || fontLibrary.sans[0];
-    headingFont = serifOption.name;
-    bodyFont = sansOption.name;
-  } else if (moods.includes("bold") || moods.includes("energetic") || isDisplayIndustry) {
-    // Display + Sans pairing
-    const displayOption = fontLibrary.display.find(f => f.mood.some(m => moods.includes(m))) || fontLibrary.display[0];
-    const sansOption = fontLibrary.sans.find(f => f.mood.some(m => moods.includes(m))) || fontLibrary.sans[2]; // Outcome/Inter
-    headingFont = displayOption.name;
-    bodyFont = sansOption.name;
-  } else {
-    // Sans + Sans pairing (Safe, Modern)
-    // Try to find two different sans fonts for contrast, or just use one good super-family
-    const sansHeading = fontLibrary.sans.find(f => f.mood.some(m => moods.includes(m))) || fontLibrary.sans[0];
-    const sansBody = fontLibrary.sans.find(f => f.name !== sansHeading.name && f.mood.includes("neutral")) || fontLibrary.sans[4]; // Open Sans
-    headingFont = sansHeading.name;
-    bodyFont = sansHeading.name === "Inter" ? "Inter" : sansBody.name; // If Inter, use Inter for both
-  }
-
-  return { heading: headingFont, body: bodyFont };
-}
-
-// Phase 3: Dynamic Typography Scales
-function getTypeScaleRatio(moods: string[]): number {
-  if (moods.includes("elegant") || moods.includes("luxurious")) return 1.618; // Golden Ratio
-  if (moods.includes("bold") || moods.includes("energetic")) return 1.333; // Perfect Fourth
-  if (moods.includes("modern") || moods.includes("playful")) return 1.25; // Major Third
-  if (moods.includes("calm") || moods.includes("professional")) return 1.2; // Minor Third
-  return 1.25; // Default Major Third
-}
-
-function generateTypeScale(baseSize: number, ratio: number) {
-  const round = (val: number) => Math.round(val);
-  return {
-    xs: `${round(baseSize / ratio)}px`,
-    sm: `${round(baseSize / Math.sqrt(ratio))}px`, // Between base and xs
-    base: `${baseSize}px`,
-    lg: `${round(baseSize * ratio)}px`,
-    xl: `${round(baseSize * ratio * ratio)}px`,
-    "2xl": `${round(baseSize * Math.pow(ratio, 3))}px`,
-    "3xl": `${round(baseSize * Math.pow(ratio, 4))}px`,
-    "4xl": `${round(baseSize * Math.pow(ratio, 5))}px`,
-    "5xl": `${round(baseSize * Math.pow(ratio, 6))}px`,
-  };
-}
-
-export function generateDesignSystemFallback(input: DesignSystemInput): GeneratedDesignSystem {
+export async function generateDesignSystemFallback(
+  input: DesignSystemInput,
+  typographyOverride?: any,
+  colorOverride?: any,
+  spacingOverride?: any
+): Promise<GeneratedDesignSystem> {
   // 1. Smart Colors with Harmony
   let primaryHue = 220;
   let primarySaturation = 85;
+
+  initializePatterns();
+
+  // Pattern Fetching (if overrides not provided)
+  let bestColorMatch = colorOverride;
+  let bestTypographyMatch = typographyOverride;
+  let bestSpacingMatch = spacingOverride;
+
+  if (!bestColorMatch && !input.primaryColor) {
+    const candidates = await patternRepository.findPatterns({ category: "colors", tags: input.brandMood });
+    bestColorMatch = candidates[0]?.data;
+  }
+  if (!bestTypographyMatch) {
+    const candidates = await patternRepository.findPatterns({ category: "typography", tags: input.brandMood });
+    bestTypographyMatch = candidates[0]?.data;
+  }
+  if (!bestSpacingMatch) {
+    const candidates = await patternRepository.findPatterns({ category: "spacing", tags: input.brandMood });
+    bestSpacingMatch = candidates[0]?.data;
+  }
 
   if (input.primaryColor) {
     const hsl = hexToHsl(input.primaryColor);
     primaryHue = hsl.h;
     primarySaturation = hsl.s;
+  } else if (bestColorMatch && bestColorMatch.primary) {
+    // Use Pattern Override
+    primaryHue = bestColorMatch.primary.hue;
+    primarySaturation = bestColorMatch.primary.saturation;
+    monitor.info("Using Pattern-based Colors", { primary: bestColorMatch.primary });
   } else if (input.brandMood.length > 0) {
-    // Find best matching mood
+    // Find best matching mood (using imported map)
     const matchedMood = input.brandMood.find(m => moodColorMappings[m]) || "modern";
     const moodParams = moodColorMappings[matchedMood];
     primaryHue = moodParams.hue;
@@ -369,7 +364,19 @@ export function generateDesignSystemFallback(input: DesignSystemInput): Generate
   };
 
   // 2. Smart Font Pairing
-  const { heading: headingFont, body: bodyFont } = selectSmartFontPair(input.industry, input.brandMood);
+  // Use override if provided (from Pattern Engine), otherwise fallback to hardcoded default
+  let headingFont = "Inter";
+  let bodyFont = "Inter";
+
+  if (bestTypographyMatch) {
+    headingFont = bestTypographyMatch.heading || "Inter";
+    bodyFont = bestTypographyMatch.body || "Inter";
+    monitor.info("Using Pattern-based Typography", { heading: headingFont, body: bodyFont });
+  } else {
+    // Minimal fallback if no pattern provided
+    headingFont = "Inter";
+    bodyFont = "Inter";
+  }
 
   // 3. Dynamic Typography Scale
   const baseSize = input.appType === "mobile" ? 16 : 16;
@@ -396,25 +403,33 @@ export function generateDesignSystemFallback(input: DesignSystemInput): Generate
     },
   };
 
-  const spacingUnit = 4;
-  const spacing = {
-    unit: spacingUnit,
-    scale: {
-      "0": "0px",
-      "1": `${spacingUnit}px`,
-      "2": `${spacingUnit * 2}px`,
-      "3": `${spacingUnit * 3}px`,
-      "4": `${spacingUnit * 4}px`,
-      "5": `${spacingUnit * 5}px`,
-      "6": `${spacingUnit * 6}px`,
-      "8": `${spacingUnit * 8}px`,
-      "10": `${spacingUnit * 10}px`,
-      "12": `${spacingUnit * 12}px`,
-      "16": `${spacingUnit * 16}px`,
-      "20": `${spacingUnit * 20}px`,
-      "24": `${spacingUnit * 24}px`,
-    },
-  };
+  let spacing: SpacingScale;
+
+  if (bestSpacingMatch) {
+    spacing = bestSpacingMatch as SpacingScale;
+    monitor.info("Using Pattern-based Spacing", { unit: spacing.unit });
+  } else {
+    const spacingUnit = 4;
+    spacing = {
+      unit: spacingUnit,
+      scale: {
+        "0": "0px",
+        "1": `${spacingUnit}px`,
+        "2": `${spacingUnit * 2}px`,
+        "3": `${spacingUnit * 3}px`,
+        "4": `${spacingUnit * 4}px`,
+        "5": `${spacingUnit * 5}px`,
+        "6": `${spacingUnit * 6}px`,
+        "8": `${spacingUnit * 8}px`,
+        "10": `${spacingUnit * 10}px`,
+        "12": `${spacingUnit * 12}px`,
+        "16": `${spacingUnit * 16}px`,
+        "20": `${spacingUnit * 20}px`,
+        "24": `${spacingUnit * 24}px`,
+      },
+    };
+  }
+
 
   const isMinimal = input.brandMood.includes("minimalist");
   const shadows = {
@@ -465,7 +480,6 @@ export function generateDesignSystemFallback(input: DesignSystemInput): Generate
   }
 
   const borderRadius = {
-
     none: "0px",
     sm: `${radiusBase * 0.5}px`,
     md: `${radiusBase}px`,
