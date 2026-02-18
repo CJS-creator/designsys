@@ -42,7 +42,7 @@ describe('useTokens Hook', () => {
             { id: '1', name: 'Primary Color', value: '#0000FF', path: 'color.primary', token_type: 'color' },
         ];
 
-        vi.spyOn(supabase, 'from').mockImplementation(() => createMockBuilder(dbRows));
+        vi.spyOn(supabase as any, 'from').mockImplementation(() => createMockBuilder(dbRows) as any);
 
         const { result } = renderHook(() => useTokens('ds-123'), {
             wrapper: createWrapper(),
@@ -55,7 +55,7 @@ describe('useTokens Hook', () => {
     });
 
     it('handles fetch error', async () => {
-        vi.spyOn(supabase, 'from').mockImplementation(() => createMockBuilder(null, { message: 'Fetch error' }));
+        vi.spyOn(supabase as any, 'from').mockImplementation(() => createMockBuilder(null, { message: 'Fetch error' }) as any);
 
         const { result } = renderHook(() => useTokens('ds-123'), {
             wrapper: createWrapper(),

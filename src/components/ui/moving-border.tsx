@@ -9,7 +9,7 @@ type ButtonProps = {
     borderClassName?: string;
     duration?: number;
     className?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     [key: string]: any;
 };
 

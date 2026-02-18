@@ -396,7 +396,7 @@ export function GovernanceDashboard({
                                             <p className="text-[10px] text-muted-foreground truncate font-mono">{t.path}</p>
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">
-                                            <span className="text-[10px] text-muted-foreground">→</span>
+                                            <span className="text-[10px] text-muted-foreground">{"->"}</span>
                                             <code className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20 font-mono">
                                                 {t.ref?.replace(/[{}]/g, '')}
                                             </code>

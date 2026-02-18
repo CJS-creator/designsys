@@ -65,13 +65,15 @@ export const MODE_OVERRIDES: Record<Exclude<VisualMode, 'default'>, any> = {
             textSecondary: "#000000",
             border: "#000000",
             interactive: {
-                primary: { hover: "#333333", active: "#000000", disabled: "#999999", focus: "#000000" }
+                primary: { hover: "#333333", active: "#000000", disabled: "#999999", focus: "#000000" },
+                secondary: { hover: "#CCCCCC", active: "#FFFFFF", disabled: "#999999", focus: "#FFFFFF" },
+                accent: { hover: "#CC00CC", active: "#FF00FF", disabled: "#999999", focus: "#FF00FF" }
             }
         }
     }
 };
 
-export function mergeTheme(base: GeneratedDesignSystem, brandOverrides: any, mode: VisualMode): GeneratedDesignSystem {
+export function mergeTheme(base: GeneratedDesignSystem, brandOverrides: Partial<GeneratedDesignSystem> | null, mode: VisualMode): GeneratedDesignSystem {
     const themed = JSON.parse(JSON.stringify(base)) as GeneratedDesignSystem;
 
     // Apply Mode Overrides first

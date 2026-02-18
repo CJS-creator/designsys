@@ -9,9 +9,9 @@ export interface AuditLogEntry {
     action: AuditAction;
     entity_type: EntityType;
     entity_id?: string;
-    old_value?: any;
-    new_value?: any;
-    metadata?: any;
+    old_value?: Record<string, unknown> | null;
+    new_value?: Record<string, unknown> | null;
+    metadata?: Record<string, unknown> | null;
 }
 
 /**
@@ -25,18 +25,16 @@ export const recordAuditLog = async (entry: AuditLogEntry) => {
 
     try {
         const { error } = await supabase
-            .from("audit_logs" as any)
-            .insert([
-                {
-                    design_system_id: entry.design_system_id,
-                    action: entry.action,
-                    entity_type: entry.entity_type,
-                    entity_id: entry.entity_id,
-                    old_value: entry.old_value,
-                    new_value: entry.new_value,
-                    metadata: entry.metadata,
-                },
-            ]);
+            .from("audit_logs")
+            .insert({
+                design_system_id: entry.design_system_id,
+                action: entry.action as string,
+                entity_type: entry.entity_type as string,
+                entity_id: entry.entity_id || null,
+                old_value: (entry.old_value as any) || null,
+                new_value: (entry.new_value as any) || null,
+                metadata: (entry.metadata as any) || null,
+            } as any);
 
         if (error) {
             monitor.warn("Audit log insert failed", { error: error.message });

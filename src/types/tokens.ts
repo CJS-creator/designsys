@@ -17,10 +17,10 @@ export interface BaseToken {
     type: TokenType;
     description?: string;
     ref?: string; // Standard reference syntax: {namespace.path.to.token}
-    extensions?: Record<string, any>;
+    extensions?: Record<string, unknown>;
     status?: TokenStatus;
-    stagingValue?: any; // The draft value currently being edited
-    publishedValue?: any; // The currently active/live value (if different from staging)
+    stagingValue?: unknown; // The draft value currently being edited
+    publishedValue?: unknown; // The currently active/live value (if different from staging)
     syncStatus?: 'synced' | 'changed';
 }
 
@@ -114,6 +114,16 @@ export interface BorderToken extends BaseToken {
     };
 }
 
+export interface TextCaseToken extends BaseToken {
+    type: 'textCase';
+    value: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+}
+
+export interface TextDecorationToken extends BaseToken {
+    type: 'textDecoration';
+    value: 'none' | 'underline' | 'line-through';
+}
+
 export interface FontFamilyToken extends BaseToken {
     type: 'fontFamily';
     value: string | string[]; // Single font or stack
@@ -132,6 +142,8 @@ export type DesignToken =
     | DurationToken
     | CompositionToken
     | AssetToken
+    | TextCaseToken
+    | TextDecorationToken
     | BorderToken;
 
 export type TokenMap = Record<string, DesignToken>;

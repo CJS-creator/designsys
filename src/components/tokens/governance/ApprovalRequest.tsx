@@ -35,7 +35,8 @@ export function ApprovalRequest({
 
     const handleSubmit = async () => {
         if (!description.trim()) return;
-        await createRequest(description, changedTokens);
+        const created = await createRequest(description, changedTokens);
+        if (!created) return;
         setDescription("");
         onOpenChange(false);
         onSuccess?.();

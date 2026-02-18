@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy } from "react";
+import { useState, useEffect, useCallback, Suspense, lazy } from "react";
 import { monitor } from "@/lib/monitoring";
 import { Link, useSearchParams } from "react-router-dom";
 import { BrandSwitcher } from "@/components/BrandSwitcher";
@@ -11,7 +11,8 @@ import { SpacingDisplay } from "@/components/SpacingDisplay";
 import { ShadowDisplay } from "@/components/ShadowDisplay";
 import { GridDisplay } from "@/components/GridDisplay";
 import { BorderRadiusDisplay } from "@/components/BorderRadiusDisplay";
-import { ExportButton } from "@/components/ExportButton";
+// Moved ExportButton to lazy load to defer heavy libraries
+const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
 import { Button } from "@/components/ui/button";
 
 import { Tabs, TabsContent, TabsList, AnimatedTabsTrigger } from "@/components/ui/animated-tabs";
@@ -73,7 +74,6 @@ const Marketplace = lazy(() => import("@/components/marketplace/Marketplace").th
 const AssetHub = lazy(() => import("@/components/AssetHub").then(m => ({ default: m.AssetHub })));
 // const GitSettings = lazy(() => import("@/components/GitSettings").then(m => ({ default: m.GitSettings }))); // GitSettings is now directly imported
 // const TeamSettings = lazy(() => import("@/components/TeamSettings").then(m => ({ default: m.TeamSettings }))); // TeamSettings is now directly imported
-
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
   const [themedDesignSystem, setThemedDesignSystem] = useState<GeneratedDesignSystem | null>(null);
@@ -102,7 +102,7 @@ const Index = () => {
     setSearchParams({ tab: value }, { replace: true });
   };
 
-  const handleGenerate = async (input: DesignSystemInput) => {
+  const handleGenerate = useCallback(async (input: DesignSystemInput) => {
     setIsLoading(true);
     setCurrentInput(input);
 
@@ -111,7 +111,9 @@ const Index = () => {
       setDesignSystem(generated);
       setThemedDesignSystem(generated);
       injectDesignSystemVariables(generated);
-      trackEvent(generated.id || searchParams.get("id") || "", "design_generated", { input });
+      trackEvent(generated.id || searchParams.get("id") || "", "design_generated", {
+        input: input as unknown as Json,
+      });
       toast.success("AI-powered design system generated!", {
         description: "Your custom design system is ready to use.",
       });
@@ -125,19 +127,19 @@ const Index = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchParams]);
 
   const handleReset = () => {
     setDesignSystem(null);
     setCurrentInput(null);
   };
 
-  const handleLoadDesign = (system: GeneratedDesignSystem) => {
+  const handleLoadDesign = useCallback((system: GeneratedDesignSystem) => {
     setDesignSystem(system);
     setThemedDesignSystem(system);
     injectDesignSystemVariables(system);
     toast.success("Design system loaded!");
-  };
+  }, []);
 
   const handleApplyPreset = (preset: GeneratedDesignSystem) => {
     setDesignSystem(preset);
@@ -167,7 +169,7 @@ const Index = () => {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!user) {
       toast.error("Sign in to save your design system");
       return;
@@ -187,7 +189,7 @@ const Index = () => {
     } else {
       toast.success("Design saved!", { id: toastId });
     }
-  };
+  }, [designSystem, user]);
 
   const { onlineUsers, broadcastUpdate } = usePresence(designSystem?.id || "", (updatedDs) => {
     setDesignSystem(updatedDs);
@@ -256,7 +258,11 @@ const Index = () => {
                 <BrandSwitcher designSystemId={designSystem.id || ""} />
               )}
               <div id="tour-export">
-                {designSystem && <ExportButton designSystem={designSystem} />}
+                {designSystem && (
+                  <Suspense fallback={<Button disabled size="lg">Export</Button>}>
+                    <ExportButton designSystem={designSystem} />
+                  </Suspense>
+                )}
               </div>
             </div>
           </div>
@@ -516,7 +522,7 @@ const Index = () => {
 
                   <TabsContent value="governance" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <ApprovalWorkflow designSystemId={designSystem?.id || ""} />
+                      <ApprovalWorkflow designSystemId={designSystem?.id || ""} currentUserRole={userRole} />
                     </Suspense>
                   </TabsContent>
 

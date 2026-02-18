@@ -71,32 +71,28 @@ export function useTokens(designSystemId?: string) {
     const saveTokensToDesignSystem = async (updatedTokens: DesignToken[]) => {
         if (!designSystemId || !user) return;
 
-        try {
-            // Get current design_system_data
-            const { data: currentData } = await supabase
-                .from("design_systems")
-                .select("design_system_data")
-                .eq("id", designSystemId)
-                .single();
+        // Get current design_system_data
+        const { data: currentData } = await supabase
+            .from("design_systems")
+            .select("design_system_data")
+            .eq("id", designSystemId)
+            .single();
 
-            const currentDsData = (currentData?.design_system_data as Record<string, unknown>) || {};
+        const currentDsData = (currentData?.design_system_data as Record<string, unknown>) || {};
 
-            // Update with new tokens - cast to Json for Supabase compatibility
-            const { error } = await supabase
-                .from("design_systems")
-                .update({
-                    design_system_data: {
-                        ...currentDsData,
-                        tokens: updatedTokens as unknown as Json[]
-                    } as Json
-                })
-                .eq("id", designSystemId);
+        // Update with new tokens - cast to Json for Supabase compatibility
+        const { error } = await supabase
+            .from("design_systems")
+            .update({
+                design_system_data: {
+                    ...currentDsData,
+                    tokens: updatedTokens as unknown as Json[]
+                } as Json
+            })
+            .eq("id", designSystemId);
 
-            if (error) throw error;
-            setTokens(updatedTokens);
-        } catch (error) {
-            throw error;
-        }
+        if (error) throw error;
+        setTokens(updatedTokens);
     };
 
     const saveToken = async (token: DesignToken) => {
@@ -223,7 +219,7 @@ export function useTokens(designSystemId?: string) {
 
     useEffect(() => {
         fetchTokens();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [designSystemId]);
 
     return {

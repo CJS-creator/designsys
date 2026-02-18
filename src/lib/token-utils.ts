@@ -5,7 +5,7 @@ import { DesignToken } from "@/types/tokens";
  * Converts internal DesignToken array into W3C DTCG community group format.
  * Supports nesting, aliases, and explicit types.
  */
-export const convertToDTCG = (tokens: DesignToken[], dsName: string): Record<string, any> => {
+export const convertToDTCG = (tokens: DesignToken[], dsName: string): Record<string, unknown> => {
     const result: Record<string, any> = {
         _meta: {
             generated_by: "DesignForge AI",
@@ -62,7 +62,7 @@ export const convertToW3CTokens = (ds: GeneratedDesignSystem): Record<string, un
         flattenedTokens.push({
             name: key,
             path: `typography.fontFamily.${key}`,
-            type: 'fontFamily' as any,
+            type: "fontFamily",
             value: value as string
         });
     });
@@ -71,7 +71,7 @@ export const convertToW3CTokens = (ds: GeneratedDesignSystem): Record<string, un
         flattenedTokens.push({
             name: key,
             path: `typography.fontSize.${key}`,
-            type: 'dimension' as any,
+            type: "fontSize",
             value: value as string
         });
     });
@@ -80,7 +80,7 @@ export const convertToW3CTokens = (ds: GeneratedDesignSystem): Record<string, un
         flattenedTokens.push({
             name: key,
             path: `typography.fontWeight.${key}`,
-            type: 'fontWeight' as any,
+            type: "fontWeight",
             value: value.toString()
         });
     });
@@ -90,7 +90,7 @@ export const convertToW3CTokens = (ds: GeneratedDesignSystem): Record<string, un
         flattenedTokens.push({
             name: key,
             path: `spacing.${key}`,
-            type: 'dimension' as any,
+            type: "spacing",
             value: value as string
         });
     });
@@ -100,7 +100,7 @@ export const convertToW3CTokens = (ds: GeneratedDesignSystem): Record<string, un
         flattenedTokens.push({
             name: key,
             path: `borderRadius.${key}`,
-            type: 'dimension' as any,
+            type: "borderRadius",
             value: value as string
         });
     });
@@ -110,8 +110,16 @@ export const convertToW3CTokens = (ds: GeneratedDesignSystem): Record<string, un
         flattenedTokens.push({
             name: key,
             path: `shadow.${key}`,
-            type: 'shadow' as any,
-            value: value as string
+            type: "shadow",
+            value: {
+                color: "#00000020",
+                x: "0px",
+                y: "4px",
+                blur: "10px",
+                spread: "0px",
+                type: "drop"
+            },
+            description: `Shadow style: ${String(value)}`
         });
     });
 

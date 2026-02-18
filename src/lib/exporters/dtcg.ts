@@ -22,7 +22,6 @@ export function exportToDTCG(tokens: DesignToken[]): string {
                 if (!current[part]) {
                     current[part] = {};
                 }
-                current[part] = current[part];
                 current = current[part];
             }
         });

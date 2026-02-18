@@ -7,11 +7,11 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('DesignSys Extension is now active!');
 
     // 1. Register Commands
-    let setKeyCmd = vscode.commands.registerCommand('designsys.setApiKey', async () => {
+    const setKeyCmd = vscode.commands.registerCommand('designsys.setApiKey', async () => {
         await setApiKey(context);
     });
 
-    let pullCmd = vscode.commands.registerCommand('designsys.pull', async () => {
+    const pullCmd = vscode.commands.registerCommand('designsys.pull', async () => {
         await pullDesignSystem(context);
     });
 

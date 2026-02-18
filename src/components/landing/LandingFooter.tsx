@@ -29,7 +29,7 @@ const links = {
     ],
 };
 
-const SocialLink = ({ icon: Icon, href }: { icon: any, href: string }) => (
+const SocialLink = ({ icon: Icon, href }: { icon: React.ElementType, href: string }) => (
     <MagneticButton distance={0.2}>
         <a
             href={href}

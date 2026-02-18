@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CustomExporterEditor } from "./exporters/CustomExporterEditor";
 import { useTokens } from "@/hooks/useTokens";
-import { ApiKeyManager } from "./ApiKeyManager";
+import { APIKeys } from "./settings/APIKeys";
 import { Key } from "lucide-react";
 
 interface DesignSystemSettingsProps {
@@ -115,7 +115,7 @@ export function DesignSystemSettings({ designSystemId }: DesignSystemSettingsPro
                 </TabsList>
 
                 <TabsContent value="api" className="animate-in fade-in duration-500">
-                    <ApiKeyManager designSystemId={designSystemId} />
+                    <APIKeys />
                 </TabsContent>
 
                 <TabsContent value="sharing" className="space-y-6 animate-in fade-in duration-500">

@@ -5,7 +5,7 @@ import * as path from 'path';
 export class DesignSysHoverProvider implements vscode.HoverProvider {
     provideHover(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.Hover> {
         // Match any sequence starting with ds. and containing alphanumeric, dots, or underscores
-        const range = document.getWordRangeAtPosition(position, /ds\.[\w\.]+/);
+        const range = document.getWordRangeAtPosition(position, /ds\.[\w.]+/);
         if (!range) return undefined;
 
         const word = document.getText(range); // e.g., ds.colors.primary.500

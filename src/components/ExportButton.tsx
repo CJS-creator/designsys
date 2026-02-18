@@ -682,9 +682,8 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
     const content = option.generator(designSystem, tokens);
     const filename = option.filename;
 
-    const [searchParams] = useSearchParams();
-    const dsId = searchParams.get("id") || "";
-    trackEvent(dsId, `exported_${filename.split('.')[1]}` as AnalyticsEvent, { filename });
+    const dsIdFromParams = searchParams.get("id") || "";
+    trackEvent(dsIdFromParams, `exported_${filename.split('.')[1]}` as AnalyticsEvent, { filename });
 
     setIsDownloading(true);
     const blob = new Blob([content], { type: "text/plain" });
@@ -706,8 +705,8 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
       return;
     }
     navigator.clipboard.writeText(JSON.stringify(designSystem, null, 2));
-    const [searchParams] = useSearchParams();
-    trackEvent(searchParams.get("id") || "", "exported_json", { method: "copy" });
+    const dsIdFromParams = searchParams.get("id") || "";
+    trackEvent(dsIdFromParams, "exported_json", { method: "copy" });
     setCopied(true);
     toast.success("Copied JSON to clipboard");
     setTimeout(() => setCopied(false), 2000);

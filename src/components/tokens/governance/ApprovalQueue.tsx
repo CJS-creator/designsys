@@ -62,13 +62,13 @@ export function ApprovalQueue({ designSystemId }: ApprovalQueueProps) {
                                     <AccordionTrigger onClick={() => handleExpand(request.id)} className="hover:no-underline px-4 border rounded-md mb-2 bg-muted/20">
                                         <div className="flex items-center gap-4 w-full text-left">
                                             <Badge variant={request.status === 'PENDING_REVIEW' ? 'default' : 'secondary'}>
-                                                {request.status.replace('_', ' ')}
+                                                {request.status.replace(/_/g, ' ')}
                                             </Badge>
                                             <div className="flex-1">
                                                 <p className="font-semibold text-sm">{request.description}</p>
                                                 <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                                                     <span>{request.author?.email}</span>
-                                                    <span>•</span>
+                                                    <span>|</span>
                                                     <span>{formatDistanceToNow(new Date(request.created_at))} ago</span>
                                                 </div>
                                             </div>
@@ -148,3 +148,4 @@ export function ApprovalQueue({ designSystemId }: ApprovalQueueProps) {
         </div>
     );
 }
+

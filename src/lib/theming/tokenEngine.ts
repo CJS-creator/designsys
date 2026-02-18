@@ -1,4 +1,4 @@
-import { UnifiedTokenStore, TokenType } from "@/types/tokens";
+import { UnifiedTokenStore, TokenType, DesignToken } from "@/types/tokens";
 
 const REF_REGEX = /^\{([^}]+)\}$/;
 
@@ -6,16 +6,16 @@ export interface ResolvedToken {
     name: string;
     path: string;
     type: TokenType;
-    value: any;
-    originalValue: any;
-    metadata?: Record<string, any>;
+    value: unknown;
+    originalValue: unknown;
+    metadata?: Record<string, unknown>;
 }
 
 export type ResolvedTokenMap = Record<string, ResolvedToken>;
 
 export class TokenEngine {
     private store: UnifiedTokenStore;
-    private resolvedCache: Map<string, any> = new Map();
+    private resolvedCache: Map<string, unknown> = new Map();
 
     constructor(store: UnifiedTokenStore) {
         this.store = store;
@@ -65,7 +65,7 @@ export class TokenEngine {
     /**
      * Deeply resolves a value, handling strings, numbers, arrays, and objects.
      */
-    private resolveValue(value: any, seen: Set<string>): any {
+    private resolveValue(value: unknown, seen: Set<string>): unknown {
         if (typeof value === 'string') {
             const match = value.match(REF_REGEX);
             if (match) {
@@ -86,7 +86,7 @@ export class TokenEngine {
         }
 
         if (typeof value === 'object' && value !== null) {
-            const resolvedObj: any = {};
+            const resolvedObj: Record<string, unknown> = {};
             Object.entries(value).forEach(([key, val]) => {
                 resolvedObj[key] = this.resolveValue(val, seen);
             });
@@ -102,7 +102,7 @@ export class TokenEngine {
     public bake<T>(template: T): T {
         // This helper will take a structured object (like GeneratedDesignSystem) 
         // and replace any string values that look like references with their resolved counterparts.
-        return this.resolveValue(template, new Set());
+        return this.resolveValue(template, new Set()) as T;
     }
 
     /**
@@ -128,12 +128,12 @@ export class TokenEngine {
             tokens: {}
         };
 
-        const addToken = (group: string, name: string, type: any, value: any) => {
+        const addToken = (group: string, name: string, type: TokenType, value: unknown) => {
             const path = `${group}.${name}`;
             if (!store.groups[group]) {
                 store.groups[group] = { id: group, name: group.charAt(0).toUpperCase() + group.slice(1), path: group, tokens: [], groups: [] };
             }
-            store.tokens[path] = { name, path, type, value };
+            store.tokens[path] = { name, path, type, value } as DesignToken;
             store.groups[group].tokens.push(path);
         };
 

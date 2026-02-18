@@ -189,7 +189,7 @@ export function generateCSSVariables(
         case 'json':
             return formatAsJSON(tokens, prefix);
         default:
-            return minified ? lines.map(l => l.replace(/^  /gm, '')).join('') : lines.join('\n');
+            return minified ? lines.map(l => l.replace(/^ {2}/g, '')).join('') : lines.join('\n');
     }
 }
 
@@ -209,12 +209,12 @@ function isLayoutProperty(path: string): boolean {
  */
 function formatAsSCSS(lines: string[], minified: boolean): string {
     if (minified) {
-        return lines.map(l => l.replace(/^  /gm, '$')).join('');
+        return lines.map(l => l.replace(/^ {2}/g, '$')).join('');
     }
     return lines.map(l => {
         if (l.startsWith(':root')) return l;
         if (l.startsWith('}')) return l;
-        return l.replace(/^  /gm, '$');
+        return l.replace(/^ {2}/g, '$');
     }).join('\n');
 }
 
@@ -226,7 +226,7 @@ function formatAsLESS(lines: string[], minified: boolean): string {
         if (l.startsWith(':root')) return l.replace(':root', ':root');
         if (l.startsWith('}')) return l;
         if (l.startsWith('  /*')) return '  // ' + l.slice(4, -3);
-        return l.replace(/^  /gm, '@');
+        return l.replace(/^ {2}/g, '@');
     }).join(minified ? '' : '\n');
 }
 

@@ -85,7 +85,7 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd, onReorder }: TokenL
                         )}
                     </div>
                 );
-            case 'typography':
+            case 'typography': {
                 const typo = value as any;
                 if (!typo || typeof typo !== 'object') return null;
                 return (
@@ -110,6 +110,7 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd, onReorder }: TokenL
                         </div>
                     </div>
                 );
+            }
             case 'spacing':
             case 'dimension':
                 return (
@@ -121,7 +122,7 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd, onReorder }: TokenL
                         <code className="text-[10px] font-mono bg-muted px-1 rounded shrink-0">{value}</code>
                     </div>
                 );
-            case 'border':
+            case 'border': {
                 const border = value as any;
                 if (!border || typeof border !== 'object') return null;
                 return (
@@ -137,6 +138,7 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd, onReorder }: TokenL
                         <code className="text-[10px] font-mono bg-muted px-1 rounded shrink-0">{border.width} {border.style}</code>
                     </div>
                 );
+            }
             case 'borderRadius':
                 return (
                     <div className="flex items-center gap-2">

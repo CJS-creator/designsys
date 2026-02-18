@@ -3,7 +3,15 @@ import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
 	darkMode: ["class"],
-	content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+	content: [
+		"./pages/**/*.{ts,tsx}",
+		"./components/**/*.{ts,tsx}",
+		"./app/**/*.{ts,tsx}",
+		"./src/**/*.{ts,tsx}",
+		// Exclude template generator sources from class scanning.
+		// They intentionally contain token placeholders like `${ds.colors.primary}`.
+		"!./src/lib/generators/**/*.{ts,tsx}",
+	],
 	prefix: "",
 	theme: {
 		container: {

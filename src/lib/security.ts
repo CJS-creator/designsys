@@ -15,7 +15,7 @@ export const isValidColor = (color: string): boolean => {
     // - RGB/RGBA: rgb(0,0,0), rgba(0,0,0,0)
     // - HSL/HSLA: hsl(0,0%,0%), hsla(0,0%,0%,0)
     // - Basic color names (approximate)
-    const colorRegex = /^(#(?:[0-9a-fA-F]{3,4}){1,2}|(rgb|hsl)a?\((-?\d+%?[,\s]+){2,3}\s*[\d\.]+%?\))$/i;
+    const colorRegex = /^(#(?:[0-9a-fA-F]{3,4}){1,2}|(rgb|hsl)a?\((-?\d+%?[,\s]+){2,3}\s*[\d.]+%?\))$/i;
 
     // Named colors list (subset for common use)
     const namedColors = new Set([
@@ -38,8 +38,8 @@ export const isValidColor = (color: string): boolean => {
 /**
  * Sanitizes a style object by filtering out potentially dangerous properties.
  */
-export const sanitizeStyle = (style: any): React.CSSProperties => {
-    const safeStyle: any = {};
+export const sanitizeStyle = (style: Record<string, unknown>): React.CSSProperties => {
+    const safeStyle: Record<string, unknown> = {};
     if (!style || typeof style !== 'object') return safeStyle;
 
     const dangerousKeys = ['behavior', 'expression', 'moz-binding'];

@@ -1,0 +1,549 @@
+﻿
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\apps\vscode-extension\src\commands.ts
+   30:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\apps\vscode-extension\src\extension.ts
+   7:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  10:9  error    'setKeyCmd' is never reassigned. Use 'const' instead                               prefer-const
+  14:9  error    'pullCmd' is never reassigned. Use 'const' instead                                 prefer-const
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\apps\vscode-extension\src\providers\completion.ts
+  27:36  error  Unnecessary escape character: \.          no-useless-escape
+  51:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\apps\vscode-extension\src\providers\hover.ts
+  8:73  error  Unnecessary escape character: \.  no-useless-escape
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\shared\dist\tokens.d.ts
+  10:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\shared\src\tokens.ts
+  20:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\ui-ux-core\src\interfaces\design-system.interface.ts
+  7:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\ui-ux-core\src\interfaces\pattern.interface.ts
+  33:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  57:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\ui-ux-core\src\interfaces\skill.interface.ts
+   80:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   82:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\ui-ux-skills\src\core\skill-executor.ts
+  130:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  147:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\ui-ux-skills\src\skills\color\generate-palette.skill.ts
+  10:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:81  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\ui-ux-skills\src\skills\component\detect-complexity.skill.ts
+   7:76  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:82  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\ui-ux-skills\src\skills\style\match-vibe.skill.ts
+  10:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\ui-ux-skills\src\skills\typography\generate-typography.skill.ts
+  11:80  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:84  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\packages\ui-ux-skills\src\state\skill-store.ts
+  14:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\scripts\verify-skills.ts
+   4:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  11:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  19:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  22:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  29:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  35:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  42:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  42:67  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  48:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  61:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  68:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\AIChatPanel.tsx
+  85:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\APIDocumentation.tsx
+   75:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   96:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  129:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  257:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  709:23  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  744:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\AccessibilityChecker.tsx
+  53:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\AnalyticsDashboard.tsx
+  13:38  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  22:8   warning  React Hook useEffect has a missing dependency: 'fetchAnalytics'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  27:64  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  35:40  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  35:60  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  50:42  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  51:40  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  52:49  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\AssetHub.tsx
+   55:23   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   89:15   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  213:104  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\BrandSwapper.tsx
+   18:16  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   37:8   warning  React Hook useEffect has a missing dependency: 'fetchThemes'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   42:56  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   48:32  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   49:37  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   64:56  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   78:46  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  107:50  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ComponentSandbox.tsx
+  618:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\DesignInsights.tsx
+  59:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ExportButton.tsx
+  612:58  error  Unexpected any. Specify a different type                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  625:34  error  Unexpected any. Specify a different type                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  657:37  error  Unexpected any. Specify a different type                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  668:29  error  Unexpected any. Specify a different type                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  685:28  error  React Hook "useSearchParams" is called in function "downloadFile" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  709:28  error  React Hook "useSearchParams" is called in function "copyJSON" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"      react-hooks/rules-of-hooks
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\FeatureTour.tsx
+  65:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\FigmaSync.tsx
+   41:46  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   53:50  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   80:46  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   87:25  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   96:8   warning  React Hook useEffect has a missing dependency: 'fetchConnection'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  267:45  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\GitSettings.tsx
+   58:44  error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+   80:47  error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+   86:36  error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+   98:44  error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  111:25  error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  126:51  error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  136:25  error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  165:27  error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  177:25  error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  187:8   warning  React Hook useEffect has missing dependencies: 'fetchConnection' and 'fetchWebhook'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\TokenGraph.tsx
+   15:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   29:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   38:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\VersionDiff.tsx
+  31:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\VersionManager.tsx
+   35:15  error    Unexpected any. Specify a different type                                                                                                     @typescript-eslint/no-explicit-any
+   44:56  error    Unexpected any. Specify a different type                                                                                                     @typescript-eslint/no-explicit-any
+   53:38  error    Unexpected any. Specify a different type                                                                                                     @typescript-eslint/no-explicit-any
+   64:51  error    Unexpected any. Specify a different type                                                                                                     @typescript-eslint/no-explicit-any
+   70:34  error    Unexpected any. Specify a different type                                                                                                     @typescript-eslint/no-explicit-any
+   84:42  error    Unexpected any. Specify a different type                                                                                                     @typescript-eslint/no-explicit-any
+   92:51  error    Unexpected any. Specify a different type                                                                                                     @typescript-eslint/no-explicit-any
+  107:25  error    Unexpected any. Specify a different type                                                                                                     @typescript-eslint/no-explicit-any
+  117:8   warning  React Hook useEffect has missing dependencies: 'fetchCurrentTokens' and 'fetchVersions'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\animations\MicroInteractions.tsx
+  100:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\docs\DocEditor.tsx
+  23:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\docs\PublicDocViewer.tsx
+    1:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+   62:39  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+   63:43  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+   64:22  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  178:57  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\exporters\CustomExporterEditor.tsx
+  44:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  90:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\landing\LandingFeatures.tsx
+  52:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\landing\LandingLogos.tsx
+  45:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\landing\LandingTestimonials.tsx
+  46:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\marketplace\Marketplace.tsx
+   1:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  34:18  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  42:31  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  82:26  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  92:25  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\tokens\GovernanceDashboard.tsx
+  106:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\tokens\SemanticCopilot.tsx
+  49:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\tokens\TokenCompareSandbox.tsx
+  43:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\tokens\TokenEditor.tsx
+   50:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   62:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  123:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\tokens\TokenList.tsx
+   59:48  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   89:17  error  Unexpected lexical declaration in case block  no-case-declarations
+   89:39  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  101:65  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  125:17  error  Unexpected lexical declaration in case block  no-case-declarations
+  125:41  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\tokens\TokenManagementDashboard.tsx
+  59:11  warning  The 'tokens' conditional could make the dependencies of useEffect Hook (at line 83) change on every render. To fix this, wrap the initialization of 'tokens' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  77:8   warning  React Hook useEffect has a missing dependency: 'fetchDesignSystem'. Either include it or remove the dependency array                                                                    react-hooks/exhaustive-deps
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\accessibility.tsx
+  122:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  160:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  234:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  257:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  336:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  343:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  361:8   warning  React Hook React.useMemo has a missing dependency: 'errorId'. Either include it or remove the dependency array                  react-hooks/exhaustive-deps
+  389:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  492:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  503:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  517:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  540:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  558:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\background-beams.tsx
+  22:49  warning  The ref value 'containerRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'containerRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\badge.tsx
+  29:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\button.tsx
+  188:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\card-3d.tsx
+  147:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\enhanced-interactions.tsx
+  209:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\form.tsx
+  129:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\glassmorphism.tsx
+  6:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\icon-registry.tsx
+  247:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\loading-spinner.tsx
+  83:26  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\navigation-menu.tsx
+  111:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\sidebar.tsx
+  636:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\sonner.tsx
+  27:19  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\spotlight.tsx
+  27:43  warning  The ref value 'svgRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'svgRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\components\ui\toggle.tsx
+  37:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\contexts\AuthContext.tsx
+  85:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\contexts\OnboardingContext.tsx
+  253:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\hooks\useApprovals.ts
+  43:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  48:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  55:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  61:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  67:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\hooks\useBrands.ts
+  12:37  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  26:41  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  26:49  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  32:74  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  36:35  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  37:72  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  48:25  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  60:41  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  60:49  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  84:25  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  91:8   warning  React Hook useEffect has a missing dependency: 'fetchBrands'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\hooks\usePresence.ts
+  12:71  error    Unexpected any. Specify a different type                                                                   @typescript-eslint/no-explicit-any
+  53:61  error    Unexpected any. Specify a different type                                                                   @typescript-eslint/no-explicit-any
+  84:8   warning  React Hook useEffect has a missing dependency: 'user'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+  86:56  error    Unexpected any. Specify a different type                                                                   @typescript-eslint/no-explicit-any
+  97:8   warning  React Hook useCallback has a missing dependency: 'user'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\hooks\useTokens.ts
+  74:9  error  Unnecessary try/catch wrapper  no-useless-catch
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\ai.ts
+  11:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\analytics.ts
+  19:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\animations\batching.ts
+   9:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  91:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\auditLogs.ts
+  28:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\exporters\ReactNativeExporter.ts
+  26:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\exporters\asset-exporters.ts
+   40:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\exporters\css-in-js.ts
+  9:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\exporters\cssExport.ts
+  192:56  error  Spaces are hard to count. Use {2}  no-regex-spaces
+  212:41  error  Spaces are hard to count. Use {2}  no-regex-spaces
+  217:26  error  Spaces are hard to count. Use {2}  no-regex-spaces
+  229:26  error  Spaces are hard to count. Use {2}  no-regex-spaces
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\exporters\custom-templating.ts
+  25:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\exporters\dtcg.ts
+   8:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:33  error  'current[part]' is assigned to itself     no-self-assign
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\exporters\figma-variables.ts
+  25:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\exporters\swiftui.ts
+  59:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\exporters\vscode-snippets.ts
+  4:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\generateDesignSystem.ts
+   6:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   6:96  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\git\githubService.ts
+  85:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\git\sync.ts
+  20:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\monitoring.ts
+   90:13  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  104:64  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  107:13  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\security.ts
+  18:93  error  Unnecessary escape character: \.          no-useless-escape
+  41:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\theming\injectVariables.ts
+   6:9    error  'r' is never reassigned. Use 'const' instead    prefer-const
+   7:9    error  'g' is never reassigned. Use 'const' instead    prefer-const
+   8:9    error  'b' is never reassigned. Use 'const' instead    prefer-const
+   9:9    error  'max' is never reassigned. Use 'const' instead  prefer-const
+   9:34   error  'min' is never reassigned. Use 'const' instead  prefer-const
+  10:19   error  'l' is never reassigned. Use 'const' instead    prefer-const
+  13:13   error  'd' is never reassigned. Use 'const' instead    prefer-const
+  39:171  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\theming\modes.ts
+   5:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\theming\tokenEngine.ts
+    9:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   10:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   11:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   18:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   68:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   68:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   89:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\token-utils.ts
+    8:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    9:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   65:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   74:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   83:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\tokenCollections.ts
+  14:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  94:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\lib\versioning.tsx
+   50:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   69:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   83:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   93:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  147:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  173:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  420:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\pages\Index.tsx
+   98:6  warning  React Hook useEffect has a missing dependency: 'activeTab'. Either include it or remove the dependency array        react-hooks/exhaustive-deps
+  200:6  warning  React Hook useEffect has a missing dependency: 'broadcastUpdate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\test\auth.integration.test.tsx
+  69:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\test\auth.test.tsx
+   49:14   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   53:14   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   59:105  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:14   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:76   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:14   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  132:76   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\test\hooks\use-toast.test.ts
+  55:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\test\rbac.test.tsx
+  19:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\test\setup.ts
+   7:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\test\tokens.test.tsx
+  28:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\test\utils.tsx
+  47:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\tests\GitSettings.test.tsx
+  40:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  80:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\tests\Phase5.test.ts
+   56:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   61:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   62:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   63:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   64:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   65:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   98:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\tests\TokenManagementDashboard.test.tsx
+   53:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   88:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\tests\test-utils.tsx
+  11:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file  react-refresh/only-export-components
+  27:1  warning  This rule can't verify that `export *` only exports components                                          react-refresh/only-export-components
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\types\shared-tokens.ts
+  20:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\src\types\tokens.ts
+  20:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\supabase\functions\_shared\design-system.ts
+  210:33  error  Unexpected control character(s) in regular expression: \x00, \x1f  no-control-regex
+
+C:\Users\HP\OneDrive\Desktop\Projects\AntiGravity - Google - Projects\DesignSys\designsys\supabase\functions\generate-design-system\index.ts
+  25:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 333 problems (256 errors, 77 warnings)
+  11 errors and 0 warnings potentially fixable with the `--fix` option.
+

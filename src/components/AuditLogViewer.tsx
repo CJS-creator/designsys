@@ -11,13 +11,13 @@ interface AuditLog {
     id: string;
     action: string;
     entity_type: string;
-    entity_id: string;
+    entity_id: string | null;
     created_at: string;
-    user_id: string;
+    user_id: string | null;
     summary?: string;
-    metadata?: any;
-    old_value?: any;
-    new_value?: any;
+    metadata?: unknown;
+    old_value?: unknown;
+    new_value?: unknown;
 }
 
 interface AuditLogViewerProps {
@@ -34,14 +34,14 @@ export const AuditLogViewer = ({ designSystemId }: AuditLogViewerProps) => {
             setLoading(true);
             try {
                 const { data, error } = await supabase
-                    .from("audit_logs" as any)
+                    .from("audit_logs")
                     .select("*")
                     .eq("design_system_id", designSystemId)
                     .order("created_at", { ascending: false })
                     .limit(50);
 
                 if (error) throw error;
-                setLogs((data as any) || []);
+                setLogs((data as AuditLog[]) || []);
             } catch (err) {
                 monitor.error("Error fetching audit logs", err as Error);
             } finally {
@@ -141,7 +141,7 @@ export const AuditLogViewer = ({ designSystemId }: AuditLogViewerProps) => {
                                         </div>
                                     </div>
                                     <p className="text-sm font-medium leading-snug">
-                                        {log.metadata?.summary || `${log.action} performed on ${log.entity_type}`}
+                                        {(log.metadata as any)?.summary || `${log.action} performed on ${log.entity_type}`}
                                     </p>
                                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
                                         <span className="bg-muted px-1.5 py-0.5 rounded uppercase tracking-tighter">ID: {log.entity_id?.split('.').pop() || 'system'}</span>

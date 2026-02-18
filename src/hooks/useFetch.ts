@@ -188,7 +188,7 @@ export function useFetch<T>(
                 abortControllerRef.current.abort();
             }
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [url, immediate, ...deps]);
 
     return {

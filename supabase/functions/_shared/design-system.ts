@@ -207,7 +207,12 @@ export const sanitize = (str: string): string => {
     sanitized = sanitized.replace(pattern, '');
   }
   sanitized = sanitized.replace(/\s+/g, ' ').trim();
-  sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
+  sanitized = Array.from(sanitized)
+    .filter((ch) => {
+      const code = ch.charCodeAt(0);
+      return !(code <= 31 || code === 127);
+    })
+    .join('');
   return sanitized;
 };
 

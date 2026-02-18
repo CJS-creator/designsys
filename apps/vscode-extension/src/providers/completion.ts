@@ -24,7 +24,7 @@ export class DesignSysCompletionProvider implements vscode.CompletionItemProvide
 
             // Extract the part after "ds."
             // e.g. "const c = ds.colors.prim" -> prefix match "ds.colors."
-            const regex = /ds\.([\w\.]*)$/;
+            const regex = /ds\.([\w.]*)$/;
             const match = linePrefix.match(regex);
 
             if (!match) return undefined;

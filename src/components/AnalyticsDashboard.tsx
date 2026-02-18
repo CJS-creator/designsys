@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { monitor } from "@/lib/monitoring";
 import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Activity, Download, MousePointer2, BarChart3 } from "lucide-react";
@@ -9,8 +10,13 @@ interface AnalyticsDashboardProps {
     designSystemId: string;
 }
 
+interface ChartDatum {
+    name: string;
+    value: number;
+}
+
 export function AnalyticsDashboard({ designSystemId }: AnalyticsDashboardProps) {
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<ChartDatum[]>([]);
     const [stats, setStats] = useState({
         totalExports: 0,
         totalEdits: 0,
@@ -24,21 +30,22 @@ export function AnalyticsDashboard({ designSystemId }: AnalyticsDashboardProps) 
     const fetchAnalytics = async () => {
         if (!designSystemId) return;
         try {
-            const { data: events, error } = await (supabase as any)
+            const { data: events, error } = await supabase
                 .from("analytics_events")
-                .select("*")
+                .select("event_type, user_id")
                 .eq("design_system_id", designSystemId);
 
             if (error) throw error;
+            const analyticsEvents = (events || []) as Pick<Tables<"analytics_events">, "event_type" | "user_id">[];
 
             // Group by event type for a bar chart
-            const grouped = (events as any[]).reduce((acc: any, event) => {
+            const grouped = analyticsEvents.reduce<Record<string, number>>((acc, event) => {
                 const type = event.event_type;
                 acc[type] = (acc[type] || 0) + 1;
                 return acc;
             }, {});
 
-            const chartData = Object.keys(grouped).map(key => ({
+            const chartData: ChartDatum[] = Object.keys(grouped).map((key) => ({
                 name: key.replace(/_/g, " ").toUpperCase(),
                 value: grouped[key]
             }));
@@ -47,9 +54,13 @@ export function AnalyticsDashboard({ designSystemId }: AnalyticsDashboardProps) 
 
             // Aggregate stats
             setStats({
-                totalExports: (events as any[]).filter(e => e.event_type.startsWith("exported")).length,
-                totalEdits: (events as any[]).filter(e => e.event_type === "token_updated").length,
-                activeUsers: new Set((events as any[]).map(e => e.metadata?.user_id)).size || 1
+                totalExports: analyticsEvents.filter((event) => event.event_type.startsWith("exported")).length,
+                totalEdits: analyticsEvents.filter((event) => event.event_type === "token_updated").length,
+                activeUsers: new Set(
+                    analyticsEvents
+                        .map((event) => event.user_id)
+                        .filter((id): id is string => Boolean(id))
+                ).size
             });
         } catch (err) {
             monitor.error("Error fetching analytics", err as Error);

@@ -1,15 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/components/TeamSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
- * useUserRole hook - Stub implementation
- * 
- * This hook requires the following database tables that are not yet created:
- * - user_roles
- * 
- * Once this table is created via migration, this hook can be fully implemented.
- * For now, it returns a default role of "owner" for the authenticated user.
+ * useUserRole hook - Fetches the user's role for a specific design system
  */
 export function useUserRole(designSystemId: string) {
     const { user } = useAuth();
@@ -23,16 +18,9 @@ export function useUserRole(designSystemId: string) {
             return;
         }
 
-        // Stub: Since user_roles table doesn't exist yet,
-        // we default the authenticated user to "owner" role
-        // This allows the app to function while awaiting the database migration
-        setRole("owner");
-        setLoading(false);
-
-        // Once the user_roles table is created, uncomment and use this:
-        /*
         const fetchRole = async () => {
             try {
+                setLoading(true);
                 const { data, error } = await supabase
                     .from("user_roles")
                     .select("role")
@@ -51,7 +39,6 @@ export function useUserRole(designSystemId: string) {
         };
 
         fetchRole();
-        */
     }, [user, designSystemId]);
 
     return { role, loading };

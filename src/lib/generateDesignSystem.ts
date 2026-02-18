@@ -3,12 +3,12 @@ import { DesignSystemInput, GeneratedDesignSystem, SemanticColors, ColorPalette,
 import { generateInteractiveStates, hslToString, parseHslString, hexToHsl, getOnColor, getContainerColor } from "./colorUtils";
 import { monitor } from "./monitoring";
 
-async function invokeWithRetry(name: string, options: any, retries = 2, delay = 1500): Promise<any> {
+async function invokeWithRetry(name: string, options: { body: Record<string, unknown> }, retries = 2, delay = 1500): Promise<any> {
   const result = await supabase.functions.invoke(name, options);
 
   // Retry on network errors or 5xx/429 status codes if possible to detect
   // supabase-js error object usually contains status
-  const status = (result.error as any)?.status;
+  const status = (result.error as { status?: number })?.status;
   const shouldRetry = result.error && (retries > 0) && (!status || status >= 500 || status === 429);
 
   if (shouldRetry) {

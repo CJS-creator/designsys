@@ -36,7 +36,7 @@ export function CustomExporterEditor({ designSystemId, tokens }: CustomExporterE
 
     useEffect(() => {
         fetchTemplates();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [designSystemId]);
 
     const fetchTemplates = async () => {
