@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@designsys/ui-ux-core": path.resolve(__dirname, "./packages/ui-ux-core/src"),
+      "@designsys/ui-ux-patterns": path.resolve(__dirname, "./packages/ui-ux-patterns/src"),
+      "@designsys/ui-ux-skills": path.resolve(__dirname, "./packages/ui-ux-skills/src"),
     },
   },
 }));

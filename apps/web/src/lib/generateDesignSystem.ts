@@ -1,195 +1,39 @@
-import { invokeWithRetry } from "./utils";
-
+import { monitor } from "@/lib/monitoring";
+import {
+  DesignSystemInput,
+  GeneratedDesignSystem,
+  ColorPalette,
+  DarkModeColors,
+  SemanticColors,
+  SpacingScale,
+  AnimationTokens
+} from "@/types/designSystem";
 import { patternRepository } from "./patterns/repository";
-import { aiCircuitBreaker } from "./circuitBreaker";
 import { typographyPatterns, getTypeScaleRatio, generateTypeScale } from "./patterns/definitions/typography";
 import { colorPatterns, moodColorMappings } from "./patterns/definitions/colors";
 import { spacingPatterns } from "./patterns/definitions/spacing";
-import { trackGeneration } from "./metrics";
+import {
+  hexToHsl,
+  hslToString,
+  parseHslString,
+  getOnColor,
+  getContainerColor,
+  generateInteractiveStates,
+  generatePaletteFromMood
+} from "./colorUtils";
 
+// Initialize patterns locally if needed by fallback
 export function initializePatterns() {
   patternRepository.registerPatterns(typographyPatterns);
   patternRepository.registerPatterns(colorPatterns);
   patternRepository.registerPatterns(spacingPatterns);
 }
 
-export async function generateDesignSystemWithAI(input: DesignSystemInput): Promise<GeneratedDesignSystem> {
-  const startTime = performance.now();
-  monitor.debug("Calling AI to generate design system...", { input });
-
-  try {
-    // Start AI Generation in parallel with Pattern matching
-    const aiPromise = aiCircuitBreaker.execute(() => invokeWithRetry("generate-design-system", {
-      body: {
-        appType: input.appType,
-        industry: input.industry,
-        brandMood: input.brandMood,
-        primaryColor: input.primaryColor,
-        description: input.description,
-      },
-    }));
-
-    // Initialize Pattern Repository with Tier 1 patterns
-    initializePatterns();
-
-    // Start Pattern Fetches immediately
-    const typographyPromise = patternRepository.findPatterns({
-      category: "typography",
-      tags: input.brandMood
-    });
-
-    const colorPromise = !input.primaryColor
-      ? patternRepository.findPatterns({ category: "colors", tags: input.brandMood })
-      : Promise.resolve([]);
-
-    const spacingPromise = patternRepository.findPatterns({
-      category: "spacing",
-      tags: input.brandMood
-    });
-
-    // Await all results
-    const [aiResult, typographyCandidates, colorCandidates, spacingCandidates] = await Promise.all([
-      aiPromise,
-      typographyPromise,
-      colorPromise,
-      spacingPromise
-    ]);
-
-    const { data, error } = aiResult;
-
-    if (error) {
-      throw new Error(error.message || "Failed to generate design system after retries");
-    }
-
-    if (data?.error) {
-      throw new Error(data.error);
-    }
-
-    if (!data?.designSystem) {
-      throw new Error("No design system returned from AI");
-    }
-
-    monitor.debug("AI generated design system", { designSystem: data.designSystem });
-
-    const bestTypographyMatch = typographyCandidates[0]?.data;
-    const bestColorMatch = colorCandidates[0]?.data;
-    const bestSpacingMatch = spacingCandidates[0]?.data;
-
-    const aiSystem = data.designSystem;
-
-    // A/B Test: Log comparison between AI and Pattern suggestions
-    monitor.info("[A/B Test] Tier 1 Generation Comparison", {
-      industry: input.industry,
-      mood: input.brandMood,
-      typography: {
-        ai: aiSystem.typography?.fontFamily,
-        pattern: bestTypographyMatch?.typography?.fontFamily,
-        match: aiSystem.typography?.fontFamily?.heading === bestTypographyMatch?.typography?.fontFamily?.heading
-      },
-      colors: {
-        aiPrimary: aiSystem.colors?.primary,
-        patternPrimary: bestColorMatch?.colors?.primary,
-        match: aiSystem.colors?.primary === bestColorMatch?.colors?.primary
-      },
-      spacing: {
-        aiUnit: aiSystem.spacing?.unit,
-        patternUnit: bestSpacingMatch?.spacing?.unit
-      }
-    });
-
-    // Ensure the AI response has all required fields, fill in missing ones
-    const result = await ensureCompleteDesignSystem(aiSystem, input, bestTypographyMatch, bestColorMatch, bestSpacingMatch);
-
-    trackGeneration({
-      source: "ai",
-      durationMs: performance.now() - startTime,
-      success: true,
-      metadata: { industry: input.industry }
-    });
-
-    return result;
-
-  } catch (err: any) {
-    trackGeneration({
-      source: "ai",
-      durationMs: performance.now() - startTime,
-      success: false,
-      error: err.message,
-      metadata: { industry: input.industry }
-    });
-    monitor.error("AI Generation failed, falling back...", err);
-    throw err;
-  }
-}
-
-async function ensureCompleteDesignSystem(
-  aiSystem: Partial<GeneratedDesignSystem>,
-  input: DesignSystemInput,
-  typographyOverride?: any,
-  colorOverride?: any,
-  spacingOverride?: any
-): Promise<GeneratedDesignSystem> {
-  const fallback = await generateDesignSystemFallback(input, typographyOverride, colorOverride, spacingOverride); // This is effectively our base pattern  
-
-
-  // Merge colors with interactive states
-  const colors: ColorPalette = {
-    primary: aiSystem.colors?.primary || fallback.colors.primary,
-    secondary: aiSystem.colors?.secondary || fallback.colors.secondary,
-    accent: aiSystem.colors?.accent || fallback.colors.accent,
-    background: aiSystem.colors?.background || fallback.colors.background,
-    surface: aiSystem.colors?.surface || fallback.colors.surface,
-    text: aiSystem.colors?.text || fallback.colors.text,
-    textSecondary: aiSystem.colors?.textSecondary || fallback.colors.textSecondary,
-    success: aiSystem.colors?.success || fallback.colors.success,
-    warning: aiSystem.colors?.warning || fallback.colors.warning,
-    error: aiSystem.colors?.error || fallback.colors.error,
-    overlay: aiSystem.colors?.overlay || fallback.colors.overlay,
-    border: aiSystem.colors?.border || fallback.colors.border,
-    borderLight: aiSystem.colors?.borderLight || fallback.colors.borderLight,
-    onPrimary: getOnColor(aiSystem.colors?.primary || fallback.colors.primary),
-    onSecondary: getOnColor(aiSystem.colors?.secondary || fallback.colors.secondary),
-    onAccent: getOnColor(aiSystem.colors?.accent || fallback.colors.accent),
-    onBackground: getOnColor(aiSystem.colors?.background || fallback.colors.background),
-    onSurface: getOnColor(aiSystem.colors?.surface || fallback.colors.surface),
-    primaryContainer: getContainerColor(aiSystem.colors?.primary || fallback.colors.primary),
-    onPrimaryContainer: getOnColor(getContainerColor(aiSystem.colors?.primary || fallback.colors.primary)),
-    secondaryContainer: getContainerColor(aiSystem.colors?.secondary || fallback.colors.secondary),
-    onSecondaryContainer: getOnColor(getContainerColor(aiSystem.colors?.secondary || fallback.colors.secondary)),
-    interactive: aiSystem.colors?.interactive || generateSemanticColors(
-      aiSystem.colors?.primary || fallback.colors.primary,
-      aiSystem.colors?.secondary || fallback.colors.secondary,
-      aiSystem.colors?.accent || fallback.colors.accent
-    ),
-  };
-
-  const result: GeneratedDesignSystem = {
-    name: aiSystem.name || fallback.name,
-    colors,
-    darkColors: aiSystem.darkColors || generateDarkModeColors(colors),
-    typography: aiSystem.typography || fallback.typography,
-    spacing: aiSystem.spacing || fallback.spacing,
-    shadows: aiSystem.shadows || fallback.shadows,
-    grid: aiSystem.grid || fallback.grid,
-    borderRadius: aiSystem.borderRadius || fallback.borderRadius,
-    animations: aiSystem.animations || fallback.animations,
-  };
-
-  // Add tokenStore for semantic resolution
-  result.tokenStore = organizeTokens(result);
-
-  // Add component variants
-  result.components = await generateComponentVariants(result);
-
-  // Legacy fallback for engine (optional, can be removed if Engine uses store)
-  // result.tokenStore = TokenEngine.fromDesignSystem(result); 
-
-  return result;
-}
+// Deprecated generateDesignSystemWithAI removed. 
+// Use hybridAdapter.generate() instead.
 
 // import { TokenEngine } from "./theming/tokenEngine";
-import { generateComponentVariants } from "./componentVariants";
-import { organizeTokens } from "./tokenCollections";
+
 
 // Helper Functions
 function generateSemanticColors(primary: string, secondary: string, accent: string): SemanticColors {
@@ -278,7 +122,7 @@ function generateAnimationTokens(brandMood: string[]): AnimationTokens {
 // Fallback local generation (used if AI fails)
 // Now powered by Smarter Algorithms (Phase 3)
 
-import { generatePaletteFromMood } from "./colorUtils";
+
 
 export async function generateDesignSystemFallback(
   input: DesignSystemInput,

@@ -203,6 +203,18 @@ export interface ComponentDefinition {
   properties: Record<string, string[]>; // e.g. { size: ['sm', 'md', 'lg'], variant: ['primary', 'secondary'] }
 }
 
+export interface LayoutStrategy {
+  type: "grid" | "flex" | "masonry" | "sidebar" | "dashboard";
+  config: {
+    columns?: number;
+    gap?: number;
+    direction?: "row" | "column";
+    wrap?: boolean;
+    alignItems?: string;
+    justifyContent?: string;
+  };
+}
+
 export interface GeneratedDesignSystem {
   id?: string;
   name: string;
@@ -217,6 +229,7 @@ export interface GeneratedDesignSystem {
   animations: AnimationTokens;
   tokenStore?: UnifiedTokenStore;
   components?: Record<string, ComponentDefinition>;
+  layoutStrategy?: LayoutStrategy; // New field for AI-suggested layout
   // Governance
   is_published?: boolean;
   version_number?: string;

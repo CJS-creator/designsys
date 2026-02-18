@@ -94,7 +94,7 @@ export function DocEditor({ designSystemId }: { designSystemId: string }) {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full space-y-6">
+            <div className="flex-1 overflow-y-auto p-6 md:p-10 w-full space-y-8">
                 {blocks.map((block) => (
                     <div key={block.id} className="relative group">
                         <div className="absolute -left-10 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
@@ -143,7 +143,7 @@ export function DocEditor({ designSystemId }: { designSystemId: string }) {
                 ))}
 
                 {blocks.length === 0 && (
-                    <div className="text-center py-20 bg-muted/10 rounded-2xl border-2 border-dashed border-border/50">
+                    <div className="text-center py-10 bg-muted/10 rounded-2xl border-2 border-dashed border-border/50">
                         <h3 className="font-bold text-lg mb-2">Build your documentation</h3>
                         <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-6">
                             Add blocks below to document your design tokens, components, and guidelines.
@@ -151,7 +151,7 @@ export function DocEditor({ designSystemId }: { designSystemId: string }) {
                     </div>
                 )}
 
-                <div className="flex justify-center gap-4 pt-8 border-t">
+                <div className="flex justify-center gap-6 pt-8 border-t">
                     <Button variant="outline" size="sm" onClick={() => addBlock('heading')} className="gap-2">
                         <Type className="h-4 w-4" /> Heading
                     </Button>

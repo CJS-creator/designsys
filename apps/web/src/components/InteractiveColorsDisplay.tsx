@@ -32,14 +32,14 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
       <div className="grid gap-6">
         {colorGroups.map((group, groupIdx) => (
           <div key={group.name} className="space-y-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
               <div
-                className="w-12 h-12 rounded-2xl shadow-lg border-2 border-white/10"
+                className="w-20 h-20 rounded-[1.75rem] shadow-2xl border-4 border-white/10 group-hover:scale-110 transition-transform"
                 style={{ background: group.base }}
               />
               <div>
-                <h3 className="text-xl font-bold tracking-tight">{group.name} System</h3>
-                <p className="text-sm text-muted-foreground">Reactive states for {group.name.toLowerCase()} elements</p>
+                <h3 className="text-3xl font-black tracking-tight uppercase tracking-wider">{group.name} System</h3>
+                <p className="text-base text-muted-foreground/80 font-bold">Reactive states for {group.name.toLowerCase()} design elements</p>
               </div>
             </div>
 
@@ -50,22 +50,26 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
                   className="group relative p-4 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1"
                   style={{ animationDelay: `${(groupIdx * 4 + idx) * 50}ms` }}
                 >
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-center mb-4">
                     <div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
-                      {stateIcons[state as keyof typeof stateIcons]}
-                      <span className="text-xs font-bold uppercase tracking-widest">{state}</span>
+                      <div className="p-1 rounded-md bg-white/5 border border-white/10 group-hover:border-primary/30">
+                        {stateIcons[state as keyof typeof stateIcons]}
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">{state}</span>
                     </div>
                   </div>
 
                   <div
-                    className="h-16 rounded-xl border border-white/10 shadow-inner relative overflow-hidden mb-3"
+                    className="h-28 rounded-2xl border-2 border-white/10 shadow-inner relative overflow-hidden mb-4 group-hover:border-white/20 transition-colors"
                     style={{ background: color }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" />
                   </div>
 
-                  <div className="text-xs font-mono text-muted-foreground/80 bg-black/20 px-2 py-1 rounded inline-block">
-                    {color}
+                  <div className="w-full text-center">
+                    <div className="text-xs font-mono font-black text-muted-foreground/80 bg-black/30 px-3 py-1.5 rounded-xl inline-block border border-white/5 group-hover:text-primary transition-colors">
+                      {color}
+                    </div>
                   </div>
 
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">

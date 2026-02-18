@@ -77,7 +77,9 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd, onReorder }: TokenL
                             className="w-4 h-4 rounded border border-border shrink-0"
                             style={{ backgroundColor: typeof value === 'string' ? value : 'transparent' }}
                         />
-                        <code className="text-[10px] uppercase font-mono bg-muted px-1 rounded truncate max-w-[80px]">{value}</code>
+                        <code className="text-[10px] uppercase font-mono bg-muted px-1 rounded truncate max-w-[80px]">
+                            {typeof value === 'string' ? value : JSON.stringify(value)}
+                        </code>
                         {isRef && (
                             <span className="text-[9px] text-muted-foreground italic truncate max-w-[60px]">
                                 via {token.ref}
@@ -105,8 +107,8 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd, onReorder }: TokenL
                             Ag The quick brown fox
                         </span>
                         <div className="flex gap-2 text-[9px] text-muted-foreground font-mono">
-                            <span>{typo.fontSize}</span>
-                            <span>{typo.fontWeight}</span>
+                            <span>{typeof typo.fontSize === 'object' ? 'Complex' : typo.fontSize}</span>
+                            <span>{typeof typo.fontWeight === 'object' ? 'Complex' : typo.fontWeight}</span>
                         </div>
                     </div>
                 );
@@ -118,7 +120,9 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd, onReorder }: TokenL
                             className="h-2 bg-primary/20 rounded-full border border-primary/30"
                             style={{ width: typeof value === 'string' ? value : '0px', maxWidth: '60px' }}
                         />
-                        <code className="text-[10px] font-mono bg-muted px-1 rounded shrink-0">{value}</code>
+                        <code className="text-[10px] font-mono bg-muted px-1 rounded shrink-0">
+                            {typeof value === 'string' || typeof value === 'number' ? value : 'Structured'}
+                        </code>
                     </div>
                 );
             case 'border':
@@ -144,7 +148,9 @@ export function TokenList({ tokens, onEdit, onDelete, onAdd, onReorder }: TokenL
                             className="w-4 h-4 border border-dashed border-muted-foreground/50"
                             style={{ borderRadius: typeof value === 'string' ? value : '0px' }}
                         />
-                        <code className="text-[10px] font-mono bg-muted px-1 rounded shrink-0">{value}</code>
+                        <code className="text-[10px] font-mono bg-muted px-1 rounded shrink-0">
+                            {typeof value === 'string' || typeof value === 'number' ? value : 'Structured'}
+                        </code>
                     </div>
                 );
             default:

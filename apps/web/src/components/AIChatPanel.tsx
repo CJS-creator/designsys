@@ -6,8 +6,8 @@ import { Send, Sparkles, User, Bot, Minimize2, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { hybridAdapter } from "@/lib/hybridAdapter";
 
 interface Message {
     id: string;
@@ -57,29 +57,25 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ designSystem, onUpdate
         setIsProcessing(true);
 
         try {
-            // Call the iterative editor logic (Phase 7.3)
-            const { data, error } = await supabase.functions.invoke("generate-design-system", {
-                body: {
-                    // Pass the current system as context for iteration
-                    currentSystem: designSystem,
-                    instruction: input,
-                    mode: "edit"
-                },
+            // Use HybridAdapter to generate a new system based on the instruction
+            // We construct the input from the current system to maintain context where possible
+            const newSystem = await hybridAdapter.generate({
+                appType: "web", // Defaulting as we might not have this stored
+                industry: "Technology", // Defaulting
+                brandMood: ["Modern"], // Defaulting
+                primaryColor: designSystem.colors.primary,
+                description: input, // The user instruction becomes the new description for generation
             });
-
-            if (error) throw error;
 
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: "assistant",
-                content: data.message || "I've updated the design system based on your request. How does it look?",
+                content: "I've updated the design system based on your request. How does it look?",
                 timestamp: new Date(),
             };
 
-            if (data.designSystem) {
-                onUpdate(data.designSystem);
-                toast.success("Design system updated iteratively!");
-            }
+            onUpdate(newSystem);
+            toast.success("Design system updated!");
 
             setMessages(prev => [...prev, assistantMessage]);
         } catch (err: any) {
@@ -90,7 +86,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ designSystem, onUpdate
                 content: "I'm sorry, I encountered an error while processing that update. Please try again.",
                 timestamp: new Date(),
             }]);
-            toast.error("Failed to iterate design system");
+            toast.error("Failed to update design system");
         } finally {
             setIsProcessing(false);
         }

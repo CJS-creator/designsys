@@ -13,6 +13,15 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@designsys/ui-ux-core": [
+        "./packages/ui-ux-core/src/index.ts"
+      ],
+      "@designsys/ui-ux-patterns": [
+        "./packages/ui-ux-patterns/src/index.ts"
+      ],
+      "@designsys/ui-ux-skills": [
+        "./packages/ui-ux-skills/src/index.ts"
       ]
     },
     "strict": true,

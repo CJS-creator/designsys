@@ -1,3 +1,4 @@
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 // We need to mock modules before importing them
 vi.mock('../lib/generateDesignSystem', () => ({
@@ -15,11 +16,36 @@ vi.mock('../lib/utils', () => ({
     cn: vi.fn()
 }));
 
+vi.mock('../lib/monitoring', () => ({
+    monitor: {
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn()
+    }
+}));
+
+vi.mock('../lib/optimizationEngine', () => ({
+    optimizationEngine: {
+        getConfig: vi.fn().mockReturnValue({ featureFlags: {} })
+    }
+}));
+
+vi.mock('../lib/aiCache', () => ({
+    aiCache: {
+        generateKey: vi.fn().mockReturnValue('mock-cache-key'),
+        get: vi.fn().mockReturnValue(null),
+        set: vi.fn()
+    }
+}));
+
 // Import after mocks
 import { hybridAdapter } from '../lib/hybridAdapter';
 import { generateDesignSystemFallback } from '../lib/generateDesignSystem';
 import { aiCircuitBreaker } from '../lib/circuitBreaker';
 import { invokeWithRetry } from '../lib/utils';
+import { monitor } from '../lib/monitoring';
+import { optimizationEngine } from '../lib/optimizationEngine';
 import { DesignSystemInput, GeneratedDesignSystem } from '../types/designSystem';
 
 describe('HybridAdapter', () => {
@@ -44,6 +70,8 @@ describe('HybridAdapter', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         (generateDesignSystemFallback as any).mockResolvedValue(mockFoundation);
+        (optimizationEngine.getConfig as any).mockReturnValue({ featureFlags: {} });
+        (aiCircuitBreaker.execute as any).mockImplementation((fn: any) => fn());
     });
 
     it('should return foundation if AI returns null', async () => {
@@ -81,5 +109,42 @@ describe('HybridAdapter', () => {
         const result = await hybridAdapter.generate(mockInput);
 
         expect(result).toBe(mockFoundation);
+    });
+
+    it('should pass optimization config to AI adaptation', async () => {
+        const config = { featureFlags: { usePatternForColors: true } };
+        (optimizationEngine.getConfig as any).mockReturnValue(config);
+
+        (invokeWithRetry as any).mockResolvedValue({ data: { adaptation: {} }, error: null });
+
+        await hybridAdapter.generate(mockInput);
+
+        expect(invokeWithRetry).toHaveBeenCalledWith(
+            "generate-design-adaptation",
+            expect.objectContaining({
+                body: expect.objectContaining({
+                    config: config
+                })
+            })
+        );
+    });
+
+    it('should log A/B testing metadata', async () => {
+        (invokeWithRetry as any).mockResolvedValue({
+            data: {
+                adaptation: {},
+                meta: { ab_variant: 'B' }
+            },
+            error: null
+        });
+
+        await hybridAdapter.generate(mockInput);
+
+        expect(monitor.info).toHaveBeenCalledWith(
+            "AI Generation Metadata",
+            expect.objectContaining({
+                meta: { ab_variant: 'B' }
+            })
+        );
     });
 });

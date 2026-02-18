@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "useDefineForClassFields": true,
+        "module": "ESNext",
+        "lib": [
+            "ES2020",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "skipLibCheck": true,
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": false,
+        "declaration": true,
+        "outDir": "./dist",
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "composite": true,
+        "baseUrl": ".",
+        "paths": {
+            "@designsys/ui-ux-core": [
+                "../ui-ux-core/src/index.ts"
+            ]
+        }
+    },
+    "include": [
+        "src"
+    ],
+    "references": [
+        {
+            "path": "../ui-ux-core"
+        }
+    ]
+}

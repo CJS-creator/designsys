@@ -20,10 +20,15 @@ export function ShadowDisplay({ shadows }: ShadowDisplayProps) {
           className="flex flex-col items-center gap-3 group transition-all"
         >
           <div
-            className="h-20 w-full bg-background rounded-xl border border-border/50 shadow-sm transition-all duration-300 group-hover:border-primary/50 relative flex items-center justify-center p-2"
-            style={{ boxShadow: value }}
+            className="h-48 w-full bg-background rounded-[2.5rem] border border-border/50 shadow-sm transition-all duration-500 group-hover:border-primary/50 relative flex items-center justify-center p-8 overflow-visible"
+            style={{
+              boxShadow: value,
+              backgroundImage: 'radial-gradient(circle, currentColor 1.5px, transparent 1.5px)',
+              backgroundSize: '16px 16px',
+              color: 'rgba(0,0,0,0.04)'
+            }}
           >
-            <span className="text-xs font-bold text-muted-foreground uppercase leading-relaxed">{name}</span>
+            <span className="text-sm font-black text-muted-foreground/80 uppercase leading-relaxed relative z-10 tracking-[0.2em]">{name}</span>
           </div>
           <p className="text-xs font-mono text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">Copy Shadow</p>
         </button>

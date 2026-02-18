@@ -42,7 +42,7 @@ export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSyst
     return (
         <Card className="overflow-hidden border-2 border-primary/10 shadow-xl shadow-primary/5">
             <CardHeader className="bg-muted/30 pb-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-end justify-between">
                     <div className="space-y-1">
                         <CardTitle className="flex items-center gap-2 text-xl">
                             <Activity className="h-5 w-5 text-primary" />
@@ -55,19 +55,19 @@ export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSyst
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="pt-4">
-                <div className="flex gap-4 mb-5">
-                    <div className="flex-1 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-center">
-                        <div className="text-2xl font-black text-red-500">{report.summary.errors}</div>
-                        <div className="text-xs uppercase font-black text-red-500/60 tracking-widest">Errors</div>
+            <CardContent className="pt-4 pb-4">
+                <div className="flex gap-6 mb-8">
+                    <div className="flex-1 p-6 rounded-3xl bg-red-500/5 border border-red-500/10 text-center group hover:bg-red-500/10 transition-all">
+                        <div className="text-4xl font-black text-red-500 mb-1 group-hover:scale-110 transition-transform">{report.summary.errors}</div>
+                        <div className="text-xs uppercase font-black text-red-500/60 tracking-[0.2em]">Critical Errors</div>
                     </div>
-                    <div className="flex-1 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 text-center">
-                        <div className="text-2xl font-black text-amber-500">{report.summary.warnings}</div>
-                        <div className="text-xs uppercase font-black text-amber-500/60 tracking-widest">Warnings</div>
+                    <div className="flex-1 p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 text-center group hover:bg-amber-500/10 transition-all">
+                        <div className="text-4xl font-black text-amber-500 mb-1 group-hover:scale-110 transition-transform">{report.summary.warnings}</div>
+                        <div className="text-xs uppercase font-black text-amber-500/60 tracking-[0.2em]">Warnings</div>
                     </div>
-                    <div className="flex-1 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 text-center">
-                        <div className="text-2xl font-black text-blue-500">{report.summary.infos}</div>
-                        <div className="text-xs uppercase font-black text-blue-500/60 tracking-widest">Insights</div>
+                    <div className="flex-1 p-6 rounded-3xl bg-blue-500/5 border border-blue-500/10 text-center group hover:bg-blue-500/10 transition-all">
+                        <div className="text-4xl font-black text-blue-500 mb-1 group-hover:scale-110 transition-transform">{report.summary.infos}</div>
+                        <div className="text-xs uppercase font-black text-blue-500/60 tracking-[0.2em]">Insights</div>
                     </div>
                 </div>
 
@@ -94,7 +94,7 @@ export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSyst
                                     <div className="flex-1 space-y-1">
                                         <div className="flex items-center justify-between">
                                             <p className="text-sm font-bold leading-none">{issue.message}</p>
-                                            <Badge variant="outline" className="text-[9px] uppercase font-black px-1.5 py-0">
+                                            <Badge variant="outline" className="text-[9px] uppercase font-black px-1.5 py-0 whitespace-nowrap">
                                                 {issue.category}
                                             </Badge>
                                         </div>

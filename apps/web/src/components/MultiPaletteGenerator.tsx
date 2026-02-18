@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 // Slider available for future use: import { Slider } from "@/components/ui/slider";
-import { Palette, Copy, Check, RefreshCw, Plus, Trash2 } from "lucide-react";
+import { Palette, Copy, Check, RefreshCw, Plus, Trash2, Cpu } from "lucide-react";
 import { toast } from "sonner";
+import { useSkill } from "@/hooks/useSkill";
+import { useFeatureFlags } from "@/contexts/FeatureFlagsContext";
+import { Badge } from "@/components/ui/badge";
 
 interface ColorShade {
   shade: number;
@@ -110,6 +113,9 @@ export function MultiPaletteGenerator({
   accentColor = "#ec4899",
   onPaletteChange,
 }: MultiPaletteGeneratorProps) {
+  const { flags } = useFeatureFlags();
+  const { execute: generatePaletteSkill } = useSkill('color.generate-palette');
+
   const [palettes, setPalettes] = useState<ColorPaletteSet[]>([
     { name: "Primary", baseColor: primaryColor, shades: generateShades(primaryColor) },
     { name: "Secondary", baseColor: secondaryColor, shades: generateShades(secondaryColor) },
@@ -118,18 +124,35 @@ export function MultiPaletteGenerator({
 
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
 
-  const updatePalette = useCallback((index: number, newBaseColor: string) => {
+  const updatePalette = useCallback(async (index: number, newBaseColor: string) => {
+    let newShades: ColorShade[] = [];
+
+    if (flags.useSkillEngine) {
+      console.log('[SkillEngine] Generating shades for:', newBaseColor);
+      const res = await generatePaletteSkill({ baseColor: newBaseColor });
+      if (res?.status === 'success' && res.output.shades) {
+        // Find the matching shades scale. Since we are generating for a specific base, 
+        // the skill returns scales for primary/secondary/accent based on harmony.
+        // For simplicity in the direct color picker, we just take the 'primary' scale generated from this base.
+        newShades = res.output.shades.primary;
+      } else {
+        newShades = generateShades(newBaseColor);
+      }
+    } else {
+      newShades = generateShades(newBaseColor);
+    }
+
     setPalettes((prev) => {
       const updated = [...prev];
       updated[index] = {
         ...updated[index],
         baseColor: newBaseColor,
-        shades: generateShades(newBaseColor),
+        shades: newShades,
       };
       onPaletteChange?.(updated);
       return updated;
     });
-  }, [onPaletteChange]);
+  }, [onPaletteChange, flags.useSkillEngine, generatePaletteSkill]);
 
   const addPalette = useCallback(() => {
     const randomHue = Math.floor(Math.random() * 360);
@@ -206,6 +229,12 @@ export function MultiPaletteGenerator({
         <CardTitle className="flex items-center gap-2">
           <Palette className="h-5 w-5 text-primary" />
           Multi-Palette Generator
+          {flags.useSkillEngine && (
+            <Badge variant="secondary" className="ml-2 gap-1 animate-pulse">
+              <Cpu className="h-3 w-3" />
+              Skill Engine
+            </Badge>
+          )}
         </CardTitle>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={copyAllAsCSS}>

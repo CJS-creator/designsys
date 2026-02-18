@@ -38,7 +38,7 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
           {Object.entries(animations.duration).map(([key, value], idx) => (
             <div
               key={key}
-              className="group space-y-3 p-4 rounded-2xl bg-white/5 border border-white/5 transition-all hover:bg-white/10 hover:border-white/20"
+              className="group space-y-3 p-4 rounded-2xl bg-white/5 border border-white/5 transition-all hover:bg-white/10 hover:border-white/20 aspect-video flex flex-col justify-between"
               style={{ animationDelay: `${idx * 50}ms` }}
             >
               <div className="flex items-center justify-between">
@@ -47,8 +47,12 @@ export function AnimationDisplay({ animations }: AnimationDisplayProps) {
               </div>
 
               <button
-                onClick={() => playDuration(key)}
-                className="w-full h-12 rounded-xl bg-black/40 border border-white/10 relative overflow-hidden group/btn transition-transform active:scale-95"
+                onClick={() => {
+                  playDuration(key);
+                  const ms = parseInt(value) || 300;
+                  setTimeout(() => setPlayingDuration(null), ms + 100);
+                }}
+                className="w-full h-12 rounded-xl bg-black/40 border border-white/10 relative overflow-hidden group/btn transition-transform active:scale-95 mt-auto"
               >
                 <div
                   className={`absolute inset-y-0 left-0 bg-primary transition-all shadow-[0_0_15px_rgba(var(--primary),0.5)]`}

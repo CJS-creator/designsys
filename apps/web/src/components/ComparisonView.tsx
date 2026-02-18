@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { GeneratedDesignSystem, DesignSystemInput } from "@/types/designSystem";
-import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
+import { hybridAdapter } from "@/lib/hybridAdapter";
+import { generateDesignSystemFallback } from "@/lib/generateDesignSystem";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -26,7 +27,7 @@ export const ComparisonView = ({ baseInput, initialSystem }: ComparisonViewProps
 
     setIsGenerating(true);
     try {
-      const variation = await generateDesignSystemWithAI({
+      const variation = await hybridAdapter.generate({
         ...baseInput,
         description: `${baseInput.description} - Variation ${variations.length + 1}`,
       });

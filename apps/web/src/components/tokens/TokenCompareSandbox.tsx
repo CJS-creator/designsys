@@ -270,14 +270,20 @@ export function TokenCompareSandbox({ allTokens, brands, onTokenClick }: TokenCo
                                         <div>
                                             <label className="text-[9px] font-bold text-muted-foreground uppercase">Brand A</label>
                                             <div className="text-[10px] font-bold truncate">
-                                                {resolveTokenValue(hoveredTokenPath, primaryBrand)}
+                                                {(() => {
+                                                    const val = resolveTokenValue(hoveredTokenPath, primaryBrand);
+                                                    return typeof val === 'object' ? JSON.stringify(val) : val;
+                                                })()}
                                             </div>
                                         </div>
                                         {comparisonBrandId !== "none" && (
                                             <div>
                                                 <label className="text-[9px] font-bold text-muted-foreground uppercase">Brand B</label>
                                                 <div className="text-[10px] font-bold truncate">
-                                                    {resolveTokenValue(hoveredTokenPath, comparisonBrand)}
+                                                    {(() => {
+                                                        const val = resolveTokenValue(hoveredTokenPath, comparisonBrand);
+                                                        return typeof val === 'object' ? JSON.stringify(val) : val;
+                                                    })()}
                                                 </div>
                                             </div>
                                         )}

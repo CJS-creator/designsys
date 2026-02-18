@@ -177,6 +177,37 @@ All colors MUST be HSL.
   }
 }
 @layer utilities {
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* Hide scrollbar on overflow-x but allow scrolling */
+  .overflow-x-hidden {
+    overflow-x: hidden;
+  }
+
+  /* Touch target minimum size */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
   .animate-gpu {
     will-change: transform, opacity;
     transform: translateZ(0);
@@ -345,4 +376,34 @@ All colors MUST be HSL.
 }
 .text-safe {
   @apply leading-normal py-0.5 overflow-visible min-h-[1.2em];
+}
+
+/* Contrast improvements for accessibility */
+.contrast-safe {
+  @apply text-foreground;
+}
+
+/* Improved focus indicators for accessibility */
+.focus-indicator {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}
+
+/* High contrast button states */
+.btn-contrast {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80;
+}
+
+/* Card hover with better contrast */
+.card-hover {
+  @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:border-primary/30;
+}
+
+/* Badge styling for better visibility */
+.badge-contrast {
+  @apply px-2 py-0.5 rounded-full text-xs font-medium border;
+}
+
+/* Visual cue beyond color for accessibility */
+.visual-cue {
+  @apply border-2 border-solid;
 }

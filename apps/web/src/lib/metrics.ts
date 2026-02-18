@@ -2,6 +2,13 @@ import { monitor } from "./monitoring";
 
 export type GenerationSource = "ai" | "pattern" | "hybrid" | "fallback";
 
+export interface AIValueMetric {
+    feature: string; // e.g., "layout", "color"
+    aiSuggested: boolean;
+    userAccepted: boolean;
+    patternMatchScore: number; // 0-1, how close was AI to a known pattern?
+}
+
 export interface GenerationMetric {
     source: GenerationSource;
     durationMs: number;
@@ -46,4 +53,45 @@ export function trackAICost(service: "openai" | "supabase-edge", tokens: number,
         model,
         estimated_cost_usd: estimatedCost
     });
+}
+
+/**
+ * Track the qualitative value of AI usage.
+ * High patternMatchScore means AI is redundant (low value).
+ */
+export function trackAIValue(metric: AIValueMetric) {
+    monitor.trackEvent("ai_value_tracking", {
+        feature: metric.feature,
+        ai_suggested: metric.aiSuggested,
+        user_accepted: metric.userAccepted,
+        pattern_match_score: metric.patternMatchScore,
+        value_score: metric.aiSuggested && metric.userAccepted ? (1 - metric.patternMatchScore) : 0
+    });
+}
+
+export interface SkillMetric {
+    skillId: string;
+    durationMs: number;
+    success: boolean;
+    cached: boolean;
+    error?: string;
+}
+
+/**
+ * Track skill engine execution metrics
+ */
+export function trackSkillExecution(metric: SkillMetric) {
+    monitor.trackEvent("skill_execution_completed", {
+        skill_id: metric.skillId,
+        duration_ms: metric.durationMs,
+        success: metric.success,
+        cached: metric.cached,
+        error: metric.error
+    });
+
+    if (metric.success) {
+        monitor.debug(`[Metrics] Skill ${metric.skillId} ${metric.cached ? '(cached)' : ''} completed in ${metric.durationMs}ms`);
+    } else {
+        monitor.error(`[Metrics] Skill ${metric.skillId} failed after ${metric.durationMs}ms: ${metric.error}`);
+    }
 }

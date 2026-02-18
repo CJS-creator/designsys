@@ -38,27 +38,27 @@ export function ColorPaletteDisplay({ colors, renderItem }: ColorPaletteDisplayP
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <div
-              className="h-20 w-full rounded-xl shadow-sm transition-all duration-300 group-hover:shadow-xl ring-1 ring-border/10 group-hover:ring-border/30 relative overflow-hidden"
+              className="h-32 w-full rounded-2xl shadow-md transition-all duration-500 group-hover:shadow-2xl ring-2 ring-border/5 group-hover:ring-primary/20 relative overflow-hidden"
               style={{ backgroundColor: value }}
             >
-              <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
 
-            <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-50 group-hover:scale-100 pointer-events-none">
+            <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500 scale-50 group-hover:scale-100 pointer-events-none">
               {copiedColor === key ? (
-                <div className="bg-black/50 backdrop-blur-md text-white p-2 rounded-full">
-                  <Check className="h-5 w-5" />
+                <div className="bg-black/40 backdrop-blur-xl text-white p-3 rounded-full shadow-2xl">
+                  <Check className="h-6 w-6" />
                 </div>
               ) : (
-                <div className="bg-black/20 backdrop-blur-sm text-white/90 p-2 rounded-full">
-                  <Copy className="h-5 w-5" />
+                <div className="bg-black/20 backdrop-blur-md text-white/90 p-3 rounded-full shadow-2xl">
+                  <Copy className="h-6 w-6" />
                 </div>
               )}
             </div>
 
-            <div className="text-center w-full">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">{name}</p>
-              <p className="text-xs font-mono text-muted-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity leading-normal">{value}</p>
+            <div className="text-center w-full mt-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 group-hover:text-primary transition-colors mb-1">{name}</p>
+              <p className="text-sm font-mono font-black text-primary/80 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">{value}</p>
             </div>
           </button>
         )

@@ -483,14 +483,17 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
 
           {/* Brand Mood */}
           <motion.div variants={itemVariants} className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
               <Label className="text-base font-medium text-foreground">
-                Brand Mood <span key={`mood-counter-${brandMood.length}`} className="text-neutral-500 text-sm transition-all duration-200">({brandMood.length}/3 selected)</span>
+                Brand Mood
               </Label>
+              <span className="text-neutral-500 text-sm whitespace-nowrap">({brandMood.length}/3 selected)</span>
               {industry && INDUSTRY_MOOD_SUGGESTIONS[industry] && (
-                <span className="text-xs text-primary/80 flex items-center gap-1">
-                  <Lightbulb className="h-3 w-3" />
-                  Suggested: {INDUSTRY_MOOD_SUGGESTIONS[industry].slice(0, 3).map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(", ")}
+                <span className="text-xs text-primary/80 flex items-center gap-1 ml-auto flex-shrink-0">
+                  <Lightbulb className="h-3 w-3 flex-shrink-0" />
+                  <span className="hidden sm:inline">Suggested:</span>
+                  <span className="sm:hidden">:</span>
+                  {INDUSTRY_MOOD_SUGGESTIONS[industry].slice(0, 3).map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(", ")}
                 </span>
               )}
             </div>
@@ -530,13 +533,13 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
           <motion.div variants={itemVariants} className="space-y-3">
             <Label htmlFor="primaryColor" className="text-base font-medium text-foreground">
               Primary Brand Color{" "}
-              <span className="text-neutral-500 text-sm">(Optional - AI will suggest if empty)</span>
+              <span className="text-neutral-500 text-sm font-normal">(Optional - AI will suggest if empty)</span>
             </Label>
             <p className="text-xs text-muted-foreground -mt-1">
               Your brand color will influence the generated palette. Leave empty for AI-suggested colors.
             </p>
-            <div className="flex gap-3">
-              <div className="relative group/picker cursor-pointer">
+            <div className="flex gap-3 items-center w-full">
+              <div className="relative group/picker cursor-pointer shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 rounded-xl blur opacity-20 group-hover/picker:opacity-40 transition-opacity" />
                 <div className="h-12 w-16 overflow-hidden rounded-xl border border-border ring-2 ring-transparent group-hover/picker:ring-primary/20 transition-all relative z-10 bg-card">
                   <Input
@@ -579,7 +582,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="text-primary hover:text-primary hover:bg-primary/10 h-7 rounded-full text-xs"
+                className="text-primary hover:text-primary hover:bg-primary/10 h-7 rounded-full text-xs touch-target"
                 onClick={handleRandomPrompt}
                 title="Fill with random idea"
                 aria-label="Randomize description"
@@ -595,7 +598,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                 placeholder={EXAMPLE_PROMPTS[placeholderIndex]}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="min-h-32 resize-none bg-background border-2 border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary relative z-10 rounded-xl transition-all hover:border-primary/50 hover:shadow-sm"
+                className="min-h-24 max-h-32 resize-y bg-background border-2 border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary relative z-10 rounded-xl transition-all hover:border-primary/50 hover:shadow-sm"
               />
             </div>
 
@@ -610,7 +613,7 @@ export function DesignSystemForm({ onGenerate, isLoading, initialValues }: Desig
                   key={chip.label}
                   type="button"
                   onClick={() => handleSuggestionClick(chip)}
-                  className="text-xs px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 text-neutral-400 hover:text-primary transition-all hover:scale-105 active:scale-95"
+                  className="text-xs px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 text-neutral-400 hover:text-primary transition-all hover:scale-105 active:scale-95 min-h-9"
                 >
                   {chip.label}
                 </button>
