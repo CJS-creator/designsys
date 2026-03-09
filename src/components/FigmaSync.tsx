@@ -16,11 +16,11 @@ interface FigmaSyncProps {
 
 interface FigmaConnection {
     id: string;
-    access_token: string;
+    repo_full_name: string;
     last_sync_at: string | null;
     sync_status: string;
-    figma_token?: string;
-    figma_file_key?: string;
+    provider: string;
+    default_branch: string;
 }
 
 export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
