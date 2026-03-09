@@ -218,10 +218,11 @@ const Index = () => {
 
         <header className="sticky top-0 z-50 border-b border-border/40 bg-background/60 dark:bg-black/40 backdrop-blur-xl supports-[backdrop-filter]:bg-background/20 animate-slide-in-down transition-all duration-300">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleReset} aria-label="Go back" className="hover:rotate-[-10deg] transition-transform duration-300 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
+              <DesignSystemSidebarMobile activeTab={activeTab} onTabChange={handleTabChange} />
               <div>
                 <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-neutral-600 to-neutral-900 dark:from-neutral-50 dark:to-neutral-400 animate-fade-in tracking-tight">
                   {designSystem?.name || "Generating System..."}
