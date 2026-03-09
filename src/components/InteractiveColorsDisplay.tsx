@@ -148,13 +148,13 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
       </div>
 
       {/* Real-world Preview Buttons */}
-      <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 mt-10">
-        <h4 className="text-sm font-bold text-primary uppercase tracking-widest mb-4 text-center">Interactive Playground</h4>
-        <div className="flex flex-wrap items-center justify-center gap-6">
+      <div className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-primary/5 border border-primary/10 mt-6 sm:mt-10">
+        <h4 className="text-xs sm:text-sm font-bold text-primary uppercase tracking-widest mb-3 sm:mb-4 text-center">Interactive Playground</h4>
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
           {colorGroups.map((group) => (
             <button
               key={group.name}
-              className="px-8 py-4 rounded-2xl font-bold text-white shadow-lg transition-all transform active:scale-95 hover:-translate-y-1 hover:shadow-2xl"
+              className="px-4 sm:px-8 py-2 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-white text-sm sm:text-base shadow-lg transition-all transform active:scale-95 hover:-translate-y-1 hover:shadow-2xl"
               style={{
                 background: group.base,
                 ["--hover-bg" as string]: group.states.hover,
@@ -165,11 +165,11 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
               onMouseDown={(e) => (e.currentTarget.style.background = group.states.active)}
               onMouseUp={(e) => (e.currentTarget.style.background = group.states.hover)}
             >
-              {group.name} Action
+              {group.name}
             </button>
           ))}
           <button
-            className="px-8 py-4 rounded-2xl font-bold transition-all cursor-not-allowed opacity-50 grayscale"
+            className="px-4 sm:px-8 py-2 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base transition-all cursor-not-allowed opacity-50 grayscale"
             style={{
               background: interactive.primary.disabled,
               color: colors.textSecondary,
@@ -177,7 +177,7 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
             }}
             disabled
           >
-            Disabled State
+            Disabled
           </button>
         </div>
       </div>

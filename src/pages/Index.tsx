@@ -305,11 +305,11 @@ const Index = () => {
           </div>
         )}
 
-        <div className="flex flex-1 relative z-10">
+        <div className="flex flex-1 relative z-10 min-h-0">
           <DesignSystemSidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
-          <main className="flex-1 overflow-y-auto">
-            <div className="container mx-auto px-4 py-6 max-w-[1200px]">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
+            <div className="w-full max-w-[1200px] mx-auto px-4 py-6">
               {isLoading && !designSystem ? (
                 <DesignSystemSkeleton />
               ) : designSystem && (
