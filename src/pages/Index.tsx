@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { DesignSystemSidebar, DesignSystemSidebarMobile } from "@/components/DesignSystemSidebar";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { SavedDesigns } from "@/components/SavedDesigns";
+import { DesignSystemDashboard } from "@/components/DesignSystemDashboard";
 import { AnimationDisplay } from "@/components/AnimationDisplay";
 import { InteractiveColorsDisplay } from "@/components/InteractiveColorsDisplay";
 import { DesignSystemPresets } from "@/components/DesignSystemPresets";
@@ -177,19 +177,36 @@ const Index = () => {
     if (!designSystem) return;
 
     const toastId = toast.loading("Saving design...");
-    const { data, error } = await supabase.from("design_systems").insert({
-      user_id: user.id,
-      name: designSystem.name,
-      description: `Generated styles`,
-      design_system_data: designSystem as unknown as Json,
-    }).select("id").single();
 
-    if (error) {
-      toast.error("Failed to save", { id: toastId, description: error.message });
+    // If the design system already has an ID, update it; otherwise insert
+    if (designSystem.id) {
+      const { error } = await supabase
+        .from("design_systems")
+        .update({
+          name: designSystem.name,
+          design_system_data: designSystem as unknown as Json,
+        })
+        .eq("id", designSystem.id);
+
+      if (error) {
+        toast.error("Failed to save", { id: toastId, description: error.message });
+      } else {
+        toast.success("Design updated!", { id: toastId });
+      }
     } else {
-      // Propagate the saved ID so downstream hooks (useTokens, useUserRole, etc.) work
-      setDesignSystem(prev => prev ? { ...prev, id: data.id } : prev);
-      toast.success("Design saved!", { id: toastId });
+      const { data, error } = await supabase.from("design_systems").insert({
+        user_id: user.id,
+        name: designSystem.name,
+        description: `Generated styles`,
+        design_system_data: designSystem as unknown as Json,
+      }).select("id").single();
+
+      if (error) {
+        toast.error("Failed to save", { id: toastId, description: error.message });
+      } else {
+        setDesignSystem(prev => prev ? { ...prev, id: data.id } : prev);
+        toast.success("Design saved!", { id: toastId });
+      }
     }
   }, [designSystem, user]);
 
@@ -543,7 +560,7 @@ const Index = () => {
 
                   {activeTab === "saved" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <SavedDesigns onLoad={handleLoadDesign} currentSystem={designSystem} />
+                      <DesignSystemDashboard onLoad={handleLoadDesign} currentSystem={designSystem} onSave={handleSave} />
                     </Suspense>
                   )}
 
