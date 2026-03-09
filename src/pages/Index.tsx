@@ -15,7 +15,7 @@ import { BorderRadiusDisplay } from "@/components/BorderRadiusDisplay";
 const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
 import { Button } from "@/components/ui/button";
 
-import { Tabs, TabsContent, TabsList, AnimatedTabsTrigger } from "@/components/ui/animated-tabs";
+import { DesignSystemSidebar, DesignSystemSidebarMobile } from "@/components/DesignSystemSidebar";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
 import { SavedDesigns } from "@/components/SavedDesigns";
