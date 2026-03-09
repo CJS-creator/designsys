@@ -37,8 +37,8 @@ export function ApprovalQueue({ designSystemId }: ApprovalQueueProps) {
         return <div className="p-8 text-center text-muted-foreground">Loading requests...</div>;
     }
 
-    const pendingRequests = requests.filter(r => r.status === 'PENDING_REVIEW');
-    const pastRequests = requests.filter(r => r.status !== 'PENDING_REVIEW');
+    const pendingRequests = requests.filter(r => r.status === 'pending_review');
+    const pastRequests = requests.filter(r => r.status !== 'pending_review');
 
     return (
         <div className="space-y-6">
