@@ -28,49 +28,49 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
   };
 
   return (
-    <div className="space-y-8 p-4">
-      <div className="grid gap-6">
+    <div className="space-y-6 p-3 sm:p-4 overflow-hidden">
+      <div className="grid gap-4 sm:gap-6">
         {colorGroups.map((group, groupIdx) => (
-          <div key={group.name} className="space-y-6">
-            <div className="flex items-center gap-4">
+          <div key={group.name} className="space-y-4 min-w-0">
+            <div className="flex items-center gap-3 sm:gap-4">
               <div
-                className="w-12 h-12 rounded-2xl shadow-lg border-2 border-white/10"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl shadow-lg border-2 border-white/10 shrink-0"
                 style={{ background: group.base }}
               />
-              <div>
-                <h3 className="text-xl font-bold tracking-tight">{group.name} System</h3>
-                <p className="text-sm text-muted-foreground">Reactive states for {group.name.toLowerCase()} elements</p>
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-xl font-bold tracking-tight truncate">{group.name} System</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">Reactive states for {group.name.toLowerCase()} elements</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
               {Object.entries(group.states).map(([state, color], idx) => (
                 <div
                   key={state}
-                  className="group relative p-4 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1"
+                  className="group relative p-2 sm:p-4 rounded-xl sm:rounded-2xl border border-white/5 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1 min-w-0"
                   style={{ animationDelay: `${(groupIdx * 4 + idx) * 50}ms` }}
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className="flex items-center gap-1 sm:gap-2 text-muted-foreground group-hover:text-primary transition-colors min-w-0">
                       {stateIcons[state as keyof typeof stateIcons]}
-                      <span className="text-xs font-bold uppercase tracking-widest">{state}</span>
+                      <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">{state}</span>
                     </div>
                   </div>
 
                   <div
-                    className="h-16 rounded-xl border border-white/10 shadow-inner relative overflow-hidden mb-3"
+                    className="h-10 sm:h-16 rounded-lg sm:rounded-xl border border-white/10 shadow-inner relative overflow-hidden mb-2 sm:mb-3"
                     style={{ background: color }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" />
                   </div>
 
-                  <div className="text-xs font-mono text-muted-foreground/80 bg-black/20 px-2 py-1 rounded inline-block">
+                  <div className="text-[9px] sm:text-xs font-mono text-muted-foreground/80 bg-black/20 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded truncate max-w-full block">
                     {color}
                   </div>
 
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-2 sm:top-4 right-2 sm:right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div
-                      className="h-2 w-2 rounded-full animate-ping"
+                      className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full animate-ping"
                       style={{ backgroundColor: color }}
                     />
                   </div>
