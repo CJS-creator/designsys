@@ -19,6 +19,7 @@ import { DesignSystemSidebar, DesignSystemSidebarMobile } from "@/components/Des
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
 import { SavedDesigns } from "@/components/SavedDesigns";
+import { DesignSystemDashboard } from "@/components/DesignSystemDashboard";
 import { AnimationDisplay } from "@/components/AnimationDisplay";
 import { InteractiveColorsDisplay } from "@/components/InteractiveColorsDisplay";
 import { DesignSystemPresets } from "@/components/DesignSystemPresets";
