@@ -13,11 +13,11 @@ export function GridDisplay({ grid }: GridDisplayProps) {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid md:grid-cols-2 gap-4 sm:gap-6 overflow-hidden">
       {/* Grid Properties */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">Configuration</h4>
-        <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-3 sm:space-y-4 min-w-0">
+        <h4 className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">Configuration</h4>
+        <div className="grid grid-cols-2 gap-2 sm:gap-4">
           {[
             { label: "Columns", value: grid.columns, key: "columns" },
             { label: "Gutter", value: grid.gutter, key: "gutter" },
@@ -27,27 +27,27 @@ export function GridDisplay({ grid }: GridDisplayProps) {
             <button
               key={item.label}
               onClick={() => copyValue(String(item.value))}
-              className="p-4 bg-background rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
+              className="p-2 sm:p-4 bg-background rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all group min-w-0"
             >
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{item.label}</p>
-              <p className="text-lg font-bold text-foreground group-hover:text-primary transition-colors font-mono">{item.value}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1">{item.label}</p>
+              <p className="text-sm sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors font-mono truncate">{item.value}</p>
             </button>
           ))}
         </div>
       </div>
 
       {/* Breakpoints */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1 font-semibold">Breakpoints</h4>
+      <div className="space-y-3 sm:space-y-4 min-w-0">
+        <h4 className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1 font-semibold">Breakpoints</h4>
         <div className="border border-border rounded-xl bg-background divide-y divide-border overflow-hidden">
           {Object.entries(grid.breakpoints).map(([name, value]) => (
             <button
               key={name}
               onClick={() => copyValue(name, value)}
-              className="flex items-center justify-between w-full p-3 hover:bg-muted/50 transition-all group"
+              className="flex items-center justify-between w-full p-2 sm:p-3 hover:bg-muted/50 transition-all group min-w-0"
             >
-              <span className="text-sm font-bold uppercase text-muted-foreground group-hover:text-primary">{name}</span>
-              <span className="text-base font-mono font-medium text-foreground">{value}</span>
+              <span className="text-xs sm:text-sm font-bold uppercase text-muted-foreground group-hover:text-primary">{name}</span>
+              <span className="text-sm sm:text-base font-mono font-medium text-foreground">{value}</span>
             </button>
           ))}
         </div>
