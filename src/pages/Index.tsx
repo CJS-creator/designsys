@@ -34,7 +34,7 @@ import { trackEvent } from "@/lib/analytics";
 
 
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Box, Layers, Type, Settings as SettingsIcon, Users, Grid3X3, Palette, Eye, HelpCircle, Zap, X, Lock, Shield, ExternalLink, Ruler, Cast, Menu, BarChart3, ShieldCheck, ShoppingBag, Package } from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, HelpCircle, X, Lock, LogOut, User, Brain, Type, Palette, Ruler, Cast, Grid3X3, Menu } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
 import { useTokens } from "@/hooks/useTokens";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
