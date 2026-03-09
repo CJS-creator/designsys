@@ -561,7 +561,7 @@ const Index = () => {
 
                   {activeTab === "saved" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <SavedDesigns onLoad={handleLoadDesign} currentSystem={designSystem} />
+                      <DesignSystemDashboard onLoad={handleLoadDesign} currentSystem={designSystem} onSave={handleSave} />
                     </Suspense>
                   )}
 
