@@ -319,9 +319,6 @@ export const DesignSystemDashboard = ({ onLoad, currentSystem, onSave }: DesignS
                       </span>
                     </div>
                   )}
-                      </span>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             );
