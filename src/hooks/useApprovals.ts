@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DesignToken } from "@/types/tokens";
 import { useAuth } from "@/contexts/AuthContext";
-import { Json, Tables, TablesInsert } from "@/integrations/supabase/types";
+import { Json, TablesInsert } from "@/integrations/supabase/types";
 import { monitor } from "@/lib/monitoring";
 import { trackEvent } from "@/lib/analytics";
 import { publishApprovedVersion } from "@/lib/versioning";
@@ -11,10 +11,10 @@ import { publishApprovedVersion } from "@/lib/versioning";
 export interface ApprovalRequest {
     id: string;
     design_system_id: string;
-    author_id: string;
-    version_number: string;
+    requester_id: string;
+    title: string;
     description: string;
-    status: 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'PUBLISHED';
+    status: 'draft' | 'pending_review' | 'approved' | 'rejected' | 'published';
     created_at: string;
     author?: {
         email: string;
@@ -60,7 +60,7 @@ const mapTokensToChanges = (tokens: DesignToken[]): ApprovalChangeInsert[] => {
         if (token.status === "archived") {
             return {
                 token_path: token.path,
-                old_value: (token.publishedValue as Json) ?? null,
+                old_value: String(token.publishedValue ?? ""),
                 new_value: null,
                 change_type: "delete",
             };
@@ -70,7 +70,7 @@ const mapTokensToChanges = (tokens: DesignToken[]): ApprovalChangeInsert[] => {
             return {
                 token_path: token.path,
                 old_value: null,
-                new_value: (token.value as Json) ?? null,
+                new_value: String(token.value ?? ""),
                 change_type: "create",
             };
         }
@@ -78,8 +78,8 @@ const mapTokensToChanges = (tokens: DesignToken[]): ApprovalChangeInsert[] => {
         if (hasDifferentValue || hasDraftFlag) {
             return {
                 token_path: token.path,
-                old_value: (token.publishedValue as Json) ?? null,
-                new_value: (token.value as Json) ?? null,
+                old_value: String(token.publishedValue ?? ""),
+                new_value: String(token.value ?? ""),
                 change_type: "update",
             };
         }
@@ -93,7 +93,7 @@ const mapTokensToChanges = (tokens: DesignToken[]): ApprovalChangeInsert[] => {
 const safeAuditInsert = async (
     designSystemId: string,
     action: string,
-    summary: string,
+    _summary: string,
     entityId: string,
     metadata: Record<string, Json | undefined>
 ) => {
@@ -103,7 +103,6 @@ const safeAuditInsert = async (
             action,
             entity_type: "SYSTEM",
             entity_id: entityId,
-            summary,
             metadata: metadata as Json,
         });
     } catch (error) {
@@ -132,8 +131,8 @@ export function useApprovals(designSystemId?: string) {
 
             if (error) throw error;
 
-            const rows = (data || []) as Tables<"approval_requests">[];
-            const authorIds = Array.from(new Set(rows.map((row) => row.author_id)));
+            const rows = data || [];
+            const authorIds = Array.from(new Set(rows.map((row) => row.requester_id)));
             const profileMap = new Map<string, { username: string | null; full_name: string | null }>();
 
             if (authorIds.length > 0) {
@@ -153,12 +152,12 @@ export function useApprovals(designSystemId?: string) {
             const mappedRequests: ApprovalRequest[] = rows.map((row) => ({
                 id: row.id,
                 design_system_id: row.design_system_id,
-                author_id: row.author_id,
-                version_number: row.version_number,
+                requester_id: row.requester_id,
+                title: row.title,
                 description: row.description || "No description provided",
                 status: row.status,
                 created_at: row.created_at,
-                author: { email: displayActor(row.author_id, profileMap) },
+                author: { email: displayActor(row.requester_id, profileMap) },
             }));
 
             setRequests(mappedRequests);
@@ -180,7 +179,7 @@ export function useApprovals(designSystemId?: string) {
 
             if (error) throw error;
 
-            return ((data || []) as Tables<"approval_changes">[]).map((change) => ({
+            return (data || []).map((change) => ({
                 id: change.id,
                 approval_request_id: change.approval_request_id,
                 token_path: change.token_path,
@@ -220,16 +219,16 @@ export function useApprovals(designSystemId?: string) {
                 .select("id", { count: "exact", head: true })
                 .eq("design_system_id", designSystemId);
 
-            const versionNumber = `v${(count || 0) + 1}`;
+            const versionTitle = `v${(count || 0) + 1}`;
 
             const { data: requestRow, error: requestError } = await supabase
                 .from("approval_requests")
                 .insert({
                     design_system_id: designSystemId,
-                    author_id: user.id,
-                    version_number: versionNumber,
+                    requester_id: user.id,
+                    title: versionTitle,
                     description: normalizedDescription,
-                    status: "PENDING_REVIEW",
+                    status: "pending_review" as const,
                 })
                 .select("*")
                 .single();
@@ -342,7 +341,6 @@ export function useApprovals(designSystemId?: string) {
                 } as DesignToken;
             });
 
-
             await saveDesignSystemTokens(designSystemData, publishedTokens);
 
             // Use the versioning utility to create a snapshot and update status
@@ -351,7 +349,7 @@ export function useApprovals(designSystemId?: string) {
                 // Fallback to manual status update if versioning fails
                 await supabase
                     .from("approval_requests")
-                    .update({ status: "PUBLISHED" })
+                    .update({ status: "published" as const })
                     .eq("id", request.id);
             }
 
@@ -364,7 +362,7 @@ export function useApprovals(designSystemId?: string) {
                 request.id,
                 {
                     request_id: request.id,
-                    request_status: "PUBLISHED",
+                    request_status: "published",
                     change_count: requestChanges.length,
                     lead_time_ms: leadTimeMs,
                 }
@@ -436,7 +434,7 @@ export function useApprovals(designSystemId?: string) {
 
             const { error: statusError } = await supabase
                 .from("approval_requests")
-                .update({ status: "REJECTED" })
+                .update({ status: "rejected" as const })
                 .eq("id", requestId);
 
             if (statusError) throw statusError;
@@ -453,7 +451,7 @@ export function useApprovals(designSystemId?: string) {
                 requestId,
                 {
                     request_id: requestId,
-                    request_status: "REJECTED",
+                    request_status: "rejected",
                     change_count: requestChanges.length,
                     lead_time_ms: leadTimeMs,
                 }

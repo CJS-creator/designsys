@@ -37,8 +37,8 @@ export function ApprovalQueue({ designSystemId }: ApprovalQueueProps) {
         return <div className="p-8 text-center text-muted-foreground">Loading requests...</div>;
     }
 
-    const pendingRequests = requests.filter(r => r.status === 'PENDING_REVIEW');
-    const pastRequests = requests.filter(r => r.status !== 'PENDING_REVIEW');
+    const pendingRequests = requests.filter(r => r.status === 'pending_review');
+    const pastRequests = requests.filter(r => r.status !== 'pending_review');
 
     return (
         <div className="space-y-6">
@@ -61,7 +61,7 @@ export function ApprovalQueue({ designSystemId }: ApprovalQueueProps) {
                                 <AccordionItem key={request.id} value={request.id}>
                                     <AccordionTrigger onClick={() => handleExpand(request.id)} className="hover:no-underline px-4 border rounded-md mb-2 bg-muted/20">
                                         <div className="flex items-center gap-4 w-full text-left">
-                                            <Badge variant={request.status === 'PENDING_REVIEW' ? 'default' : 'secondary'}>
+                                            <Badge variant={request.status === 'pending_review' ? 'default' : 'secondary'}>
                                                 {request.status.replace(/_/g, ' ')}
                                             </Badge>
                                             <div className="flex-1">
@@ -134,7 +134,7 @@ export function ApprovalQueue({ designSystemId }: ApprovalQueueProps) {
                         {pastRequests.slice(0, 5).map(request => (
                             <div key={request.id} className="flex items-center justify-between p-3 rounded-md border bg-muted/10">
                                 <div className="flex items-center gap-3">
-                                    <Badge variant={request.status === 'PUBLISHED' ? 'outline' : 'destructive'} className={request.status === 'PUBLISHED' ? 'text-green-600 border-green-200' : ''}>
+                                    <Badge variant={request.status === 'published' ? 'outline' : 'destructive'} className={request.status === 'published' ? 'text-green-600 border-green-200' : ''}>
                                         {request.status}
                                     </Badge>
                                     <span className="text-sm font-medium">{request.description}</span>

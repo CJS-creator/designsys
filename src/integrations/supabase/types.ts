@@ -14,16 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          design_system_id: string | null
+          event_data: Json | null
+          event_name: string
+          id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          design_system_id?: string | null
+          event_data?: Json | null
+          event_name: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          design_system_id?: string | null
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_keys: {
         Row: {
           created_at: string
           design_system_id: string
           expires_at: string | null
           id: string
+          is_active: boolean
           key_hash: string
+          key_prefix: string | null
           last_used_at: string | null
           name: string
-          scopes: string[] | null
+          scopes: string[]
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -31,10 +72,13 @@ export type Database = {
           design_system_id: string
           expires_at?: string | null
           id?: string
+          is_active?: boolean
           key_hash: string
+          key_prefix?: string | null
           last_used_at?: string | null
           name: string
-          scopes?: string[] | null
+          scopes?: string[]
+          updated_at?: string
           user_id: string
         }
         Update: {
@@ -42,10 +86,13 @@ export type Database = {
           design_system_id?: string
           expires_at?: string | null
           id?: string
+          is_active?: boolean
           key_hash?: string
+          key_prefix?: string | null
           last_used_at?: string | null
           name?: string
-          scopes?: string[] | null
+          scopes?: string[]
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -64,17 +111,17 @@ export type Database = {
           change_type: string
           created_at: string
           id: string
-          new_value: Json | null
-          old_value: Json | null
+          new_value: string | null
+          old_value: string | null
           token_path: string
         }
         Insert: {
           approval_request_id: string
-          change_type: string
+          change_type?: string
           created_at?: string
           id?: string
-          new_value?: Json | null
-          old_value?: Json | null
+          new_value?: string | null
+          old_value?: string | null
           token_path: string
         }
         Update: {
@@ -82,8 +129,8 @@ export type Database = {
           change_type?: string
           created_at?: string
           id?: string
-          new_value?: Json | null
-          old_value?: Json | null
+          new_value?: string | null
+          old_value?: string | null
           token_path?: string
         }
         Relationships: [
@@ -98,34 +145,43 @@ export type Database = {
       }
       approval_requests: {
         Row: {
-          author_id: string
           created_at: string
           description: string | null
           design_system_id: string
           id: string
+          requester_id: string
+          review_comment: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
           status: Database["public"]["Enums"]["approval_status"]
+          title: string
           updated_at: string
-          version_number: string
         }
         Insert: {
-          author_id: string
           created_at?: string
           description?: string | null
           design_system_id: string
           id?: string
+          requester_id: string
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
           status?: Database["public"]["Enums"]["approval_status"]
+          title: string
           updated_at?: string
-          version_number: string
         }
         Update: {
-          author_id?: string
           created_at?: string
           description?: string | null
           design_system_id?: string
           id?: string
+          requester_id?: string
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
           status?: Database["public"]["Enums"]["approval_status"]
+          title?: string
           updated_at?: string
-          version_number?: string
         }
         Relationships: [
           {
@@ -137,79 +193,38 @@ export type Database = {
           },
         ]
       }
-      analytics_events: {
-        Row: {
-          created_at: string
-          design_system_id: string
-          event_type: string
-          id: string
-          metadata: Json
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          design_system_id: string
-          event_type: string
-          id?: string
-          metadata?: Json
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          design_system_id?: string
-          event_type?: string
-          id?: string
-          metadata?: Json
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "analytics_events_design_system_id_fkey"
-            columns: ["design_system_id"]
-            isOneToOne: false
-            referencedRelation: "design_systems"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       audit_logs: {
         Row: {
           action: string
           created_at: string
-          design_system_id: string
+          design_system_id: string | null
           entity_id: string | null
-          entity_type: string
+          entity_type: string | null
           id: string
+          ip_address: string | null
           metadata: Json | null
-          new_value: Json | null
-          old_value: Json | null
-          summary: string | null
           user_id: string | null
         }
         Insert: {
           action: string
           created_at?: string
-          design_system_id: string
+          design_system_id?: string | null
           entity_id?: string | null
-          entity_type: string
+          entity_type?: string | null
           id?: string
+          ip_address?: string | null
           metadata?: Json | null
-          new_value?: Json | null
-          old_value?: Json | null
-          summary?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
           created_at?: string
-          design_system_id?: string
+          design_system_id?: string | null
           entity_id?: string | null
-          entity_type?: string
+          entity_type?: string | null
           id?: string
+          ip_address?: string | null
           metadata?: Json | null
-          new_value?: Json | null
-          old_value?: Json | null
-          summary?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -225,45 +240,39 @@ export type Database = {
       design_system_versions: {
         Row: {
           created_at: string
-          created_by: string | null
+          created_by: string
           description: string | null
           design_system_id: string
           id: string
-          is_published: boolean | null
-          name: string | null
-          parent_version_id: string | null
+          is_published: boolean
+          name: string
           published_at: string | null
-          snapshot: Json
-          updated_at: string
-          version_number: string
+          snapshot_data: Json
+          version_number: number
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          created_by: string
           description?: string | null
           design_system_id: string
           id?: string
-          is_published?: boolean | null
-          name?: string | null
-          parent_version_id?: string | null
+          is_published?: boolean
+          name: string
           published_at?: string | null
-          snapshot: Json
-          updated_at?: string
-          version_number: string
+          snapshot_data: Json
+          version_number?: number
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           description?: string | null
           design_system_id?: string
           id?: string
-          is_published?: boolean | null
-          name?: string | null
-          parent_version_id?: string | null
+          is_published?: boolean
+          name?: string
           published_at?: string | null
-          snapshot?: Json
-          updated_at?: string
-          version_number?: string
+          snapshot_data?: Json
+          version_number?: number
         }
         Relationships: [
           {
@@ -271,13 +280,6 @@ export type Database = {
             columns: ["design_system_id"]
             isOneToOne: false
             referencedRelation: "design_systems"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "design_system_versions_parent_version_id_fkey"
-            columns: ["parent_version_id"]
-            isOneToOne: false
-            referencedRelation: "design_system_versions"
             referencedColumns: ["id"]
           },
         ]
@@ -392,6 +394,7 @@ export type Database = {
           design_system_id: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -399,6 +402,7 @@ export type Database = {
           design_system_id: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
           user_id: string
         }
         Update: {
@@ -406,6 +410,7 @@ export type Database = {
           design_system_id?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -420,43 +425,33 @@ export type Database = {
       }
       version_changelog: {
         Row: {
-          action: string
+          change_type: string
           created_at: string
-          design_system_id: string
           id: string
-          new_value: Json | null
-          old_value: Json | null
+          new_value: string | null
+          old_value: string | null
           token_path: string
-          version_id: string | null
+          version_id: string
         }
         Insert: {
-          action: string
+          change_type?: string
           created_at?: string
-          design_system_id: string
           id?: string
-          new_value?: Json | null
-          old_value?: Json | null
+          new_value?: string | null
+          old_value?: string | null
           token_path: string
-          version_id?: string | null
+          version_id: string
         }
         Update: {
-          action?: string
+          change_type?: string
           created_at?: string
-          design_system_id?: string
           id?: string
-          new_value?: Json | null
-          old_value?: Json | null
+          new_value?: string | null
+          old_value?: string | null
           token_path?: string
-          version_id?: string | null
+          version_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "version_changelog_design_system_id_fkey"
-            columns: ["design_system_id"]
-            isOneToOne: false
-            referencedRelation: "design_systems"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "version_changelog_version_id_fkey"
             columns: ["version_id"]
@@ -468,62 +463,30 @@ export type Database = {
       }
     }
     Views: {
-      governance_kpi_median_lead_time_28d: {
-        Row: {
-          design_system_id: string | null
-          median_lead_time_ms: number | null
-        }
-        Relationships: []
-      }
-      governance_kpi_rejection_rate_28d: {
-        Row: {
-          design_system_id: string | null
-          published_count: number | null
-          rejected_count: number | null
-          rejection_rate: number | null
-        }
-        Relationships: []
-      }
-      governance_kpi_weekly_activation: {
-        Row: {
-          active_design_systems: number | null
-          week_start: string | null
-        }
-        Relationships: []
-      }
-      governance_kpi_weekly_throughput: {
-        Row: {
-          published_requests: number | null
-          week_start: string | null
-        }
-        Relationships: []
-      }
-      governance_sla_stale_requests: {
-        Row: {
-          author_id: string | null
-          created_at: string | null
-          design_system_id: string | null
-          pending_for: unknown | null
-          request_id: string | null
-          version_number: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "approval_requests_design_system_id_fkey"
-            columns: ["design_system_id"]
-            isOneToOne: false
-            referencedRelation: "design_systems"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _design_system_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_member: {
+        Args: { _design_system_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "owner" | "editor" | "viewer"
-      approval_status: "DRAFT" | "PENDING_REVIEW" | "APPROVED" | "REJECTED" | "PUBLISHED"
+      approval_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "rejected"
+        | "published"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -537,119 +500,128 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-  : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R
-    }
-  ? R
-  : never
-  : never
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-  | keyof DefaultSchema["Enums"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-  | keyof DefaultSchema["CompositeTypes"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "editor", "viewer"],
+      approval_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "rejected",
+        "published",
+      ],
+    },
   },
 } as const

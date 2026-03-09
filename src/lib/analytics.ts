@@ -21,14 +21,14 @@ type AnalyticsMetadata = Record<string, Json>;
 
 export async function trackEvent(
     designSystemId: string,
-    eventType: AnalyticsEvent,
+    eventName: AnalyticsEvent,
     metadata: AnalyticsMetadata = {}
 ) {
     try {
         const { error } = await supabase.from("analytics_events").insert({
             design_system_id: designSystemId,
-            event_type: eventType,
-            metadata: metadata as Json,
+            event_name: eventName,
+            event_data: metadata as Json,
         });
         if (error) throw error;
     } catch (err) {

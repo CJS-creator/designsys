@@ -27,12 +27,12 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface DesignVersion {
     id: string;
-    version_number: string;
+    version_number: number;
     name: string;
     description: string;
     is_published: boolean;
     published_at: string;
-    snapshot: any;
+    snapshot_data: unknown;
     created_at: string;
 }
 
@@ -97,7 +97,7 @@ export function VersionManager({ designSystemId }: { designSystemId: string }) {
                     description: newVersion.description,
                     is_published: true,
                     published_at: new Date().toISOString(),
-                    snapshot: tokens, // Store the tokens array as the snapshot
+                    snapshot_data: tokens, // Store the tokens array as the snapshot
                 });
 
             if (versionError) throw versionError;
@@ -191,7 +191,7 @@ export function VersionManager({ designSystemId }: { designSystemId: string }) {
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <VersionDiff
                         currentTokens={currentTokens}
-                        previousTokens={selectedVersion.snapshot}
+                        previousTokens={selectedVersion.snapshot_data as any[]}
                     />
                 </div>
             ) : (

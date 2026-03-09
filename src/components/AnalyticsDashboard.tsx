@@ -32,15 +32,15 @@ export function AnalyticsDashboard({ designSystemId }: AnalyticsDashboardProps) 
         try {
             const { data: events, error } = await supabase
                 .from("analytics_events")
-                .select("event_type, user_id")
+                .select("event_name, user_id")
                 .eq("design_system_id", designSystemId);
 
             if (error) throw error;
-            const analyticsEvents = (events || []) as Pick<Tables<"analytics_events">, "event_type" | "user_id">[];
+            const analyticsEvents = (events || []) as Pick<Tables<"analytics_events">, "event_name" | "user_id">[];
 
-            // Group by event type for a bar chart
+            // Group by event name for a bar chart
             const grouped = analyticsEvents.reduce<Record<string, number>>((acc, event) => {
-                const type = event.event_type;
+                const type = event.event_name;
                 acc[type] = (acc[type] || 0) + 1;
                 return acc;
             }, {});
@@ -54,8 +54,8 @@ export function AnalyticsDashboard({ designSystemId }: AnalyticsDashboardProps) 
 
             // Aggregate stats
             setStats({
-                totalExports: analyticsEvents.filter((event) => event.event_type.startsWith("exported")).length,
-                totalEdits: analyticsEvents.filter((event) => event.event_type === "token_updated").length,
+                totalExports: analyticsEvents.filter((event) => event.event_name.startsWith("exported")).length,
+                totalEdits: analyticsEvents.filter((event) => event.event_name === "token_updated").length,
                 activeUsers: new Set(
                     analyticsEvents
                         .map((event) => event.user_id)
