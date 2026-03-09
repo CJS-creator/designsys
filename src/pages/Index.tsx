@@ -178,19 +178,36 @@ const Index = () => {
     if (!designSystem) return;
 
     const toastId = toast.loading("Saving design...");
-    const { data, error } = await supabase.from("design_systems").insert({
-      user_id: user.id,
-      name: designSystem.name,
-      description: `Generated styles`,
-      design_system_data: designSystem as unknown as Json,
-    }).select("id").single();
 
-    if (error) {
-      toast.error("Failed to save", { id: toastId, description: error.message });
+    // If the design system already has an ID, update it; otherwise insert
+    if (designSystem.id) {
+      const { error } = await supabase
+        .from("design_systems")
+        .update({
+          name: designSystem.name,
+          design_system_data: designSystem as unknown as Json,
+        })
+        .eq("id", designSystem.id);
+
+      if (error) {
+        toast.error("Failed to save", { id: toastId, description: error.message });
+      } else {
+        toast.success("Design updated!", { id: toastId });
+      }
     } else {
-      // Propagate the saved ID so downstream hooks (useTokens, useUserRole, etc.) work
-      setDesignSystem(prev => prev ? { ...prev, id: data.id } : prev);
-      toast.success("Design saved!", { id: toastId });
+      const { data, error } = await supabase.from("design_systems").insert({
+        user_id: user.id,
+        name: designSystem.name,
+        description: `Generated styles`,
+        design_system_data: designSystem as unknown as Json,
+      }).select("id").single();
+
+      if (error) {
+        toast.error("Failed to save", { id: toastId, description: error.message });
+      } else {
+        setDesignSystem(prev => prev ? { ...prev, id: data.id } : prev);
+        toast.success("Design saved!", { id: toastId });
+      }
     }
   }, [designSystem, user]);
 
