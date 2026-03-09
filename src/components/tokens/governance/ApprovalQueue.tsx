@@ -61,7 +61,7 @@ export function ApprovalQueue({ designSystemId }: ApprovalQueueProps) {
                                 <AccordionItem key={request.id} value={request.id}>
                                     <AccordionTrigger onClick={() => handleExpand(request.id)} className="hover:no-underline px-4 border rounded-md mb-2 bg-muted/20">
                                         <div className="flex items-center gap-4 w-full text-left">
-                                            <Badge variant={request.status === 'PENDING_REVIEW' ? 'default' : 'secondary'}>
+                                            <Badge variant={request.status === 'pending_review' ? 'default' : 'secondary'}>
                                                 {request.status.replace(/_/g, ' ')}
                                             </Badge>
                                             <div className="flex-1">
