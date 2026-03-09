@@ -78,20 +78,24 @@ class MonitoringService {
             this.breadcrumbs.shift();
         }
 
-        // In local development, log to console
-        if (!this.isProduction || event.level === "error" || event.level === "warn") {
-            const color = {
-                debug: "\x1b[34m", // Blue
-                info: "\x1b[32m",  // Green
-                warn: "\x1b[33m",  // Yellow
-                error: "\x1b[31m", // Red
+        // Only log to console in development, or for errors/warnings in production
+        if (!this.isProduction) {
+            const consoleFn = {
+                debug: console.debug,
+                info: console.info,
+                warn: console.warn,
+                error: console.error,
             }[event.level];
 
-            console.log(
-                `${color}[${event.level.toUpperCase()}] ${event.timestamp}\x1b[0m: ${event.message}`,
+            consoleFn(
+                `[${event.level.toUpperCase()}] ${event.timestamp}: ${event.message}`,
                 event.context || "",
                 event.error || ""
             );
+        } else if (event.level === "error" || event.level === "warn") {
+            // In production, only log errors and warnings (no verbose info/debug)
+            const consoleFn = event.level === "error" ? console.error : console.warn;
+            consoleFn(`[${event.level.toUpperCase()}] ${event.message}`);
         }
 
         // Simulate Sentry capture for errors
