@@ -14,6 +14,276 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          design_system_id: string | null
+          event_data: Json | null
+          event_name: string
+          id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          design_system_id?: string | null
+          event_data?: Json | null
+          event_name: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          design_system_id?: string | null
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_keys: {
+        Row: {
+          created_at: string
+          design_system_id: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string | null
+          last_used_at: string | null
+          name: string
+          scopes: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          design_system_id: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          key_prefix?: string | null
+          last_used_at?: string | null
+          name: string
+          scopes?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          design_system_id?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string | null
+          last_used_at?: string | null
+          name?: string
+          scopes?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approval_changes: {
+        Row: {
+          approval_request_id: string
+          change_type: string
+          created_at: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          token_path: string
+        }
+        Insert: {
+          approval_request_id: string
+          change_type?: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          token_path: string
+        }
+        Update: {
+          approval_request_id?: string
+          change_type?: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          token_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_changes_approval_request_id_fkey"
+            columns: ["approval_request_id"]
+            isOneToOne: false
+            referencedRelation: "approval_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approval_requests: {
+        Row: {
+          created_at: string
+          description: string | null
+          design_system_id: string
+          id: string
+          requester_id: string
+          review_comment: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          status: Database["public"]["Enums"]["approval_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          design_system_id: string
+          id?: string
+          requester_id: string
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          design_system_id?: string
+          id?: string
+          requester_id?: string
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_requests_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          design_system_id: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          design_system_id?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          design_system_id?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      design_system_versions: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          design_system_id: string
+          id: string
+          is_published: boolean
+          name: string
+          published_at: string | null
+          snapshot_data: Json
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          design_system_id: string
+          id?: string
+          is_published?: boolean
+          name: string
+          published_at?: string | null
+          snapshot_data: Json
+          version_number?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          design_system_id?: string
+          id?: string
+          is_published?: boolean
+          name?: string
+          published_at?: string | null
+          snapshot_data?: Json
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_system_versions_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       design_systems: {
         Row: {
           created_at: string
@@ -91,15 +361,132 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          design_system_id: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          design_system_id: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          design_system_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      version_changelog: {
+        Row: {
+          change_type: string
+          created_at: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          token_path: string
+          version_id: string
+        }
+        Insert: {
+          change_type?: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          token_path: string
+          version_id: string
+        }
+        Update: {
+          change_type?: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          token_path?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "version_changelog_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "design_system_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _design_system_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_member: {
+        Args: { _design_system_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "editor" | "viewer"
+      approval_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "rejected"
+        | "published"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -226,6 +613,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "editor", "viewer"],
+      approval_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "rejected",
+        "published",
+      ],
+    },
   },
 } as const

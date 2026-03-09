@@ -105,11 +105,11 @@ class MonitoringService {
     }
 
     // Mock Sentry methods for simulation
-    private mockSentryCaptureException(error: Error, context?: any) {
-        if (this.isProduction) {
-            // In production this would be sent to Sentry
-            console.log("[Sentry-Sim] Capturing Exception:", error.message, context);
+    private mockSentryCaptureException(error: Error, context?: Record<string, unknown>) {
+        if (!this.isProduction) {
+            console.debug("[Sentry-Sim] Capturing Exception:", error.message, context);
         }
+        // In production, this would be replaced with actual Sentry.captureException()
     }
 
     public debug(message: string, context?: Record<string, unknown>) {
