@@ -82,20 +82,20 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
       </div>
 
       {/* Surface & Semantic Tokens */}
-      <div className="space-y-6 pt-6 border-t border-white/5">
-        <h3 className="text-lg font-bold flex items-center gap-2">
-          <Focus className="h-5 w-5 text-primary" />
+      <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-white/5">
+        <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
+          <Focus className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           Surface & Semantic Tokens
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
           {/* Overlay */}
-          <div className="p-6 rounded-2xl border border-white/5 bg-white/5 space-y-4 group">
-            <div className="flex justify-between items-center">
-              <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Overlay</h4>
-              <span className="text-xs font-mono text-muted-foreground">{colors.overlay}</span>
+          <div className="p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5 bg-white/5 space-y-3 sm:space-y-4 group min-w-0">
+            <div className="flex justify-between items-center gap-2 min-w-0">
+              <h4 className="font-bold text-xs sm:text-sm uppercase tracking-wider text-muted-foreground">Overlay</h4>
+              <span className="text-[10px] sm:text-xs font-mono text-muted-foreground truncate max-w-[100px]">{colors.overlay}</span>
             </div>
             <div
-              className="h-24 rounded-xl border border-white/10 relative overflow-hidden"
+              className="h-16 sm:h-24 rounded-lg sm:rounded-xl border border-white/10 relative overflow-hidden"
               style={{ background: `linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%)`, backgroundSize: '12px 12px' }}
             >
               <div
@@ -106,40 +106,40 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
           </div>
 
           {/* Border Tokens */}
-          <div className="p-6 rounded-2xl border border-white/5 bg-white/5 space-y-4 group">
-            <div className="flex justify-between items-center">
-              <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Borders</h4>
-              <span className="text-xs font-mono text-muted-foreground">{colors.border}</span>
+          <div className="p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5 bg-white/5 space-y-3 sm:space-y-4 group min-w-0">
+            <div className="flex justify-between items-center gap-2 min-w-0">
+              <h4 className="font-bold text-xs sm:text-sm uppercase tracking-wider text-muted-foreground">Borders</h4>
+              <span className="text-[10px] sm:text-xs font-mono text-muted-foreground truncate max-w-[100px]">{colors.border}</span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <div
-                className="h-24 rounded-xl flex items-center justify-center transition-all group-hover:scale-105"
+                className="h-16 sm:h-24 rounded-lg sm:rounded-xl flex items-center justify-center transition-all group-hover:scale-105"
                 style={{ border: `2px solid ${colors.border}`, background: colors.background }}
               >
-                <span className="text-xs font-bold text-muted-foreground uppercase opacity-50">Standard</span>
+                <span className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase opacity-50">Standard</span>
               </div>
               <div
-                className="h-24 rounded-xl flex items-center justify-center transition-all group-hover:scale-105"
+                className="h-16 sm:h-24 rounded-lg sm:rounded-xl flex items-center justify-center transition-all group-hover:scale-105"
                 style={{ border: `2px solid ${colors.borderLight}`, background: colors.background }}
               >
-                <span className="text-xs font-bold text-muted-foreground uppercase opacity-50">Light</span>
+                <span className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase opacity-50">Light</span>
               </div>
             </div>
           </div>
 
           {/* Backgrounds */}
-          <div className="p-6 rounded-2xl border border-white/5 bg-white/5 space-y-4 group">
-            <div className="flex justify-between items-center">
-              <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Backgrounds</h4>
-              <span className="text-xs font-mono text-muted-foreground">{colors.background}</span>
+          <div className="p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-white/5 bg-white/5 space-y-3 sm:space-y-4 group min-w-0">
+            <div className="flex justify-between items-center gap-2 min-w-0">
+              <h4 className="font-bold text-xs sm:text-sm uppercase tracking-wider text-muted-foreground">Backgrounds</h4>
+              <span className="text-[10px] sm:text-xs font-mono text-muted-foreground truncate max-w-[100px]">{colors.background}</span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <div
-                className="h-24 rounded-xl shadow-lg transition-all group-hover:scale-105"
+                className="h-16 sm:h-24 rounded-lg sm:rounded-xl shadow-lg transition-all group-hover:scale-105"
                 style={{ background: colors.background }}
               />
               <div
-                className="h-24 rounded-xl shadow-lg transition-all group-hover:scale-105"
+                className="h-16 sm:h-24 rounded-lg sm:rounded-xl shadow-lg transition-all group-hover:scale-105"
                 style={{ background: colors.surface }}
               />
             </div>
