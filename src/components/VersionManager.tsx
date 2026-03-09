@@ -191,7 +191,7 @@ export function VersionManager({ designSystemId }: { designSystemId: string }) {
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <VersionDiff
                         currentTokens={currentTokens}
-                        previousTokens={selectedVersion.snapshot}
+                        previousTokens={selectedVersion.snapshot_data as any[]}
                     />
                 </div>
             ) : (
