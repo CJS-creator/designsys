@@ -97,7 +97,7 @@ export function VersionManager({ designSystemId }: { designSystemId: string }) {
                     description: newVersion.description,
                     is_published: true,
                     published_at: new Date().toISOString(),
-                    snapshot: tokens, // Store the tokens array as the snapshot
+                    snapshot_data: tokens, // Store the tokens array as the snapshot
                 });
 
             if (versionError) throw versionError;
