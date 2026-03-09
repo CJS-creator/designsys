@@ -134,7 +134,7 @@ export function ApprovalQueue({ designSystemId }: ApprovalQueueProps) {
                         {pastRequests.slice(0, 5).map(request => (
                             <div key={request.id} className="flex items-center justify-between p-3 rounded-md border bg-muted/10">
                                 <div className="flex items-center gap-3">
-                                    <Badge variant={request.status === 'PUBLISHED' ? 'outline' : 'destructive'} className={request.status === 'PUBLISHED' ? 'text-green-600 border-green-200' : ''}>
+                                    <Badge variant={request.status === 'published' ? 'outline' : 'destructive'} className={request.status === 'published' ? 'text-green-600 border-green-200' : ''}>
                                         {request.status}
                                     </Badge>
                                     <span className="text-sm font-medium">{request.description}</span>
