@@ -24,8 +24,8 @@ interface GitConnection {
 }
 
 export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
-    const { user } = useAuth();
-    const [copied, setCopied] = useState(false);
+    const { user: _user } = useAuth();
+    const [_copied, setCopied] = useState(false);
     const [connection, setConnection] = useState<GitConnection | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [figmaToken, setFigmaToken] = useState("");
