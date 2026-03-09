@@ -15,7 +15,7 @@ import { BorderRadiusDisplay } from "@/components/BorderRadiusDisplay";
 const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
 import { Button } from "@/components/ui/button";
 
-import { Tabs, TabsContent, TabsList, AnimatedTabsTrigger } from "@/components/ui/animated-tabs";
+import { DesignSystemSidebar, DesignSystemSidebarMobile } from "@/components/DesignSystemSidebar";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
 import { SavedDesigns } from "@/components/SavedDesigns";
@@ -34,7 +34,7 @@ import { trackEvent } from "@/lib/analytics";
 
 
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { SwatchBook, Sparkles, ArrowLeft, Wand2, History, FileText, LogOut, User, Brain, Box, Layers, Type, Settings as SettingsIcon, Users, Grid3X3, Palette, Eye, HelpCircle, Zap, X, Lock, Shield, ExternalLink, Ruler, Cast, Menu, BarChart3, ShieldCheck, ShoppingBag, Package } from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, HelpCircle, X, Lock, LogOut, User, Brain, Type, Palette, Ruler, Cast, Grid3X3, Menu } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
 import { useTokens } from "@/hooks/useTokens";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
@@ -218,10 +218,11 @@ const Index = () => {
 
         <header className="sticky top-0 z-50 border-b border-border/40 bg-background/60 dark:bg-black/40 backdrop-blur-xl supports-[backdrop-filter]:bg-background/20 animate-slide-in-down transition-all duration-300">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleReset} aria-label="Go back" className="hover:rotate-[-10deg] transition-transform duration-300 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
+              <DesignSystemSidebarMobile activeTab={activeTab} onTabChange={handleTabChange} />
               <div>
                 <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-neutral-600 to-neutral-900 dark:from-neutral-50 dark:to-neutral-400 animate-fade-in tracking-tight">
                   {designSystem?.name || "Generating System..."}
@@ -304,304 +305,271 @@ const Index = () => {
           </div>
         )}
 
-        <main className="container mx-auto px-4 py-8 animate-fade-in relative z-10">
-          {isLoading && !designSystem ? (
-            <DesignSystemSkeleton />
-          ) : (
-            designSystem && (
-              <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
-                {/* Modern Sliding Tabs with Scroll Indicators */}
-                <div
-                  className="sticky top-[72px] z-40 bg-background/60 dark:bg-black/60 backdrop-blur-xl border-b border-border/40 py-2 mb-4 -mx-4 px-4 relative"
-                  id="tour-tabs"
-                  role="navigation"
-                  aria-label="Design system sections"
-                >
-                  {/* Left scroll indicator */}
-                  <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background/80 to-transparent pointer-events-none z-10 md:hidden" />
-                  {/* Right scroll indicator */}
-                  <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none z-10 md:hidden" />
+        <div className="flex flex-1 relative z-10">
+          <DesignSystemSidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
-                  <div className="overflow-x-auto scrollbar-hide">
-                    <TabsList
-                      className="bg-transparent p-0 h-auto flex-nowrap w-max md:w-full md:justify-start gap-2"
-                      role="tablist"
-                      aria-label="Design system sections"
-                    >
-                      <AnimatedTabsTrigger value="overview" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Palette className="h-4 w-4" /> Overview
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="tokens" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Box className="h-4 w-4" /> Tokens
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="docs" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <FileText className="h-4 w-4" /> Docs
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="preview" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Eye className="h-4 w-4" /> Preview
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="components" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Layers className="h-4 w-4" /> Components
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="motion" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Zap className="h-4 w-4" /> Motion
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="team" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Users className="h-4 w-4" /> Team
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="governance" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <ShieldCheck className="h-4 w-4" /> Governance
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="marketplace" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <ShoppingBag className="h-4 w-4" /> Store
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="assets" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Package className="h-4 w-4" /> Assets
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="vision" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Sparkles className="h-4 w-4" /> Vision
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="insights" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Brain className="h-4 w-4" /> Insights
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="themes" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <SwatchBook className="h-4 w-4" /> Themes
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="analytics" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <BarChart3 className="h-4 w-4" /> Analytics
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="accessibility" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <Shield className="h-4 w-4" /> Accessibility
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="figma" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <ExternalLink className="h-4 w-4" /> Figma
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="saved" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <History className="h-4 w-4" /> Saved
-                      </AnimatedTabsTrigger>
-                      <AnimatedTabsTrigger value="settings" className="gap-2 px-4 py-2.5 rounded-full data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none hover:bg-muted/50 transition-all">
-                        <SettingsIcon className="h-4 w-4" /> Settings
-                      </AnimatedTabsTrigger>
-                    </TabsList>
-                  </div>
-                </div>
-
-                <div className="relative min-h-[500px]">
-                  <TabsContent value="overview" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {/* Main container with max-width and centered */}
-                    <div className="max-w-[1200px] mx-auto px-6">
-                      {/* Scrollable container */}
-                      <div className="max-h-[calc(100vh-250px)] overflow-y-auto pr-2">
-                        {/* Flex column layout with gap */}
-                        <div className="flex flex-col gap-6">
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                            <div className="lg:col-span-8 space-y-6">
-                              <HeroSection designSystem={designSystem} />
-                              <FeaturesOverview designSystem={designSystem} />
-                            </div>
-                            <div className="lg:col-span-4 sticky top-0 space-y-6">
-                              <DesignHealthScore designSystem={designSystem} />
-                              <AIAdvisor designSystem={designSystem} />
-                              <InteractiveColorsDisplay colors={designSystem.colors} />
-                            </div>
+          <main className="flex-1 overflow-y-auto">
+            <div className="container mx-auto px-4 py-6 max-w-[1200px]">
+              {isLoading && !designSystem ? (
+                <DesignSystemSkeleton />
+              ) : designSystem && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "overview" && (
+                    <div className="flex flex-col gap-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        <div className="lg:col-span-8 space-y-6">
+                          <HeroSection designSystem={designSystem} />
+                          <FeaturesOverview designSystem={designSystem} />
+                        </div>
+                        <div className="lg:col-span-4 sticky top-0 space-y-6">
+                          <DesignHealthScore designSystem={designSystem} />
+                          <AIAdvisor designSystem={designSystem} />
+                          <InteractiveColorsDisplay colors={designSystem.colors} />
+                        </div>
+                      </div>
+                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Palette className="h-5 w-5 text-primary" />
+                          <h3 className="text-lg font-semibold text-foreground">Brand Color Palette</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">Primary, secondary, and accent colors with semantic variants</p>
+                        <ColorPaletteDisplay colors={designSystem.colors} />
+                      </div>
+                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Type className="h-5 w-5 text-primary" />
+                          <h3 className="text-lg font-semibold text-foreground">Typography System</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">Heading and body scales using modern font pairings</p>
+                        <TypographyDisplay typography={designSystem.typography} />
+                      </div>
+                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Ruler className="h-5 w-5 text-primary" />
+                          <h3 className="text-lg font-semibold text-foreground">Spacing & Radius</h3>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
+                            <p className="text-xs text-muted-foreground mb-4">{designSystem.spacing.unit}px base unit with consistent scale</p>
+                            <SpacingDisplay spacing={designSystem.spacing} />
                           </div>
-
-                          {/* Brand Color Palette Section */}
-                          <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Palette className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-semibold text-foreground">Brand Color Palette</h3>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-4">Primary, secondary, and accent colors with semantic variants</p>
-                            <ColorPaletteDisplay colors={designSystem.colors} />
+                          <div className="space-y-4">
+                            <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Border Radius</h4>
+                            <p className="text-xs text-muted-foreground mb-4">{designSystem.borderRadius.md} standard radius with full range</p>
+                            <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
                           </div>
+                        </div>
+                      </div>
+                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Cast className="h-5 w-5 text-primary" />
+                          <h3 className="text-lg font-semibold text-foreground">Elevation & Shadows</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">Light and dark mode compatible elevation system</p>
+                        <ShadowDisplay shadows={designSystem.shadows} />
+                      </div>
+                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Grid3X3 className="h-5 w-5 text-primary" />
+                          <h3 className="text-lg font-semibold text-foreground">Layout Grid</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">Responsive 12-column grid with flexible layout system</p>
+                        <GridDisplay grid={designSystem.grid} />
+                      </div>
+                    </div>
+                  )}
 
-                          {/* Typography System Section */}
-                          <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Type className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-semibold text-foreground">Typography System</h3>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-4">Heading and body scales using modern font pairings</p>
-                            <TypographyDisplay typography={designSystem.typography} />
-                          </div>
+                  {activeTab === "colors" && (
+                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Palette className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-foreground">Brand Color Palette</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">Primary, secondary, and accent colors with semantic variants</p>
+                      <ColorPaletteDisplay colors={designSystem.colors} />
+                      <div className="mt-6">
+                        <InteractiveColorsDisplay colors={designSystem.colors} />
+                      </div>
+                    </div>
+                  )}
 
-                          {/* Spacing & Border Radius Combined Section */}
-                          <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                            <div className="flex items-center gap-2 mb-4">
-                              <Ruler className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-semibold text-foreground">Spacing & Radius</h3>
-                            </div>
-                            <div className="grid md:grid-cols-2 gap-6">
-                              <div className="space-y-4">
-                                <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
-                                <p className="text-xs text-muted-foreground mb-4">{designSystem.spacing.unit}px base unit with consistent scale</p>
-                                <SpacingDisplay spacing={designSystem.spacing} />
-                              </div>
-                              <div className="space-y-4">
-                                <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Border Radius</h4>
-                                <p className="text-xs text-muted-foreground mb-4">{designSystem.borderRadius.md} standard radius with full range</p>
-                                <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
-                              </div>
-                            </div>
-                          </div>
+                  {activeTab === "typography" && (
+                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Type className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-foreground">Typography System</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">Heading and body scales using modern font pairings</p>
+                      <TypographyDisplay typography={designSystem.typography} />
+                    </div>
+                  )}
 
-                          {/* Elevation & Shadows Section */}
-                          <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Cast className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-semibold text-foreground">Elevation & Shadows</h3>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-4">Light and dark mode compatible elevation system</p>
-                            <ShadowDisplay shadows={designSystem.shadows} />
-                          </div>
-
-                          {/* Layout Grid Section */}
-                          <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Grid3X3 className="h-5 w-5 text-primary" />
-                              <h3 className="text-lg font-semibold text-foreground">Layout Grid</h3>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-4">Responsive 12-column grid with flexible layout system</p>
-                            <GridDisplay grid={designSystem.grid} />
-                          </div>
-
+                  {activeTab === "spacing" && (
+                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Ruler className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-foreground">Spacing & Radius</h3>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
+                          <SpacingDisplay spacing={designSystem.spacing} />
+                        </div>
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Border Radius</h4>
+                          <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
                         </div>
                       </div>
                     </div>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="tokens" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "shadows" && (
+                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Cast className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-foreground">Elevation & Shadows</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">Light and dark mode compatible elevation system</p>
+                      <ShadowDisplay shadows={designSystem.shadows} />
+                    </div>
+                  )}
+
+                  {activeTab === "grid" && (
+                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Grid3X3 className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-foreground">Layout Grid</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">Responsive 12-column grid with flexible layout system</p>
+                      <GridDisplay grid={designSystem.grid} />
+                    </div>
+                  )}
+
+                  {activeTab === "tokens" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <TokenManagementDashboard
-                        designSystem={designSystem}
-                        designSystemId={designSystem.id}
-                      />
+                      <TokenManagementDashboard designSystem={designSystem} designSystemId={designSystem.id} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="docs" className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "docs" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <DocEditor designSystemId={designSystem?.id || ""} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="settings" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <GitSettings designSystemId={designSystem?.id || ""} />
-                    </Suspense>
-                  </TabsContent>
-
-                  <TabsContent value="preview" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "preview" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <InteractiveColorsDisplay colors={designSystem.colors} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="components" className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                  {activeTab === "components" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <ComponentSandbox />
-                      <ComponentLibraryPreview designSystem={designSystem} />
-                      <ComponentBlueprints designSystem={designSystem} />
+                      <div className="space-y-8">
+                        <ComponentSandbox />
+                        <ComponentLibraryPreview designSystem={designSystem} />
+                        <ComponentBlueprints designSystem={designSystem} />
+                      </div>
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="motion" className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                  {activeTab === "motion" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <AnimationDisplay animations={designSystem.animations} />
-                      <MotionGallery designSystem={designSystem} />
-                      <AnimationSystemDocs />
+                      <div className="space-y-8">
+                        <AnimationDisplay animations={designSystem.animations} />
+                        <MotionGallery designSystem={designSystem} />
+                        <AnimationSystemDocs />
+                      </div>
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="team" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "team" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <TeamSettings designSystemId={designSystem?.id || ""} currentUserRole={userRole} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="governance" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "governance" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <ApprovalWorkflow designSystemId={designSystem?.id || ""} currentUserRole={userRole} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="vision" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "vision" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <VisionGenerator onDesignGenerated={handleVisionGenerate} isGenerating={isLoading} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="insights" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "insights" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <DesignInsights designSystem={themedDesignSystem || designSystem} onUpdate={setDesignSystem} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="themes" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "themes" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <BrandSwapper
-                        designSystemId={designSystem?.id || ""}
-                        baseDesignSystem={designSystem!}
-                        onThemeChange={setThemedDesignSystem}
-                      />
+                      <BrandSwapper designSystemId={designSystem?.id || ""} baseDesignSystem={designSystem!} onThemeChange={setThemedDesignSystem} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="analytics" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "analytics" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <AnalyticsDashboard designSystemId={designSystem?.id || searchParams.get("id") || ""} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="accessibility" className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                  {activeTab === "accessibility" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <AccessibilityChecker
-                        colors={designSystem.colors}
-                        darkColors={designSystem.darkColors}
-                        onUpdate={(colors, darkColors) => setDesignSystem({ ...designSystem, colors, darkColors })}
-                      />
-                      <ColorBlindnessSimulator colors={designSystem.colors} />
+                      <div className="space-y-8">
+                        <AccessibilityChecker
+                          colors={designSystem.colors}
+                          darkColors={designSystem.darkColors}
+                          onUpdate={(colors, darkColors) => setDesignSystem({ ...designSystem, colors, darkColors })}
+                        />
+                        <ColorBlindnessSimulator colors={designSystem.colors} />
+                      </div>
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="figma" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "figma" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <FigmaSync designSystemId={searchParams.get("id") || undefined} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="saved" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "saved" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <SavedDesigns onLoad={handleLoadDesign} currentSystem={designSystem} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="marketplace" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "marketplace" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <Marketplace
-                        onImport={handleRestoreVersion}
-                        currentSystemId={designSystem?.id}
-                      />
+                      <Marketplace onImport={handleRestoreVersion} currentSystemId={designSystem?.id} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="assets" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "assets" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
                       <AssetHub designSystem={designSystem!} tokens={tokens || []} />
                     </Suspense>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="settings" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {activeTab === "settings" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <DesignSystemSettings designSystemId={designSystem?.id || ""} />
+                      <div className="space-y-8">
+                        <GitSettings designSystemId={designSystem?.id || ""} />
+                        <DesignSystemSettings designSystemId={designSystem?.id || ""} />
+                      </div>
                     </Suspense>
-                  </TabsContent>
+                  )}
                 </div>
-              </Tabs>
-            )
-          )}
-        </main>
+              )}
+            </div>
+          </main>
+        </div>
         <ShortcutOverlay />
         {designSystem && (
           <AIChatPanel
