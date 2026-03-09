@@ -311,11 +311,14 @@ export const DesignSystemDashboard = ({ onLoad, currentSystem, onSave }: DesignS
                   </div>
 
                   {/* Font info */}
-                  {design.design_system_data?.typography && (
+                  {design.design_system_data?.typography?.fontFamily && (
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Palette className="h-3 w-3" />
                       <span className="truncate">
-                        {design.design_system_data.typography.headingFont} / {design.design_system_data.typography.bodyFont}
+                        {design.design_system_data.typography.fontFamily.heading} / {design.design_system_data.typography.fontFamily.body}
+                      </span>
+                    </div>
+                  )}
                       </span>
                     </div>
                   )}
