@@ -27,12 +27,12 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface DesignVersion {
     id: string;
-    version_number: string;
+    version_number: number;
     name: string;
     description: string;
     is_published: boolean;
     published_at: string;
-    snapshot: any;
+    snapshot_data: unknown;
     created_at: string;
 }
 
