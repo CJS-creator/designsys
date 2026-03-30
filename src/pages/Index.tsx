@@ -554,7 +554,7 @@ const Index = () => {
 
                   {activeTab === "figma" && (
                     <Suspense fallback={<DesignSystemSkeleton />}>
-                      <FigmaSync designSystemId={searchParams.get("id") || undefined} />
+                      <FigmaSync designSystemId={designSystem?.id || undefined} />
                     </Suspense>
                   )}
 

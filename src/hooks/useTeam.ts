@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/components/TeamSettings";
 import { toast } from "sonner";
@@ -15,15 +15,26 @@ export interface TeamMember {
     };
 }
 
+interface RawTeamMember {
+    id: string;
+    user_id: string;
+    role: UserRole;
+    created_at: string;
+    profile: {
+        full_name: string | null;
+        avatar_url: string | null;
+        username: string | null;
+    } | null;
+}
+
 export function useTeam(designSystemId: string) {
     const [members, setMembers] = useState<TeamMember[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchMembers = async () => {
+    const fetchMembers = useCallback(async () => {
         if (!designSystemId) return;
         setLoading(true);
         try {
-            // Fetch roles along with profile information
             const { data, error } = await supabase
                 .from("user_roles")
                 .select(`
@@ -36,18 +47,27 @@ export function useTeam(designSystemId: string) {
                 .eq("design_system_id", designSystemId);
 
             if (error) throw error;
-            setMembers((data as any) || []);
+
+            const mapped: TeamMember[] = ((data as unknown as RawTeamMember[]) || []).map(d => ({
+                id: d.id,
+                user_id: d.user_id,
+                role: d.role,
+                created_at: d.created_at,
+                profile: d.profile ?? undefined,
+            }));
+
+            setMembers(mapped);
         } catch (error) {
             console.error("Error fetching team members:", error);
             toast.error("Failed to load team members");
         } finally {
             setLoading(false);
         }
-    };
+    }, [designSystemId]);
 
     useEffect(() => {
         fetchMembers();
-    }, [designSystemId]);
+    }, [fetchMembers]);
 
     const updateMemberRole = async (memberId: string, newRole: UserRole) => {
         try {
@@ -95,7 +115,7 @@ export function useTeam(designSystemId: string) {
 
             if (error) throw error;
 
-            fetchMembers(); // Refresh list
+            fetchMembers();
             toast.success("Member invited successfully");
         } catch (error) {
             if ((error as any).code === "23505") {
