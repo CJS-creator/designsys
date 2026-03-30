@@ -27,15 +27,16 @@ const SharedDesign = () => {
             if (!id) return;
 
             try {
+                // Query by share_id for public access (no auth required)
                 const { data, error } = await supabase
                     .from("design_systems")
                     .select("*")
-                    .eq("id", id)
+                    .eq("share_id" as any, id)
+                    .eq("is_public" as any, true)
                     .single();
 
                 if (error) throw error;
 
-                // Add type assertion/checking here if needed, or assume it matches GeneratedDesignSystem
                 setDesignSystem(data.design_system_data as unknown as GeneratedDesignSystem);
             } catch (err: unknown) {
                 monitor.error("Error fetching design", err as Error);
@@ -76,10 +77,8 @@ const SharedDesign = () => {
 
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
-            {/* Background Decorations */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5 -z-10" />
             <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02] -z-10" />
-            {/* Header */}
             <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -98,7 +97,6 @@ const SharedDesign = () => {
                             <p className="text-sm text-muted-foreground">Shared Design System</p>
                         </div>
                     </div>
-
                     <Button asChild variant="default">
                         <Link to="/">
                             <Wand2 className="h-4 w-4 mr-2" />
@@ -108,7 +106,6 @@ const SharedDesign = () => {
                 </div>
             </header>
 
-            {/* Content */}
             <main className="container mx-auto px-4 py-8">
                 <Tabs defaultValue="overview" className="space-y-8">
                     <TabsList className="bg-muted/50 border border-border rounded-xl p-1 h-auto flex-wrap">

@@ -316,7 +316,7 @@ export const DesignSystemDashboard = ({ onLoad, currentSystem, onSave }: DesignS
                             <Copy className="h-3.5 w-3.5" />
                           )}
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Share" onClick={() => handleShare(design.id)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Share" onClick={() => handleShare(design)}>
                           <Share2 className="h-3.5 w-3.5" />
                         </Button>
                         <Button

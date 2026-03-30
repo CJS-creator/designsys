@@ -219,7 +219,6 @@ export function useTokens(designSystemId?: string) {
 
     useEffect(() => {
         fetchTokens();
-         
     }, [designSystemId]);
 
     return {
