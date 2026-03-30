@@ -290,7 +290,9 @@ export type Database = {
           description: string | null
           design_system_data: Json
           id: string
+          is_public: boolean
           name: string
+          share_id: string | null
           updated_at: string
           user_id: string
         }
@@ -299,7 +301,9 @@ export type Database = {
           description?: string | null
           design_system_data: Json
           id?: string
+          is_public?: boolean
           name: string
+          share_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -308,7 +312,9 @@ export type Database = {
           description?: string | null
           design_system_data?: Json
           id?: string
+          is_public?: boolean
           name?: string
+          share_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -419,6 +425,13 @@ export type Database = {
             columns: ["design_system_id"]
             isOneToOne: false
             referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
