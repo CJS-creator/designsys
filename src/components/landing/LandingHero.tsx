@@ -75,10 +75,10 @@ export const LandingHero = () => {
                 </motion.div>
 
                 {/* Main Title */}
-                <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-8 max-w-[90rem] leading-[1.1]">
+                <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tight mb-8 max-w-[90rem] leading-[1.1]">
                     <TextReveal text="Build Design Systems" className="justify-center" />
-                    <span className="block mt-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-shimmer whitespace-nowrap">
-                        <TextReveal text="Faster Than Implementation" className="justify-center" delay={0.3} />
+                    <span className="block mt-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-shimmer">
+                        <TextReveal text="Faster Than Ever" className="justify-center" delay={0.3} />
                     </span>
                 </h1>
 
@@ -97,7 +97,7 @@ export const LandingHero = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.8 }}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20 w-full"
+                    className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-20 w-full px-4"
                 >
                     <MagneticButton distance={0.2} className="w-full sm:w-auto">
                         <Link to="/auth" className="w-full sm:w-auto">

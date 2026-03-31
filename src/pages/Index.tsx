@@ -324,11 +324,11 @@ const Index = () => {
           </div>
         )}
 
-        <div className="flex flex-1 relative z-10 min-h-0">
+        <div className="flex flex-1 relative z-10 min-h-0 h-[calc(100vh-73px)]">
           <DesignSystemSidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
           <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
-            <div className="w-full max-w-[1200px] mx-auto px-4 py-6">
+            <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
               {isLoading && !designSystem ? (
                 <DesignSystemSkeleton />
               ) : designSystem && (
@@ -680,7 +680,7 @@ const Index = () => {
                 <Brain className="h-3 w-3 animate-pulse-soft" />
                 Powered by AI
               </div>
-              <h1 className="text-5xl md:text-7xl font-black mb-8 leading-[1.1] animate-fade-in-up tracking-tighter" style={{ animationDelay: '0.1s' }}>
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-8 leading-[1.1] animate-fade-in-up tracking-tighter" style={{ animationDelay: '0.1s' }}>
                 Create Complete{" "}
                 <span className="text-primary relative inline-block">
                   Design Systems

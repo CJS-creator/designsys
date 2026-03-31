@@ -36,7 +36,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <OnboardingModal />
-              <BrowserRouter>
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <div className="min-h-screen bg-background text-foreground">
                   <Suspense fallback={
                     <div className="h-screen w-screen flex flex-col items-center justify-center gap-4">

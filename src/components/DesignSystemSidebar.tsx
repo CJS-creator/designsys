@@ -146,8 +146,8 @@ function SidebarNav({ activeTab, onTabChange, onItemClick }: DesignSystemSidebar
 
 export function DesignSystemSidebar({ activeTab, onTabChange }: DesignSystemSidebarProps) {
   return (
-    <aside className="hidden md:flex w-[240px] shrink-0 border-r border-border/40 bg-card/30 backdrop-blur-sm">
-      <ScrollArea className="h-[calc(100vh-73px)] w-full sticky top-[73px]">
+    <aside className="hidden md:flex w-[240px] shrink-0 border-r border-border/40 bg-card/30 backdrop-blur-sm sticky top-[73px] h-[calc(100vh-73px)]">
+      <ScrollArea className="h-full w-full">
         <SidebarNav activeTab={activeTab} onTabChange={onTabChange} />
       </ScrollArea>
     </aside>
