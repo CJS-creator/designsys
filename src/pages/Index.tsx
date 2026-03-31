@@ -680,7 +680,7 @@ const Index = () => {
                 <Brain className="h-3 w-3 animate-pulse-soft" />
                 Powered by AI
               </div>
-              <h1 className="text-5xl md:text-7xl font-black mb-8 leading-[1.1] animate-fade-in-up tracking-tighter" style={{ animationDelay: '0.1s' }}>
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-8 leading-[1.1] animate-fade-in-up tracking-tighter" style={{ animationDelay: '0.1s' }}>
                 Create Complete{" "}
                 <span className="text-primary relative inline-block">
                   Design Systems
