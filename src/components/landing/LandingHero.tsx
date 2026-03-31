@@ -97,7 +97,7 @@ export const LandingHero = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.8 }}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20 w-full"
+                    className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-20 w-full px-4"
                 >
                     <MagneticButton distance={0.2} className="w-full sm:w-auto">
                         <Link to="/auth" className="w-full sm:w-auto">

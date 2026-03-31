@@ -32,7 +32,7 @@ export const LandingCTA = () => {
                         <span>INSTANT SETUP • NO CREDIT CARD</span>
                     </motion.div>
 
-                    <h2 className="text-5xl md:text-7xl font-black mb-8 leading-[1.1] tracking-tighter">
+                    <h2 className="text-4xl sm:text-5xl md:text-7xl font-black mb-8 leading-[1.1] tracking-tighter">
                         Ship Your Design System{" "}
                         <span className="block mt-2 bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-shimmer">
                             This Week
