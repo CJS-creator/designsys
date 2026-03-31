@@ -324,11 +324,11 @@ const Index = () => {
           </div>
         )}
 
-        <div className="flex flex-1 relative z-10 min-h-0">
+        <div className="flex flex-1 relative z-10 min-h-0 h-[calc(100vh-73px)]">
           <DesignSystemSidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
           <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
-            <div className="w-full max-w-[1200px] mx-auto px-4 py-6">
+            <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
               {isLoading && !designSystem ? (
                 <DesignSystemSkeleton />
               ) : designSystem && (

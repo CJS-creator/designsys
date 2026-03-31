@@ -140,25 +140,19 @@ export const DesignSystemDashboard = ({ onLoad, currentSystem, onSave }: DesignS
 
   const handleShare = async (design: SavedDesign) => {
     try {
-      // Generate a share_id if not already set
-      const existingDesign = designs.find(d => d.id === design.id);
-      let shareId = (existingDesign as any)?.share_id;
+      const shareId = crypto.randomUUID().slice(0, 12);
+      const { error } = await supabase
+        .from("design_systems")
+        .update({ is_public: true, share_id: shareId })
+        .eq("id", design.id);
 
-      if (!shareId) {
-        shareId = crypto.randomUUID().slice(0, 12);
-        const { error } = await supabase
-          .from("design_systems")
-          .update({ is_public: true, share_id: shareId } as any)
-          .eq("id", design.id);
-
-        if (error) {
-          toast.error("Failed to enable sharing", { description: error.message });
-          return;
-        }
+      if (error) {
+        toast.error("Failed to enable sharing", { description: error.message });
+        return;
       }
 
       const url = `${window.location.origin}/share/${shareId}`;
-      navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard!", {
         description: "Share this link with anyone to view your design system.",
       });
