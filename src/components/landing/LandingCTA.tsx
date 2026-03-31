@@ -71,15 +71,15 @@ export const LandingCTA = () => {
 
                     <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground font-bold">
                         <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                            <div className="h-2 w-2 rounded-full bg-primary" />
                             <span>Free forever for small teams</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                            <div className="h-2 w-2 rounded-full bg-primary" />
                             <span>No setup required</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                            <div className="h-2 w-2 rounded-full bg-primary" />
                             <span>Cancel anytime</span>
                         </div>
                     </div>
