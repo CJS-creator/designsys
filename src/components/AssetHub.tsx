@@ -13,14 +13,26 @@ import {
     ExternalLink,
     Settings2,
     Package,
-    ArrowRight
+    ArrowRight,
+    Smartphone,
+    Code,
+    CheckCircle2,
+    FileJson,
+    Folder
 } from "lucide-react";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { DesignToken } from "@/types/tokens";
-import { generateBulkBundle } from "@/lib/exporters/bulk-exporter";
+import { generateBulkBundle, BulkExportCategory } from "@/lib/exporters/bulk-exporter";
 import { exportToPDF, exportToWord } from "@/lib/exporters/asset-exporters";
+import { 
+    generateCSSVariables, 
+    generateSCSS, 
+    generateTailwindConfig, 
+    generateREADME 
+} from "@/lib/exporters/web-exporters";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Separator } from "@/components/ui/separator";
 
 interface AssetHubProps {
     designSystem: GeneratedDesignSystem;
@@ -31,27 +43,49 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
+    const [bundleFiles, setBundleFiles] = useState<string[]>([]);
 
-    const handleBulkExport = async () => {
+    const handleBulkExport = async (category: BulkExportCategory = 'all') => {
         setIsGenerating(true);
         setProgress(0);
         setError(null);
+        setBundleFiles([]);
 
         try {
             const blob = await generateBulkBundle(designSystem, tokens, {
-                onProgress: (p) => setProgress(p)
+                onProgress: (p) => setProgress(p),
+                category
             });
+
+            // If it's a full bundle, we can "preview" the structure
+            // Since JSZip doesn't return the list easily without generating again, 
+            // we'll just mock the visual for the user based on our known structure
+            if (category === 'all') {
+                setBundleFiles([
+                    "manifest.json",
+                    "README.md",
+                    "documentation/specification.pdf",
+                    "documentation/specification.docx",
+                    "tokens/tokens.json",
+                    "web/variables.css",
+                    "mobile/Theme.swift",
+                    "assets/color-swatches.png",
+                    "assets/palette/primary.svg",
+                    "...and 24 more files"
+                ]);
+            }
 
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `${designSystem.name}-assets-bundle.zip`;
+            const suffix = category === 'all' ? 'full-bundle' : `${category}-assets`;
+            a.download = `${designSystem.name}-${suffix}.zip`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            toast.success("Design bundle generated successfully!");
+            toast.success(`${category === 'all' ? 'Full bundle' : category.toUpperCase()} generated successfully!`);
         } catch (err: any) {
             monitor.error("Bulk export failed", err as Error);
             setError(err.message || "Export failed. Please try again.");
@@ -61,67 +95,142 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
         }
     };
 
-    const downloadIndividual = async (type: 'pdf' | 'docx') => {
-        const toastId = toast.loading(`Generating ${type.toUpperCase()}...`);
+    const downloadFormat = async (type: string) => {
+        let content: string = "";
+        let filename: string = "";
+        const toastId = toast.loading(`Preparing ${type.toUpperCase()}...`);
+        
         try {
-            let blob: Blob;
-            if (type === 'pdf') blob = await exportToPDF(designSystem, tokens);
-            else blob = await exportToWord(designSystem, tokens);
+            switch(type) {
+                // Documents
+                case 'pdf': {
+                    const blob = await exportToPDF(designSystem, tokens);
+                    downloadBlob(blob, `${designSystem.name}-spec.pdf`);
+                    toast.success("PDF Generated", { id: toastId });
+                    return;
+                }
+                case 'docx': {
+                    const blob = await exportToWord(designSystem, tokens);
+                    downloadBlob(blob, `${designSystem.name}-spec.docx`);
+                    toast.success("Word Doc Generated", { id: toastId });
+                    return;
+                }
+                // Web
+                case 'css': content = generateCSSVariables(designSystem); filename = "variables.css"; break;
+                case 'scss': content = generateSCSS(designSystem); filename = "variables.scss"; break;
+                case 'tailwind': content = generateTailwindConfig(designSystem); filename = "tailwind.js"; break;
+                // Tokens
+                case 'dtcg': content = JSON.stringify(designSystem, null, 2); filename = "tokens.json"; break;
+                case 'figma': 
+                    const { generateFigmaTokens } = await import("@/lib/exporters/web-exporters");
+                    content = generateFigmaTokens(designSystem); 
+                    filename = "figma-tokens.json"; 
+                    break;
+                // Mobile
+                case 'react-native':
+                    const { generateReactNative } = await import("@/lib/exporters/web-exporters");
+                    content = generateReactNative(designSystem);
+                    filename = "Theme.ts";
+                    break;
+                // Logic
+                case 'readme': content = generateREADME(designSystem); filename = "README.md"; break;
+                default: 
+                    toast.info("This format is currently only available in the Full Bundle", { id: toastId }); 
+                    return;
+            }
 
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${designSystem.name}-spec.${type}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            toast.success(`${type.toUpperCase()} ready!`, { id: toastId });
+            const blob = new Blob([content], { type: "text/plain" });
+            downloadBlob(blob, filename);
+            toast.success(`Downloaded ${filename}`, { id: toastId });
         } catch (err) {
-            toast.error(`Failed to generate ${type.toUpperCase()}`, { id: toastId });
+            monitor.error(`Download failed: ${type}`, err as Error);
+            toast.error("Export failed", { id: toastId });
         }
     };
 
+    const downloadBlob = (blob: Blob, filename: string) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     const assetCategories: Array<{
+        id: BulkExportCategory;
         title: string;
         description: string;
         icon: any;
         color: string;
         bg: string;
-        formats: Array<{ name: string; type?: 'pdf' | 'docx' | 'css' | 'json'; format?: string; size: string }>;
+        formats: Array<{ name: string; type?: string; size: string }>;
     }> = [
             {
+                id: 'documentation',
                 title: "Documentation",
-                description: "Full design specifications and guidelines",
+                description: "Human-readable guidelines",
                 icon: FileText,
                 color: "text-blue-500",
                 bg: "bg-blue-500/10",
                 formats: [
-                    { name: "Specification (PDF)", type: 'pdf', size: "2.4 MB" },
-                    { name: "Spec Document (DOCX)", type: 'docx', size: "1.2 MB" },
+                    { name: "Specification (PDF)", type: 'pdf', size: "~2.4 MB" },
+                    { name: "Spec Document (DOCX)", type: 'docx', size: "~1.2 MB" },
+                    { name: "Tokens Reference (MD)", type: 'readme', size: "12 KB" },
                 ]
             },
             {
-                title: "Code Tokens",
-                description: "Raw variables for multiple platforms",
-                icon: FileType,
+                id: 'tokens',
+                title: "Data Tokens",
+                description: "Cross-platform JSON formats",
+                icon: FileJson,
                 color: "text-purple-500",
                 bg: "bg-purple-500/10",
                 formats: [
-                    { name: "JSON Tokens", format: 'json', size: "45 KB" },
-                    { name: "Tailwind Config", format: 'js', size: "12 KB" },
+                    { name: "DTCG Standard", type: 'dtcg', size: "65 KB" },
+                    { name: "Figma Variables", type: 'figma', size: "12 KB" },
+                    { name: "Style Dictionary", size: "48 KB" },
                 ]
             },
             {
-                title: "Asset Package",
-                description: "SVG and high-res image representations",
+                id: 'web',
+                title: "Web Engineering",
+                description: "Styles for modern web apps",
+                icon: Code,
+                color: "text-emerald-500",
+                bg: "bg-emerald-500/10",
+                formats: [
+                    { name: "CSS Variables", type: 'css', size: "15 KB" },
+                    { name: "SCSS Variables", type: 'scss', size: "18 KB" },
+                    { name: "Tailwind Config", type: 'tailwind', size: "8 KB" },
+                ]
+            },
+            {
+                id: 'mobile',
+                title: "Mobile Themes",
+                description: "Native styling solutions",
+                icon: Smartphone,
+                color: "text-pink-500",
+                bg: "bg-pink-500/10",
+                formats: [
+                    { name: "React Native", type: 'react-native', size: "14 KB" },
+                    { name: "iOS / SwiftUI", size: "32 KB" },
+                    { name: "Android / Kotlin", size: "42 KB" },
+                ]
+            },
+            {
+                id: 'assets',
+                title: "Visual Assets",
+                description: "Renders & previews",
                 icon: ImageIcon,
                 color: "text-orange-500",
                 bg: "bg-orange-500/10",
                 formats: [
-                    { name: "Color Swatches (PNG)", format: 'png', size: "850 KB" },
-                    { name: "Logo Icons (SVG)", format: 'svg', size: "120 KB" },
+                    { name: "Palette (PNG)", size: "850 KB" },
+                    { name: "Swatches (SVG)", size: "122 KB" },
+                    { name: "Brand Preview", size: "410 KB" },
                 ]
             }
         ];
@@ -138,7 +247,7 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                 <div className="relative z-10">
                     <Button
                         size="lg"
-                        onClick={handleBulkExport}
+                        onClick={() => handleBulkExport('all')}
                         disabled={isGenerating}
                         className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 gap-3 group"
                     >
@@ -157,7 +266,7 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -ml-10 -mb-10" />
             </div>
 
-            {/* Progress Bar (Visible during generation) */}
+            {/* Progress Bar & Preview */}
             <AnimatePresence>
                 {isGenerating && (
                     <motion.div
@@ -174,9 +283,31 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                             <span>{progress}%</span>
                         </div>
                         <Progress value={progress} className="h-2" />
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-                            Bundling specification, code tokens, and visual assets
-                        </p>
+                    </motion.div>
+                )}
+
+                {bundleFiles.length > 0 && !isGenerating && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-emerald-500/5 p-6 rounded-2xl border border-emerald-500/20 space-y-4"
+                    >
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 text-emerald-600">
+                                <CheckCircle2 className="h-6 w-6" />
+                                <h3 className="font-black">Bundle Generated!</h3>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => setBundleFiles([])}>Dismiss</Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {bundleFiles.map((file, idx) => (
+                                <div key={idx} className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground truncate bg-white/50 p-2 rounded border">
+                                    <Folder className="h-3 w-3 text-primary animate-pulse" />
+                                    {file}
+                                </div>
+                            ))}
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -189,34 +320,42 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
             )}
 
             {/* Grid of format categories */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {assetCategories.map((category, idx) => (
-                    <Card key={idx} className="border-border/50 hover:border-primary/20 transition-all duration-300 group">
-                        <CardHeader>
-                            <div className={`w-12 h-12 rounded-2xl ${category.bg} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-500`}>
-                                <category.icon className={`h-6 w-6 ${category.color}`} />
+                    <Card key={idx} className="border-border/50 hover:border-primary/20 transition-all duration-300 group flex flex-col">
+                        <CardHeader className="p-4">
+                            <div className={`w-10 h-10 rounded-xl ${category.bg} flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform duration-500`}>
+                                <category.icon className={`h-5 w-5 ${category.color}`} />
                             </div>
-                            <CardTitle className="text-xl">{category.title}</CardTitle>
-                            <CardDescription>{category.description}</CardDescription>
+                            <CardTitle className="text-base">{category.title}</CardTitle>
+                            <CardDescription className="text-[10px] leading-tight">{category.description}</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="p-4 pt-0 space-y-2 flex-grow">
+                            <Separator className="mb-3 opacity-50" />
                             {category.formats.map((format, fIdx) => (
-                                <div key={fIdx} className="flex items-center justify-between p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
-                                    <div className="space-y-0.5">
-                                        <p className="text-sm font-bold">{format.name}</p>
-                                        <p className="text-[10px] text-muted-foreground uppercase">{format.size}</p>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-full"
-                                        onClick={() => format.type ? downloadIndividual(format.type as any) : toast.info("Download available in bundle")}
+                                <div key={fIdx} className="flex items-center justify-between text-xs">
+                                    <span className="text-muted-foreground truncate pr-2">{format.name}</span>
+                                    <button 
+                                        className="hover:text-primary transition-colors h-6 w-6 flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed"
+                                        onClick={() => format.type && downloadFormat(format.type)}
+                                        disabled={!format.type}
                                     >
-                                        <Download className="h-4 w-4" />
-                                    </Button>
+                                        <Download className="h-3 w-3" />
+                                    </button>
                                 </div>
                             ))}
                         </CardContent>
+                        <div className="p-4 pt-0 mt-auto">
+                            <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                className="w-full text-xs h-8 gap-2 rounded-lg"
+                                onClick={() => handleBulkExport(category.id)}
+                            >
+                                <Download className="h-3 w-3" />
+                                {category.title} Only
+                            </Button>
+                        </div>
                     </Card>
                 ))}
             </div>

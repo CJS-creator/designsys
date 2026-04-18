@@ -65,7 +65,7 @@ export function InteractiveColorsDisplay({ colors }: InteractiveColorsDisplayPro
                   </div>
 
                   <div className="text-[9px] sm:text-xs font-mono text-muted-foreground/80 bg-black/20 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded truncate max-w-full block">
-                    {color}
+                    {typeof color === 'string' ? color : 'Complex Token'}
                   </div>
 
                   <div className="absolute top-2 sm:top-4 right-2 sm:right-4 opacity-0 group-hover:opacity-100 transition-opacity">
