@@ -320,6 +320,59 @@ export type Database = {
         }
         Relationships: []
       }
+      design_tokens: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          design_system_id: string
+          id: string
+          name: string
+          path: string
+          ref: string | null
+          status: string
+          type: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          design_system_id: string
+          id?: string
+          name: string
+          path: string
+          ref?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          design_system_id?: string
+          id?: string
+          name?: string
+          path?: string
+          ref?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_tokens_design_system_id_fkey"
+            columns: ["design_system_id"]
+            isOneToOne: false
+            referencedRelation: "design_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       git_connections: {
         Row: {
           created_at: string
