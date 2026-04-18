@@ -20,6 +20,8 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const SharedDesign = lazy(() => import("./pages/SharedDesign"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 // Named export lazy loading
 const PublicDocViewer = lazy(() => import("./components/docs/PublicDocViewer").then(module => ({ default: module.PublicDocViewer })));
 
@@ -47,6 +49,15 @@ const App = () => (
                     <Routes>
                       <Route path="/" element={<Landing />} />
                       <Route path="/auth" element={<Auth />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route
+                        path="/profile"
+                        element={
+                          <ProtectedRoute>
+                            <Profile />
+                          </ProtectedRoute>
+                        }
+                      />
                       <Route path="/share/:id" element={<SharedDesign />} />
                       <Route path="/docs/:shareId" element={<PublicDocViewer />} />
                       <Route

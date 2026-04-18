@@ -48,13 +48,16 @@ export function useTeam(designSystemId: string) {
 
             if (error) throw error;
 
-            const mapped: TeamMember[] = ((data as unknown as RawTeamMember[]) || []).map(d => ({
-                id: d.id,
-                user_id: d.user_id,
-                role: d.role,
-                created_at: d.created_at,
-                profile: d.profile ?? undefined,
-            }));
+            const mapped: TeamMember[] = (data || []).map((d) => {
+                const profileField = (d as { profile?: RawTeamMember["profile"] }).profile;
+                return {
+                    id: d.id,
+                    user_id: d.user_id,
+                    role: d.role as UserRole,
+                    created_at: d.created_at,
+                    profile: profileField ?? undefined,
+                };
+            });
 
             setMembers(mapped);
         } catch (error) {
@@ -103,27 +106,26 @@ export function useTeam(designSystemId: string) {
         }
     };
 
-    const inviteMember = async (userId: string, role: UserRole) => {
+    const inviteMember = async (email: string, role: UserRole) => {
         try {
-            const { error } = await supabase
-                .from("user_roles")
-                .insert({
-                    user_id: userId,
-                    design_system_id: designSystemId,
-                    role: role
-                });
+            const { data, error } = await supabase.functions.invoke("invite-member", {
+                body: { email, role, design_system_id: designSystemId },
+            });
 
-            if (error) throw error;
-
-            fetchMembers();
-            toast.success("Member invited successfully");
-        } catch (error) {
-            if ((error as any).code === "23505") {
-                toast.error("User is already a member of this project");
-            } else {
-                console.error("Error inviting member:", error);
-                toast.error("Failed to invite member");
+            if (error) {
+                const msg = (data as { error?: string } | null)?.error || error.message;
+                toast.error(msg || "Failed to invite member");
+                return { success: false, error: msg };
             }
+
+            await fetchMembers();
+            toast.success("Member invited successfully");
+            return { success: true };
+        } catch (error) {
+            console.error("Error inviting member:", error);
+            const msg = (error as Error).message;
+            toast.error(msg || "Failed to invite member");
+            return { success: false, error: msg };
         }
     };
 

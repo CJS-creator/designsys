@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -32,8 +41,22 @@ interface TeamSettingsProps {
 }
 
 export const TeamSettings = ({ designSystemId, currentUserRole }: TeamSettingsProps) => {
-    const { members, loading, updateMemberRole, removeMember } = useTeam(designSystemId);
+    const { members, loading, updateMemberRole, removeMember, inviteMember } = useTeam(designSystemId);
     const [isInviting, setIsInviting] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState("");
+    const [inviteRole, setInviteRole] = useState<UserRole>("editor");
+    const [sending, setSending] = useState(false);
+
+    const handleSendInvite = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSending(true);
+        const result = await inviteMember(inviteEmail.trim(), inviteRole);
+        setSending(false);
+        if (result?.success) {
+            setInviteEmail("");
+            setIsInviting(false);
+        }
+    };
 
     const isOwner = currentUserRole === "owner";
 
@@ -149,18 +172,43 @@ export const TeamSettings = ({ designSystemId, currentUserRole }: TeamSettingsPr
             {/* Invite Dialog placeholder - would be a real implementation with search */}
             {isInviting && (
                 <Card className="border-primary p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-                    <div className="space-y-4">
+                    <form onSubmit={handleSendInvite} className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="font-bold">Invite to Design System</h3>
-                            <Button variant="ghost" size="sm" onClick={() => setIsInviting(false)}>Cancel</Button>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => setIsInviting(false)}>
+                                Cancel
+                            </Button>
                         </div>
-                        <div className="space-y-4 py-4">
-                            <p className="text-sm text-muted-foreground">
-                                In a production environment, you would search for users by name or email here.
+                        <div className="space-y-2">
+                            <Label htmlFor="invite-email">Email address</Label>
+                            <Input
+                                id="invite-email"
+                                type="email"
+                                placeholder="teammate@example.com"
+                                value={inviteEmail}
+                                onChange={(e) => setInviteEmail(e.target.value)}
+                                required
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                The person must already have a DesignForge account.
                             </p>
-                            <Button className="w-full" disabled>Send Invitation (Coming Soon)</Button>
                         </div>
-                    </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="invite-role">Role</Label>
+                            <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as UserRole)}>
+                                <SelectTrigger id="invite-role">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="editor">Editor — can modify tokens</SelectItem>
+                                    <SelectItem value="viewer">Viewer — read only</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button type="submit" className="w-full" disabled={sending || !inviteEmail.trim()}>
+                            {sending ? "Sending..." : "Send invitation"}
+                        </Button>
+                    </form>
                 </Card>
             )}
         </div>

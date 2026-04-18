@@ -31,11 +31,12 @@ const SharedDesign = () => {
                 const { data, error } = await supabase
                     .from("design_systems")
                     .select("*")
-                    .eq("share_id" as any, id)
-                    .eq("is_public" as any, true)
-                    .single();
+                    .eq("share_id", id)
+                    .eq("is_public", true)
+                    .maybeSingle();
 
                 if (error) throw error;
+                if (!data) throw new Error("Design not found or not public");
 
                 setDesignSystem(data.design_system_data as unknown as GeneratedDesignSystem);
             } catch (err: unknown) {

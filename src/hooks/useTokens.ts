@@ -219,6 +219,7 @@ export function useTokens(designSystemId?: string) {
 
     useEffect(() => {
         fetchTokens();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [designSystemId]);
 
     return {
