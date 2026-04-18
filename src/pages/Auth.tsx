@@ -8,14 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Wand2, Loader2, ArrowRight } from "lucide-react";
+import { Wand2, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { Spotlight } from "@/components/ui/spotlight";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
   const { user, signIn, signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
@@ -92,6 +96,27 @@ const Auth = () => {
     if (!hasSpecialChar) return "Password must contain at least one special character";
 
     return null;
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast.error("Please enter your email");
+      return;
+    }
+    setIsResetting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setIsResetting(false);
+    if (error) {
+      toast.error("Failed to send reset email", { description: error.message });
+    } else {
+      toast.success("Check your inbox", {
+        description: "We've sent you a password reset link.",
+      });
+      setShowForgot(false);
+    }
   };
 
   return (
