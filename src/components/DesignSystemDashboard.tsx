@@ -140,7 +140,18 @@ export const DesignSystemDashboard = ({ onLoad, currentSystem, onSave }: DesignS
 
   const handleShare = async (design: SavedDesign) => {
     try {
-      const shareId = crypto.randomUUID().slice(0, 12);
+      // Reuse existing share_id if present
+      const { data: existing } = await supabase
+        .from("design_systems")
+        .select("share_id, is_public")
+        .eq("id", design.id)
+        .maybeSingle();
+
+      let shareId = existing?.share_id;
+      if (!shareId) {
+        shareId = crypto.randomUUID().slice(0, 12);
+      }
+
       const { error } = await supabase
         .from("design_systems")
         .update({ is_public: true, share_id: shareId })
