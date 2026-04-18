@@ -178,6 +178,32 @@ const Index = () => {
 
     const toastId = toast.loading("Saving design...");
 
+    const snapshotVersion = async (designSystemId: string) => {
+      try {
+        // Get next version number
+        const { data: latest } = await supabase
+          .from("design_system_versions")
+          .select("version_number")
+          .eq("design_system_id", designSystemId)
+          .order("version_number", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const nextNumber = (latest?.version_number ?? 0) + 1;
+
+        await supabase.from("design_system_versions").insert({
+          design_system_id: designSystemId,
+          version_number: nextNumber,
+          name: `Auto-snapshot v${nextNumber}`,
+          description: `Automatic snapshot taken on ${new Date().toLocaleString()}`,
+          snapshot_data: designSystem as unknown as Json,
+          created_by: user.id,
+        });
+      } catch (e) {
+        monitor.warn("Failed to create version snapshot");
+      }
+    };
+
     // If the design system already has an ID, update it; otherwise insert
     if (designSystem.id) {
       const { error } = await supabase
@@ -191,6 +217,7 @@ const Index = () => {
       if (error) {
         toast.error("Failed to save", { id: toastId, description: error.message });
       } else {
+        await snapshotVersion(designSystem.id);
         toast.success("Design updated!", { id: toastId });
       }
     } else {
@@ -205,6 +232,7 @@ const Index = () => {
         toast.error("Failed to save", { id: toastId, description: error.message });
       } else {
         setDesignSystem(prev => prev ? { ...prev, id: data.id } : prev);
+        await snapshotVersion(data.id);
         toast.success("Design saved!", { id: toastId });
       }
     }
