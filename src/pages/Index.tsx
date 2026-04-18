@@ -288,10 +288,18 @@ const Index = () => {
               <PresenceAvatars users={onlineUsers} />
 
               {user ? (
-                <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
+                <>
+                  <Button variant="ghost" size="sm" asChild className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
+                    <Link to="/profile" aria-label="Profile">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
               ) : (
                 <Button variant="ghost" size="sm" asChild className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
                   <Link to="/auth">
@@ -312,6 +320,21 @@ const Index = () => {
                   </Suspense>
                 )}
               </div>
+            </div>
+
+            {/* Mobile actions */}
+            <div className="md:hidden flex items-center gap-1">
+              {designSystem && user && (
+                <Button size="sm" variant="ghost" onClick={handleSave} aria-label="Save design">
+                  Save
+                </Button>
+              )}
+              {designSystem && (
+                <Suspense fallback={<Button size="sm" disabled>Export</Button>}>
+                  <ExportButton designSystem={designSystem} />
+                </Suspense>
+              )}
+              <ModeToggle />
             </div>
           </div>
         </header>
