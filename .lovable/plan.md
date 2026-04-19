@@ -1,117 +1,81 @@
 
+# Overview Page UI/UX Audit & Enhancement Plan
 
-# Complete Implementation Plan: DesignForge Production Readiness
+## Issues Found
 
-## Current State Summary
+### 1. Layout & Alignment
+- **Sticky sidebar broken**: `lg:col-span-4 sticky top-0` — `top-0` with no offset means it tucks under the page header. Should be `top-20` (or matching header height) and needs `self-start` so it doesn't stretch.
+- **Sidebar can exceed viewport**: `DesignHealthScore` + `AIAdvisor` + `InteractiveColorsDisplay` stacked in a sticky column will scroll-jump on shorter viewports. Needs `max-h-[calc(100vh-6rem)] overflow-y-auto`.
+- **Inconsistent card radius**: Hero uses `rounded-[2.5rem]`, all section cards use `rounded-xl`, sub-cards inside use `rounded-2xl`/`rounded-3xl`. Needs a single radius scale (suggest `rounded-2xl` for sections, `rounded-xl` for sub-cards).
+- **Inconsistent padding**: Sections use `p-5 md:p-6`, hero uses `p-5 md:p-8`, FeaturesOverview cards use `p-5`. Standardize to `p-6`.
+- **Spacing & Radius section**: header `mb-4` while every other section uses `mb-2` between icon-row and description — visual rhythm is off.
 
-**Working well:** Landing page, auth (email + Google), AI design system generation with fallback, sidebar navigation, save/load/rename/duplicate/delete lifecycle, export to multiple formats, dark mode, keyboard shortcuts.
+### 2. Content Duplication
+- **`InteractiveColorsDisplay` appears twice**: in the Overview sidebar AND inside the Colors tab (line 462). Sidebar position duplicates content the user sees again on the Colors tab.
+- **Brand Color Palette block is identical** in Overview (line 400-407) and Colors tab (line 454-460). Overview should be a condensed preview, not a full duplicate.
+- **Spacing/Typography/Shadows blocks** in Overview duplicate their dedicated tabs verbatim — Overview becomes a long scroll instead of a summary.
 
-**Broken or incomplete:**
+### 3. Typography & Hierarchy
+- **Mixed font weights**: HeroSection uses `font-black`, FeaturesOverview uses `font-bold`, DesignHealthScore uses `font-black tracking-tighter`. No consistent type scale.
+- **Hero h2 uses `leading-none`** — long design system names (e.g. "Enterprise SaaS Platform") clip descenders.
+- **Section titles inconsistent**: `text-lg font-semibold` in sections vs `text-xl` in DesignHealthScore vs `text-4xl md:text-5xl` in hero — no clear h1/h2/h3 step.
+- **Sub-headers in Spacing section** use `uppercase tracking-wider` but section title doesn't — inconsistent treatment.
 
-1. **SharedDesign uses `as any` casts** — `share_id` and `is_public` columns exist in DB but Supabase types file hasn't been regenerated, so the code uses unsafe casts (`eq("share_id" as any, id)`)
-2. **No DB triggers active** — The `<db-triggers>` section shows "There are no triggers in the database" despite migrations creating them. The owner auto-assign trigger and `updated_at` trigger are not firing.
-3. **Share overwrites share_id every time** — `handleShare` generates a new `share_id` on every click instead of reusing existing one
-4. **Team invite is user-ID based only** — No email-based invite flow; `inviteMember` requires knowing the target user's UUID
-5. **No profile management** — Users can't edit their name, avatar, or username
-6. **Token storage is JSONB blob** — All tokens stored in `design_system_data.tokens`, no dedicated table
-7. **Version history is unwired** — `design_system_versions` table exists but no auto-snapshot on save
-8. **No "forgot password" flow** on auth page
-9. **Landing page has placeholder content** — fake logos, fake testimonials, fake stats, fake video embed
-10. **Mobile header missing export/save buttons** — only desktop header shows them
+### 4. Visual Noise
+- **Hero badge text** "READY FOR PRODUCTION" is misleading on a freshly generated, unsaved system.
+- **FeaturesOverview values are static/fake**: "100%", "<1ms", "Pass" are hardcoded marketing copy, not real metrics. Should be removed or wired to actual audit data.
+- **Hero "Colors" / "Type Scales" pills** repeat info shown immediately below in FeaturesOverview and DesignHealthScore.
+- **DesignHealthScore inside narrow `col-span-4` sidebar**: 3 stat cards (`flex gap-4`) get squeezed, numbers wrap awkwardly below ~360px column width.
 
-## Implementation Plan (4 Phases)
+### 5. Responsive Issues
+- **`lg` breakpoint flip is jarring**: at `<1024px` everything collapses to one column, sidebar drops below content (DesignHealthScore appears after a long scroll). Health Score should appear near the top on mobile.
+- **Hero text** `text-4xl md:text-5xl` with `leading-none tracking-tighter` overflows on narrow viewports for long names.
+- **InteractiveColorsDisplay** inside `col-span-4` shows `lg:grid-cols-4` which becomes 4 tiny squeezed swatches per row in the sidebar.
 
-### Phase 1: Fix Critical Bugs (Immediate)
+### 6. Accessibility
+- Hero badge `Sparkles` icon is decorative but not marked `aria-hidden`.
+- FeaturesOverview cards are visual-only with no semantic role; values like "Pass" lack context for screen readers.
+- DesignHealthScore percentage uses color-only signaling (red/amber/green) without text labels.
+- "View N More Issues" button in DesignHealthScore is non-functional (no onClick).
 
-**1a. Re-create missing database triggers**
-- Migration to recreate `trg_assign_owner_on_design_system_create` and `set_updated_at` triggers (they exist as functions but triggers aren't attached)
-- Verify with a test insert
+### 7. Interaction
+- Section cards have no clear CTA to jump to their dedicated tab. User has to manually click sidebar links.
+- Hero pills have `cursor-default` — they look like buttons but do nothing. Either make them clickable filters or remove the button styling.
+- AIAdvisor suggestions are read-only — no "fix it" or "dismiss" actions despite mentioning "Magic Fix".
 
-**1b. Fix share flow**
-- Check if design already has a `share_id` before generating a new one
-- Remove `as any` casts in `SharedDesign.tsx` — regenerate types or use `.eq("share_id", id)` directly since columns now exist
+## Proposed Fixes
 
-**1c. Fix mobile header**
-- Add Save and Export buttons to mobile Sheet menu in the result view header
+### Phase A — Layout (high impact, low risk)
+1. Fix sticky sidebar: `lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto`
+2. Standardize card chrome: `rounded-2xl p-6 border border-border bg-card shadow-sm`
+3. On mobile (`<lg`), reorder so DesignHealthScore appears between hero and FeaturesOverview.
 
-**Files:** 1 migration, `DesignSystemDashboard.tsx`, `SharedDesign.tsx`, `Index.tsx`
+### Phase B — Reduce duplication
+4. Overview should show **previews**, not full sections. Replace the full `ColorPaletteDisplay` / `TypographyDisplay` / `SpacingDisplay` / `ShadowDisplay` / `GridDisplay` blocks with compact summary cards (top 6 colors, 2 font samples, 4 spacing steps) that link "View all →" to the dedicated tab.
+5. Remove `InteractiveColorsDisplay` from sidebar (keep on Colors tab only). Replace with a slim "Quick Actions" card (Save, Export, Share).
 
-### Phase 2: Core Feature Gaps
+### Phase C — Typography & polish
+6. Define a 3-step heading scale used everywhere on this page: hero `text-3xl md:text-4xl font-bold tracking-tight leading-tight`, section title `text-lg font-semibold`, sub `text-sm font-semibold uppercase tracking-wider text-muted-foreground`.
+7. Normalize font weight: `font-bold` for titles, `font-semibold` for sub-titles, drop `font-black`.
+8. Add `aria-hidden` to all decorative icons; add `aria-label` to icon-only buttons.
 
-**2a. Email-based team invite**
-- Create edge function `invite-member` that looks up user by email in `profiles`, inserts `user_roles` row
-- Add email input field to `TeamSettings.tsx` invite UI
-- Handle "user not found" gracefully with a message
+### Phase D — Truthful metrics
+9. Replace FeaturesOverview hardcoded values with real ones: token count from `Object.keys`, contrast pass count from `getContrastRatio`, font names from `designSystem.typography.fontFamily`.
+10. Wire DesignHealthScore "View N More Issues" button to expand the list.
+11. Remove "READY FOR PRODUCTION" badge or make it conditional on `designSystem.id` (i.e., only after first save).
 
-**2b. Profile management page**
-- New `ProfileSettings.tsx` component: edit `full_name`, `username`, `avatar_url`
-- Add "Profile" link in the app header user menu
-- Wire to `profiles` table UPDATE
+### Phase E — Interaction
+12. Add a "View details →" link to each Overview section card that switches to that tab.
+13. Make hero stat pills either clickable (jump to that tab) or downgrade to non-button `<div>`s without `hover-lift`.
 
-**2c. Auto-snapshot versions on save**
-- In `handleSave` (Index.tsx), after successful save/update, insert a row into `design_system_versions`
-- Wire `VersionManager` component to display version history from DB
-- Add restore functionality
+## Files Changed
+- `src/pages/Index.tsx` (Overview branch, lines 387-450) — layout, ordering, preview cards
+- `src/components/HeroSection.tsx` — typography, conditional badge, a11y
+- `src/components/FeaturesOverview.tsx` — wire real metrics
+- `src/components/DesignHealthScore.tsx` — sidebar-friendly compact mode, "View more" wiring
+- `src/components/AIAdvisor.tsx` — minor a11y pass
 
-**2d. Forgot password**
-- Add "Forgot password?" link on Auth page sign-in tab
-- Call `supabase.auth.resetPasswordForEmail()`
-- Add password reset confirmation UI
-
-**Files:** 1 edge function, `TeamSettings.tsx`, new `ProfileSettings.tsx`, `Index.tsx`, `Auth.tsx`, `VersionManager.tsx`
-
-### Phase 3: Token Management Migration
-
-**3a. Create `design_tokens` table**
-- Migration: `design_tokens` with columns `id`, `design_system_id`, `path`, `name`, `type`, `value` (jsonb), `description`, `status`, `created_by`, `created_at`, `updated_at`
-- RLS: members can CRUD tokens for their design systems
-- Enable realtime
-
-**3b. Migrate `useTokens` hook**
-- Query `design_tokens` table instead of JSONB blob
-- Keep fallback: if no rows in `design_tokens`, flatten from `design_system_data` (backward compat)
-- Individual token CRUD operations become simple row inserts/updates/deletes
-
-**Files:** 1 migration, `useTokens.ts`, `TokenEditor.tsx`
-
-### Phase 4: Polish & Launch Readiness
-
-**4a. Landing page cleanup**
-- Replace fake logos/testimonials/stats with realistic placeholder content or remove sections
-- Remove fake video embed or replace with a screenshot/demo GIF
-- Ensure all CTA buttons link to `/auth` or `/app`
-
-**4b. Empty states & error handling**
-- Add proper empty states for: Tokens (no tokens yet), Team (only you), Governance (no requests), Analytics (no events), Docs (no docs), Assets (no assets)
-- Wrap all tab content in ErrorBoundary
-
-**4c. Loading state consistency**
-- Ensure all Suspense fallbacks use consistent skeleton components
-- Add loading states to team invite, share, and delete operations
-
-**4d. Accessibility pass**
-- Add `aria-label` to all icon-only buttons
-- Ensure focus management in sidebar navigation
-- Check color contrast in both light and dark modes
-
-**Files:** Multiple landing components, various tab components in `Index.tsx`
-
-## Execution Order
-
-```text
-Phase 1 (1-2 days):  Fix triggers, share flow, mobile header
-Phase 2 (3-5 days):  Team invite, profiles, versions, forgot password
-Phase 3 (2-3 days):  Token table migration + hook rewrite
-Phase 4 (2-3 days):  Polish, empty states, landing cleanup
-```
-
-## Database Changes Summary
-1. Recreate triggers (owner auto-assign + updated_at)
-2. Create `design_tokens` table with RLS
-3. No new columns needed (share_id, is_public already exist)
-
-## Key Decisions
-- Keep backward compatibility: `useTokens` falls back to JSONB if `design_tokens` table is empty
-- Team invite works by email lookup, not by sending actual invitation emails (simpler, ships faster)
-- Version snapshots are automatic on every save, not manual
-
+## Out of Scope
+- Sidebar nav itself (separate concern)
+- Other tabs (Colors, Typography, etc. — only mentioned where they overlap with Overview)
+- Landing page
