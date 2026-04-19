@@ -13,6 +13,7 @@ interface DesignHealthScoreProps {
 
 export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSystem }) => {
     const [report, setReport] = useState<AuditReport | null>(null);
+    const [showAll, setShowAll] = useState(false);
 
     useEffect(() => {
         const runAudit = async () => {
@@ -28,6 +29,13 @@ export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSyst
         if (score >= 90) return "text-emerald-500";
         if (score >= 70) return "text-amber-500";
         return "text-red-500";
+    };
+
+    const getScoreLabel = (score: number) => {
+        if (score >= 90) return "Excellent";
+        if (score >= 70) return "Good";
+        if (score >= 50) return "Needs work";
+        return "Critical";
     };
 
     const getLevelIcon = (level: string) => {
