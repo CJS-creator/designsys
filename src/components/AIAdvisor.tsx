@@ -64,17 +64,17 @@ export function AIAdvisor({ designSystem }: { designSystem: GeneratedDesignSyste
     if (suggestions.length === 0) return null;
 
     return (
-        <Card className="border-primary/20 bg-primary/5 backdrop-blur-sm overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
+        <Card className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-4 opacity-10" aria-hidden="true">
                 <Sparkles className="h-12 w-12 text-primary" />
             </div>
             <CardHeader>
                 <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 animate-pulse-soft">
-                        <Brain className="h-3 w-3 mr-1" />
-                        AI ADVISOR
+                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                        <Brain className="h-3 w-3 mr-1" aria-hidden="true" />
+                        AI Advisor
                     </Badge>
-                    <CardTitle className="text-sm font-bold">Smart Insights</CardTitle>
+                    <CardTitle className="text-sm font-semibold">Smart Insights</CardTitle>
                 </div>
                 <CardDescription className="text-xs">Real-time design audits for your system</CardDescription>
             </CardHeader>
@@ -90,11 +90,11 @@ export function AIAdvisor({ designSystem }: { designSystem: GeneratedDesignSyste
                             }`}
                     >
                         {suggestion.severity === "success" ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 mt-0.5" />
+                            <CheckCircle2 className="h-3.5 w-3.5 mt-0.5" aria-hidden="true" />
                         ) : suggestion.severity === "warning" ? (
-                            <AlertCircle className="h-3.5 w-3.5 mt-0.5" />
+                            <AlertCircle className="h-3.5 w-3.5 mt-0.5" aria-hidden="true" />
                         ) : (
-                            <Lightbulb className="h-3.5 w-3.5 mt-0.5" />
+                            <Lightbulb className="h-3.5 w-3.5 mt-0.5" aria-hidden="true" />
                         )}
                         <p className="font-medium">{suggestion.message}</p>
                     </div>
