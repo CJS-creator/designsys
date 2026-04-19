@@ -469,7 +469,7 @@ export const Default: Story = {};
 `;
 }
 
-export function generateTokensReference(ds: GeneratedDesignSystem, tokens: DesignToken[]): string {
+export function generateTokensReference(ds: GeneratedDesignSystem, _tokens: DesignToken[]): string {
     return `# Design Tokens Reference: ${ds.name}
 
 Generated on ${new Date().toLocaleDateString()}

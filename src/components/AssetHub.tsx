@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
     Download,
-    FileType,
     FileText,
     Image as ImageIcon,
     Loader2,

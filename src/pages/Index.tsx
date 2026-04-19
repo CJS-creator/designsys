@@ -387,66 +387,136 @@ const Index = () => {
                   {activeTab === "overview" && (
                     <div className="flex flex-col gap-6">
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                        <div className="lg:col-span-8 space-y-6">
-                          <HeroSection designSystem={designSystem} />
+                        <div className="lg:col-span-8 space-y-6 lg:order-1 order-2">
+                          <HeroSection designSystem={designSystem} isSaved={Boolean(designSystem.id)} />
                           <FeaturesOverview designSystem={designSystem} />
                         </div>
-                        <div className="lg:col-span-4 sticky top-0 space-y-6">
+                        <div className="lg:col-span-4 space-y-6 lg:order-2 order-1 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
                           <DesignHealthScore designSystem={designSystem} />
                           <AIAdvisor designSystem={designSystem} />
-                          <InteractiveColorsDisplay colors={designSystem.colors} />
                         </div>
                       </div>
-                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Palette className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-semibold text-foreground">Brand Color Palette</h3>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-4">Primary, secondary, and accent colors with semantic variants</p>
-                        <ColorPaletteDisplay colors={designSystem.colors} />
-                      </div>
-                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Type className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-semibold text-foreground">Typography System</h3>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-4">Heading and body scales using modern font pairings</p>
-                        <TypographyDisplay typography={designSystem.typography} />
-                      </div>
-                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Ruler className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-semibold text-foreground">Spacing & Radius</h3>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
-                            <p className="text-xs text-muted-foreground mb-4">{designSystem.spacing.unit}px base unit with consistent scale</p>
-                            <SpacingDisplay spacing={designSystem.spacing} />
+
+                      {/* Compact preview cards — full views live in dedicated tabs */}
+                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-colors">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Palette className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                            <h3 id="overview-colors" className="text-lg font-semibold text-foreground truncate">Brand Color Palette</h3>
                           </div>
-                          <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Border Radius</h4>
-                            <p className="text-xs text-muted-foreground mb-4">{designSystem.borderRadius.md} standard radius with full range</p>
-                            <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
+                          <button
+                            type="button"
+                            onClick={() => handleTabChange("colors")}
+                            className="text-xs font-semibold text-primary hover:underline shrink-0"
+                            aria-label="View all colors"
+                          >
+                            View all →
+                          </button>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">Top brand colors with semantic variants</p>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(designSystem.colors)
+                            .filter(([, v]) => typeof v === "string")
+                            .slice(0, 8)
+                            .map(([name, value]) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => handleTabChange("colors")}
+                                className="group flex flex-col items-center gap-1.5"
+                                aria-label={`${name} color`}
+                              >
+                                <div
+                                  className="h-12 w-12 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform"
+                                  style={{ backgroundColor: value as string }}
+                                />
+                                <span className="text-[10px] font-medium text-muted-foreground capitalize">{name}</span>
+                              </button>
+                            ))}
+                        </div>
+                      </section>
+
+                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-typography">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Type className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                            <h3 id="overview-typography" className="text-lg font-semibold text-foreground truncate">Typography</h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleTabChange("typography")}
+                            className="text-xs font-semibold text-primary hover:underline shrink-0"
+                            aria-label="View all typography"
+                          >
+                            View all →
+                          </button>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Heading · {designSystem.typography.fontFamily.heading}</p>
+                            <p className="text-2xl font-bold leading-tight" style={{ fontFamily: designSystem.typography.fontFamily.heading }}>
+                              The quick brown fox
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Body · {designSystem.typography.fontFamily.body}</p>
+                            <p className="text-base leading-relaxed" style={{ fontFamily: designSystem.typography.fontFamily.body }}>
+                              The quick brown fox jumps over the lazy dog.
+                            </p>
                           </div>
                         </div>
-                      </div>
-                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Cast className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-semibold text-foreground">Elevation & Shadows</h3>
+                      </section>
+
+                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-spacing">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Ruler className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                            <h3 id="overview-spacing" className="text-lg font-semibold text-foreground truncate">Spacing & Radius</h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleTabChange("spacing")}
+                            className="text-xs font-semibold text-primary hover:underline shrink-0"
+                            aria-label="View all spacing tokens"
+                          >
+                            View all →
+                          </button>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-4">Light and dark mode compatible elevation system</p>
-                        <ShadowDisplay shadows={designSystem.shadows} />
-                      </div>
-                      <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Grid3X3 className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-semibold text-foreground">Layout Grid</h3>
+                        <p className="text-sm text-muted-foreground mb-4">{designSystem.spacing.unit}px base unit · {designSystem.borderRadius.md} default radius</p>
+                        <div className="flex items-end gap-3 flex-wrap">
+                          {Object.entries(designSystem.spacing.scale || {}).slice(0, 6).map(([name, value]) => (
+                            <div key={name} className="flex flex-col items-center gap-1.5">
+                              <div className="bg-primary/20 rounded" style={{ width: value as string, height: value as string, minWidth: 8, minHeight: 8 }} />
+                              <span className="text-[10px] font-medium text-muted-foreground">{name}</span>
+                            </div>
+                          ))}
                         </div>
-                        <p className="text-sm text-muted-foreground mb-4">Responsive 12-column grid with flexible layout system</p>
-                        <GridDisplay grid={designSystem.grid} />
-                      </div>
+                      </section>
+
+                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-elevation">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Cast className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                            <h3 id="overview-elevation" className="text-lg font-semibold text-foreground truncate">Elevation</h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleTabChange("shadows")}
+                            className="text-xs font-semibold text-primary hover:underline shrink-0"
+                            aria-label="View all shadows"
+                          >
+                            View all →
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          {Object.entries(designSystem.shadows).slice(0, 4).map(([name, value]) => (
+                            <div key={name} className="flex flex-col items-center gap-2">
+                              <div className="h-12 w-full bg-background rounded-lg border border-border" style={{ boxShadow: value as string }} />
+                              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
                     </div>
                   )}
 
