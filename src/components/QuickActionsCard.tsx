@@ -80,7 +80,9 @@ export function QuickActionsCard({ designSystem, onSave }: QuickActionsCardProps
                         </Button>
                     }
                 >
-                    <ExportButton designSystem={designSystem} variant="outline" size="sm" className="justify-start font-semibold rounded-xl w-full" />
+                    <div className="[&>button]:w-full [&>button]:justify-start [&>button]:font-semibold [&>button]:rounded-xl">
+                        <ExportButton designSystem={designSystem} />
+                    </div>
                 </Suspense>
 
                 <Button
