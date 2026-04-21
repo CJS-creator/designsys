@@ -2,9 +2,16 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Brain, Lightbulb, CheckCircle2, AlertCircle, Wand2 } from "lucide-react";
+import { Sparkles, Brain, Lightbulb, CheckCircle2, AlertCircle, Wand2, Loader2 } from "lucide-react";
 import { GeneratedDesignSystem } from "@/types/designSystem";
-import { getContrastRatio, fixContrast, parseHslString, hexToHsl, hslToString } from "@/lib/colorUtils";
+import {
+    getContrastRatio,
+    autoFixContrast,
+    parseHslString,
+    hexToHsl,
+    hslToString,
+    pickAccessibleForeground,
+} from "@/lib/colorUtils";
 import { toast } from "sonner";
 
 interface Suggestion {
@@ -12,8 +19,10 @@ interface Suggestion {
     type: "harmony" | "usability" | "accessibility" | "naming";
     message: string;
     severity: "info" | "warning" | "success";
-    fix?: () => void;
+    fix?: () => void | Promise<void>;
     fixLabel?: string;
+    autoFix?: () => void | Promise<void>;
+    autoFixLabel?: string;
 }
 
 interface AIAdvisorProps {
@@ -21,16 +30,53 @@ interface AIAdvisorProps {
     onUpdate?: (next: GeneratedDesignSystem) => void;
 }
 
+/**
+ * After changing a primary color, recompute all derived/related tokens
+ * (foreground, interactive states) so the rest of the palette stays
+ * accessible & coherent.
+ */
+function recalcRelatedTokens(ds: GeneratedDesignSystem, newPrimary: string): GeneratedDesignSystem {
+    const next: GeneratedDesignSystem = {
+        ...ds,
+        colors: { ...ds.colors, primary: newPrimary },
+    };
+
+    // Foreground on primary
+    next.colors.onPrimary = pickAccessibleForeground(newPrimary);
+
+    // Interactive states derived from primary
+    let hsl = parseHslString(newPrimary);
+    if (!hsl && newPrimary.startsWith("#")) hsl = hexToHsl(newPrimary);
+    if (hsl) {
+        const { h, s, l } = hsl;
+        next.colors.interactive = {
+            ...ds.colors.interactive,
+            primary: {
+                hover: hslToString(h, Math.min(s + 5, 100), Math.max(l - 5, 0)),
+                active: hslToString(h, Math.min(s + 10, 100), Math.max(l - 10, 0)),
+                disabled: hslToString(h, Math.max(s - 40, 10), Math.min(l + 30, 90)),
+                focus: hslToString(h, Math.min(s + 15, 100), l),
+            },
+        };
+        // Container variants
+        next.colors.primaryContainer = hslToString(h, Math.max(s - 10, 5), Math.min(l + 35, 92));
+        next.colors.onPrimaryContainer = pickAccessibleForeground(next.colors.primaryContainer);
+    }
+
+    return next;
+}
+
 export function AIAdvisor({ designSystem, onUpdate }: AIAdvisorProps) {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+    const [autoFixing, setAutoFixing] = useState<string | null>(null);
 
     useEffect(() => {
         if (!designSystem) return;
 
         const newSuggestions: Suggestion[] = [];
 
-        // 1. Accessibility Checks
+        // 1. Accessibility — primary contrast
         const contrastRatio = getContrastRatio(designSystem.colors.primary, designSystem.colors.background);
         if (contrastRatio < 4.5) {
             newSuggestions.push({
@@ -44,24 +90,50 @@ export function AIAdvisor({ designSystem, onUpdate }: AIAdvisorProps) {
                         toast.error("Cannot apply fix in this context");
                         return;
                     }
-                    const fixed = fixContrast(
+                    const result = autoFixContrast(
                         designSystem.colors.primary,
                         designSystem.colors.background,
-                        "AA",
-                        "normal"
+                        { targetLevel: "AA", textSize: "normal", step: 2, maxLightnessDelta: 30 }
                     );
-                    const newRatio = getContrastRatio(fixed, designSystem.colors.background);
-                    if (newRatio < 4.5) {
-                        toast.warning("Could not reach AA — primary nudged as far as possible", {
-                            description: `New ratio: ${newRatio.toFixed(2)}:1`,
+                    const next = recalcRelatedTokens(designSystem, result.color);
+                    onUpdate(next);
+                    if (result.passed) {
+                        toast.success(`Primary updated · contrast now ${result.ratio.toFixed(2)}:1`, {
+                            description: "Foreground & interactive tokens were also recalculated.",
                         });
                     } else {
-                        toast.success(`Primary updated · contrast now ${newRatio.toFixed(2)}:1`);
+                        toast.warning("Could not reach AA in one pass", {
+                            description: `Try “Auto-fix until AA passes”. Current ratio: ${result.ratio.toFixed(2)}:1`,
+                        });
                     }
-                    onUpdate({
-                        ...designSystem,
-                        colors: { ...designSystem.colors, primary: fixed },
-                    });
+                },
+                autoFixLabel: "Auto-fix until AA passes",
+                autoFix: async () => {
+                    if (!onUpdate) {
+                        toast.error("Cannot apply fix in this context");
+                        return;
+                    }
+                    setAutoFixing("a11y-primary");
+                    try {
+                        const result = autoFixContrast(
+                            designSystem.colors.primary,
+                            designSystem.colors.background,
+                            { targetLevel: "AA", textSize: "normal", step: 1, maxLightnessDelta: 100 }
+                        );
+                        const next = recalcRelatedTokens(designSystem, result.color);
+                        onUpdate(next);
+                        if (result.passed) {
+                            toast.success(`AA reached after ${result.iterations} steps`, {
+                                description: `Final ratio ${result.ratio.toFixed(2)}:1, lightness Δ ${result.deltaL > 0 ? "+" : ""}${result.deltaL}.`,
+                            });
+                        } else {
+                            toast.error("Reached the lightness limit before passing AA", {
+                                description: `Best ratio achieved: ${result.ratio.toFixed(2)}:1. Consider changing the hue.`,
+                            });
+                        }
+                    } finally {
+                        setAutoFixing(null);
+                    }
                 },
             });
         } else {
@@ -73,7 +145,7 @@ export function AIAdvisor({ designSystem, onUpdate }: AIAdvisorProps) {
             });
         }
 
-        // 2. Harmony Checks (Heuristic based)
+        // 2. Harmony — duplicate accent/secondary
         if (designSystem.colors.accent === designSystem.colors.secondary) {
             newSuggestions.push({
                 id: "harmony-duplicate",
@@ -97,7 +169,7 @@ export function AIAdvisor({ designSystem, onUpdate }: AIAdvisorProps) {
             });
         }
 
-        // 3. Spacing Consistency
+        // 3. Spacing consistency
         if (designSystem.spacing.unit !== 4 && designSystem.spacing.unit !== 8) {
             newSuggestions.push({
                 id: "usability-spacing",
@@ -129,54 +201,75 @@ export function AIAdvisor({ designSystem, onUpdate }: AIAdvisorProps) {
                 <CardDescription className="text-xs">Real-time design audits for your system</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-                {visible.map((suggestion) => (
-                    <div
-                        key={suggestion.id}
-                        className={`flex items-start gap-3 p-2.5 rounded-lg border text-xs transition-all ${suggestion.severity === "success"
-                            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-                            : suggestion.severity === "warning"
-                                ? "bg-amber-500/5 border-amber-500/20 text-amber-700 dark:text-amber-400"
-                                : "bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400"
-                            }`}
-                    >
-                        {suggestion.severity === "success" ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
-                        ) : suggestion.severity === "warning" ? (
-                            <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
-                        ) : (
-                            <Lightbulb className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
-                        )}
-                        <div className="flex-1 min-w-0 space-y-2">
-                            <p className="font-semibold leading-snug">{suggestion.message}</p>
-                            {(suggestion.fix || suggestion.severity !== "success") && (
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    {suggestion.fix && (
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-6 px-2 text-[11px] font-semibold rounded-md"
-                                            onClick={suggestion.fix}
-                                        >
-                                            <Wand2 className="h-3 w-3 mr-1" aria-hidden="true" />
-                                            {suggestion.fixLabel || "Fix"}
-                                        </Button>
-                                    )}
-                                    {suggestion.severity !== "success" && (
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-6 px-2 text-[11px] font-medium rounded-md"
-                                            onClick={() => setDismissed((prev) => new Set(prev).add(suggestion.id))}
-                                            aria-label="Dismiss suggestion"
-                                        >
-                                            Dismiss
-                                        </Button>
-                                    )}
-                                </div>
+                {visible.map((suggestion) => {
+                    const isAutoFixing = autoFixing === suggestion.id;
+                    return (
+                        <div
+                            key={suggestion.id}
+                            className={`flex items-start gap-3 p-2.5 rounded-lg border text-xs transition-all ${suggestion.severity === "success"
+                                ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                                : suggestion.severity === "warning"
+                                    ? "bg-amber-500/5 border-amber-500/20 text-amber-700 dark:text-amber-400"
+                                    : "bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400"
+                                }`}
+                        >
+                            {suggestion.severity === "success" ? (
+                                <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+                            ) : suggestion.severity === "warning" ? (
+                                <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+                            ) : (
+                                <Lightbulb className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
                             )}
+                            <div className="flex-1 min-w-0 space-y-2">
+                                <p className="font-semibold leading-snug">{suggestion.message}</p>
+                                {(suggestion.fix || suggestion.autoFix || suggestion.severity !== "success") && (
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {suggestion.fix && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-6 px-2 text-[11px] font-semibold rounded-md"
+                                                onClick={suggestion.fix}
+                                                disabled={isAutoFixing}
+                                            >
+                                                <Wand2 className="h-3 w-3 mr-1" aria-hidden="true" />
+                                                {suggestion.fixLabel || "Fix"}
+                                            </Button>
+                                        )}
+                                        {suggestion.autoFix && (
+                                            <Button
+                                                size="sm"
+                                                variant="default"
+                                                className="h-6 px-2 text-[11px] font-semibold rounded-md"
+                                                onClick={suggestion.autoFix}
+                                                disabled={isAutoFixing}
+                                            >
+                                                {isAutoFixing ? (
+                                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" aria-hidden="true" />
+                                                ) : (
+                                                    <Sparkles className="h-3 w-3 mr-1" aria-hidden="true" />
+                                                )}
+                                                {isAutoFixing ? "Fixing…" : suggestion.autoFixLabel || "Auto-fix"}
+                                            </Button>
+                                        )}
+                                        {suggestion.severity !== "success" && (
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-6 px-2 text-[11px] font-medium rounded-md"
+                                                onClick={() => setDismissed((prev) => new Set(prev).add(suggestion.id))}
+                                                aria-label="Dismiss suggestion"
+                                                disabled={isAutoFixing}
+                                            >
+                                                Dismiss
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </CardContent>
         </Card>
     );
