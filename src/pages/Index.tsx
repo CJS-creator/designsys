@@ -27,6 +27,7 @@ import { GitSettings } from "@/components/GitSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { TeamSettings } from "@/components/TeamSettings";
 import { AIAdvisor } from "@/components/AIAdvisor";
+import { QuickActionsCard } from "@/components/QuickActionsCard";
 import { BrandSwapper } from "@/components/BrandSwapper";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { trackEvent } from "@/lib/analytics";
@@ -386,14 +387,22 @@ const Index = () => {
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {activeTab === "overview" && (
                     <div className="flex flex-col gap-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start scroll-mt-24">
                         <div className="lg:col-span-8 space-y-6 lg:order-1 order-2">
                           <HeroSection designSystem={designSystem} isSaved={Boolean(designSystem.id)} />
                           <FeaturesOverview designSystem={designSystem} />
                         </div>
                         <div className="lg:col-span-4 space-y-6 lg:order-2 order-1 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
                           <DesignHealthScore designSystem={designSystem} />
-                          <AIAdvisor designSystem={designSystem} />
+                          <QuickActionsCard designSystem={designSystem} onSave={handleSave} />
+                          <AIAdvisor
+                            designSystem={designSystem}
+                            onUpdate={(next) => {
+                              setDesignSystem(next);
+                              setThemedDesignSystem(next);
+                              injectDesignSystemVariables(next);
+                            }}
+                          />
                         </div>
                       </div>
 
@@ -521,69 +530,119 @@ const Index = () => {
                   )}
 
                   {activeTab === "colors" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Palette className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Brand Color Palette</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-colors-title">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Palette className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-colors-title" className="text-lg font-semibold text-foreground truncate">Brand Color Palette</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("accessibility")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View accessibility audit"
+                        >
+                          Accessibility audit →
+                        </button>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Primary, secondary, and accent colors with semantic variants</p>
                       <ColorPaletteDisplay colors={designSystem.colors} />
                       <div className="mt-6">
                         <InteractiveColorsDisplay colors={designSystem.colors} />
                       </div>
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "typography" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Type className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Typography System</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-typography-title">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Type className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-typography-title" className="text-lg font-semibold text-foreground truncate">Typography System</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("tokens")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View token management"
+                        >
+                          Manage tokens →
+                        </button>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Heading and body scales using modern font pairings</p>
                       <TypographyDisplay typography={designSystem.typography} />
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "spacing" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Ruler className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Spacing & Radius</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-spacing-title">
+                      <div className="flex items-center justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Ruler className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-spacing-title" className="text-lg font-semibold text-foreground truncate">Spacing & Radius</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("grid")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View grid system"
+                        >
+                          View grid →
+                        </button>
                       </div>
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-4">
-                          <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
                           <SpacingDisplay spacing={designSystem.spacing} />
                         </div>
                         <div className="space-y-4">
-                          <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Border Radius</h4>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Border Radius</h4>
                           <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
                         </div>
                       </div>
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "shadows" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Cast className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Elevation & Shadows</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-shadows-title">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Cast className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-shadows-title" className="text-lg font-semibold text-foreground truncate">Elevation & Shadows</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("motion")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View motion gallery"
+                        >
+                          View motion →
+                        </button>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Light and dark mode compatible elevation system</p>
                       <ShadowDisplay shadows={designSystem.shadows} />
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "grid" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Grid3X3 className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Layout Grid</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-grid-title">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Grid3X3 className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-grid-title" className="text-lg font-semibold text-foreground truncate">Layout Grid</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("spacing")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View spacing scale"
+                        >
+                          View spacing →
+                        </button>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Responsive 12-column grid with flexible layout system</p>
                       <GridDisplay grid={designSystem.grid} />
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "tokens" && (
