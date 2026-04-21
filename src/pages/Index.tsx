@@ -27,6 +27,7 @@ import { GitSettings } from "@/components/GitSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { TeamSettings } from "@/components/TeamSettings";
 import { AIAdvisor } from "@/components/AIAdvisor";
+import { QuickActionsCard } from "@/components/QuickActionsCard";
 import { BrandSwapper } from "@/components/BrandSwapper";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { trackEvent } from "@/lib/analytics";
