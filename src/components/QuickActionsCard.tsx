@@ -175,7 +175,7 @@ export function QuickActionsCard({ designSystem, onSave }: QuickActionsCardProps
                             onClick={copyLink}
                             aria-label="Copy share URL"
                         >
-                            {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                            {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                         </Button>
                     </div>
                     <DialogFooter className="gap-2 sm:gap-0">
