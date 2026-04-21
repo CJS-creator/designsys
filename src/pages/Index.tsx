@@ -98,10 +98,40 @@ const Index = () => {
     }
   }, [searchParams]);
 
+  // Persist scroll position per tab and restore on switch (deep-link friendly)
+  const scrollPositionsRef = (typeof window !== "undefined")
+    ? ((window as unknown as { __dsScrollPositions?: Record<string, number> }).__dsScrollPositions ??= {})
+    : {};
+
   const handleTabChange = (value: string) => {
+    // Save current tab scroll
+    const main = document.querySelector<HTMLElement>("main[data-ds-main]");
+    if (main) scrollPositionsRef[activeTab] = main.scrollTop;
+
     setActiveTab(value);
     setSearchParams({ tab: value }, { replace: true });
+    // Update hash so the URL is shareable / browser-back friendly
+    if (typeof window !== "undefined" && window.location.hash !== `#${value}`) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search.includes("tab=") ? window.location.search : `?tab=${value}`}#${value}`);
+    }
+
+    // Restore on next paint
+    requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>("main[data-ds-main]");
+      if (target) target.scrollTop = scrollPositionsRef[value] ?? 0;
+    });
   };
+
+  // On mount, honour #hash if present (deep link from external share)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash.replace(/^#/, "");
+    if (hash && hash !== activeTab) {
+      setActiveTab(hash);
+      setSearchParams({ tab: hash }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleGenerate = useCallback(async (input: DesignSystemInput) => {
     setIsLoading(true);
