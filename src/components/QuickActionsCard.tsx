@@ -1,105 +1,203 @@
-import { Save, Download, Share2, Zap } from "lucide-react";
+import { Save, Download, Share2, Zap, Copy, ExternalLink, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useCallback, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
 
 interface QuickActionsCardProps {
     designSystem: GeneratedDesignSystem;
-    onSave: () => void;
+    onSave: () => void | Promise<void>;
 }
 
 export function QuickActionsCard({ designSystem, onSave }: QuickActionsCardProps) {
     const { user } = useAuth();
-    const [sharing, setSharing] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [creatingLink, setCreatingLink] = useState(false);
+    const [shareUrl, setShareUrl] = useState<string | null>(null);
+    const [shareOpen, setShareOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
 
-    const handleShare = async () => {
+    // Refs to prevent double-firing across re-renders / accidental double-clicks
+    const saveInFlightRef = useRef(false);
+    const shareInFlightRef = useRef(false);
+
+    const handleSave = useCallback(async () => {
+        if (saveInFlightRef.current) return;
+        saveInFlightRef.current = true;
+        setSaving(true);
+        try {
+            await onSave();
+        } finally {
+            saveInFlightRef.current = false;
+            setSaving(false);
+        }
+    }, [onSave]);
+
+    const openShareModal = useCallback(async () => {
         if (!designSystem.id) {
             toast.error("Save the design system first to share it");
             return;
         }
-        setSharing(true);
+        // If we already have a URL cached for this id, just reopen
+        if (shareUrl) {
+            setShareOpen(true);
+            return;
+        }
+        if (shareInFlightRef.current) return;
+        shareInFlightRef.current = true;
+        setCreatingLink(true);
         try {
-            // Ensure share_id exists & is_public is true
             const { data, error } = await supabase
                 .from("design_systems")
                 .update({ is_public: true })
                 .eq("id", designSystem.id)
                 .select("share_id")
                 .single();
-
             if (error) throw error;
-            const shareId = data?.share_id;
-            if (!shareId) throw new Error("Share link unavailable");
-
-            const url = `${window.location.origin}/share/${shareId}`;
-            await navigator.clipboard.writeText(url);
-            toast.success("Share link copied to clipboard!", { description: url });
+            const sid = data?.share_id;
+            if (!sid) throw new Error("Share link unavailable");
+            const url = `${window.location.origin}/share/${sid}`;
+            setShareUrl(url);
+            setShareOpen(true);
         } catch (e) {
             toast.error("Failed to create share link", {
                 description: e instanceof Error ? e.message : "Unknown error",
             });
         } finally {
-            setSharing(false);
+            shareInFlightRef.current = false;
+            setCreatingLink(false);
         }
-    };
+    }, [designSystem.id, shareUrl]);
+
+    const copyLink = useCallback(async () => {
+        if (!shareUrl) return;
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            setCopied(true);
+            toast.success("Link copied to clipboard");
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            toast.error("Could not copy link");
+        }
+    }, [shareUrl]);
 
     return (
-        <section
-            aria-labelledby="quick-actions-title"
-            className="p-6 rounded-2xl border border-border bg-card shadow-sm"
-        >
-            <div className="flex items-center gap-2 mb-4">
-                <Zap className="h-4 w-4 text-primary" aria-hidden="true" />
-                <h3 id="quick-actions-title" className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                    Quick Actions
-                </h3>
-            </div>
-            <div className="grid grid-cols-1 gap-2">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onSave}
-                    disabled={!user}
-                    className="justify-start font-semibold rounded-xl"
-                    aria-label={user ? "Save design system" : "Sign in to save"}
-                >
-                    <Save className="h-4 w-4 mr-2" aria-hidden="true" />
-                    {designSystem.id ? "Save changes" : "Save design"}
-                </Button>
+        <>
+            <section
+                aria-labelledby="quick-actions-title"
+                className="p-6 rounded-2xl border border-border bg-card shadow-sm"
+            >
+                <div className="flex items-center gap-2 mb-4">
+                    <Zap className="h-4 w-4 text-primary" aria-hidden="true" />
+                    <h3 id="quick-actions-title" className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        Quick Actions
+                    </h3>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSave}
+                        disabled={!user || saving}
+                        className="justify-start font-semibold rounded-xl"
+                        aria-label={user ? "Save design system" : "Sign in to save"}
+                    >
+                        <Save className="h-4 w-4 mr-2" aria-hidden="true" />
+                        {saving ? "Saving…" : designSystem.id ? "Save changes" : "Save design"}
+                    </Button>
 
-                <Suspense
-                    fallback={
-                        <Button variant="outline" size="sm" disabled className="justify-start font-semibold rounded-xl">
-                            <Download className="h-4 w-4 mr-2" aria-hidden="true" />
-                            Export
+                    <Suspense
+                        fallback={
+                            <Button variant="outline" size="sm" disabled className="justify-start font-semibold rounded-xl">
+                                <Download className="h-4 w-4 mr-2" aria-hidden="true" />
+                                Export
+                            </Button>
+                        }
+                    >
+                        <div className="[&>button]:w-full [&>button]:justify-start [&>button]:font-semibold [&>button]:rounded-xl">
+                            <ExportButton designSystem={designSystem} />
+                        </div>
+                    </Suspense>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={openShareModal}
+                        disabled={creatingLink || !designSystem.id}
+                        className="justify-start font-semibold rounded-xl"
+                        aria-label="Open share dialog"
+                    >
+                        <Share2 className="h-4 w-4 mr-2" aria-hidden="true" />
+                        {creatingLink ? "Creating link…" : shareUrl ? "Share link" : "Share design"}
+                    </Button>
+                </div>
+                {!user && (
+                    <p className="mt-3 text-[11px] text-muted-foreground">Sign in to save and share.</p>
+                )}
+            </section>
+
+            <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Share2 className="h-4 w-4 text-primary" aria-hidden="true" />
+                            Share this design system
+                        </DialogTitle>
+                        <DialogDescription>
+                            Anyone with this link can view a read-only version of your system.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            readOnly
+                            value={shareUrl ?? ""}
+                            onFocus={(e) => e.currentTarget.select()}
+                            className="font-mono text-xs"
+                            aria-label="Public share URL"
+                        />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={copyLink}
+                            aria-label="Copy share URL"
+                        >
+                            {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
                         </Button>
-                    }
-                >
-                    <div className="[&>button]:w-full [&>button]:justify-start [&>button]:font-semibold [&>button]:rounded-xl">
-                        <ExportButton designSystem={designSystem} />
                     </div>
-                </Suspense>
-
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleShare}
-                    disabled={sharing || !designSystem.id}
-                    className="justify-start font-semibold rounded-xl"
-                    aria-label="Copy public share link"
-                >
-                    <Share2 className="h-4 w-4 mr-2" aria-hidden="true" />
-                    {sharing ? "Creating link…" : "Share link"}
-                </Button>
-            </div>
-            {!user && (
-                <p className="mt-3 text-[11px] text-muted-foreground">Sign in to save and share.</p>
-            )}
-        </section>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="ghost"
+                            onClick={() => setShareOpen(false)}
+                            className="rounded-xl"
+                        >
+                            Close
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={() => shareUrl && window.open(shareUrl, "_blank", "noopener,noreferrer")}
+                            disabled={!shareUrl}
+                            className="rounded-xl"
+                        >
+                            <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />
+                            Open in new tab
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
