@@ -227,36 +227,60 @@ export function fixContrast(
   targetLevel: WCAGLevel = "AA",
   textSize: TextSize = "normal"
 ): string {
-  const hsl = parseHslString(color);
-  const bgHsl = parseHslString(background);
-  if (!hsl || !bgHsl) return color;
+  return autoFixContrast(color, background, { targetLevel, textSize, step: 2, maxLightnessDelta: 100 }).color;
+}
 
-  const { h, s } = hsl;
-  let l = hsl.l;
-  const targetRatio = targetLevel === "AAA" ? (textSize === "large" ? 4.5 : 7) : (textSize === "large" ? 3 : 4.5);
-
-  let currentRatio = getContrastRatio(hslToString(h, s, l), background);
-  if (currentRatio >= targetRatio) return color;
-
-  // Determine if we should lighten or darken
-  const isBackgroundDark = bgHsl.l < 50;
-
-  // Iterative adjustment
-  let attempts = 0;
-  while (currentRatio < targetRatio && attempts < 50) {
-    if (isBackgroundDark) {
-      l = Math.min(l + 2, 98); // Lighten if bg is dark
-    } else {
-      l = Math.max(l - 2, 2);  // Darken if bg is light
-    }
-
-    currentRatio = getContrastRatio(hslToString(h, s, l), background);
-    attempts++;
-
-    if (l >= 98 || l <= 2) break; // Reached limits
+/**
+ * Aggressive auto-fix: nudges lightness in the contrast-improving direction
+ * until the target ratio passes OR maxLightnessDelta is reached.
+ */
+export function autoFixContrast(
+  color: string,
+  background: string,
+  options: {
+    targetLevel?: WCAGLevel;
+    textSize?: TextSize;
+    maxLightnessDelta?: number;
+    step?: number;
+  } = {}
+): { color: string; ratio: number; passed: boolean; iterations: number; deltaL: number } {
+  const { targetLevel = "AA", textSize = "normal", maxLightnessDelta = 80, step = 1 } = options;
+  let hsl = parseHslString(color);
+  if (!hsl && color.startsWith("#")) hsl = hexToHsl(color);
+  let bgHsl = parseHslString(background);
+  if (!bgHsl && background.startsWith("#")) bgHsl = hexToHsl(background);
+  if (!hsl || !bgHsl) {
+    return { color, ratio: getContrastRatio(color, background), passed: false, iterations: 0, deltaL: 0 };
   }
 
-  return hslToString(h, s, l);
+  const target = targetLevel === "AAA" ? (textSize === "large" ? 4.5 : 7) : (textSize === "large" ? 3 : 4.5);
+  const isBgDark = bgHsl.l < 50;
+  const startL = hsl.l;
+  let l = startL;
+  let ratio = getContrastRatio(hslToString(hsl.h, hsl.s, l), background);
+  let iterations = 0;
+
+  while (ratio < target && Math.abs(l - startL) <= maxLightnessDelta && iterations < 200) {
+    l = isBgDark ? Math.min(l + step, 100) : Math.max(l - step, 0);
+    ratio = getContrastRatio(hslToString(hsl.h, hsl.s, l), background);
+    iterations++;
+    if (l >= 100 || l <= 0) break;
+  }
+
+  return {
+    color: hslToString(hsl.h, hsl.s, l),
+    ratio,
+    passed: ratio >= target,
+    iterations,
+    deltaL: Math.round(l - startL),
+  };
+}
+
+/** Pick the best foreground (black/white in HSL) for a given background. */
+export function pickAccessibleForeground(background: string): string {
+  const white = "hsl(0, 0%, 100%)";
+  const black = "hsl(0, 0%, 0%)";
+  return getContrastRatio(white, background) >= getContrastRatio(black, background) ? white : black;
 }
 
 // Phase 13: Semantic Token Helpers
