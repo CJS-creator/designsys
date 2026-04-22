@@ -210,6 +210,15 @@ export function QuickActionsCard({ designSystem, onSave, onRestoreVersion }: Qui
                             {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                         </Button>
                     </div>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={copyThemeUrl}
+                        className="w-full justify-start rounded-xl"
+                    >
+                        {themeCopied ? <Check className="h-4 w-4 mr-2 text-primary" /> : <Link2 className="h-4 w-4 mr-2" />}
+                        Copy theme URL (no account needed)
+                    </Button>
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button
                             variant="ghost"
