@@ -22,15 +22,17 @@ const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({
 interface QuickActionsCardProps {
     designSystem: GeneratedDesignSystem;
     onSave: () => void | Promise<void>;
+    onRestoreVersion?: (ds: GeneratedDesignSystem) => void;
 }
 
-export function QuickActionsCard({ designSystem, onSave }: QuickActionsCardProps) {
+export function QuickActionsCard({ designSystem, onSave, onRestoreVersion }: QuickActionsCardProps) {
     const { user } = useAuth();
     const [saving, setSaving] = useState(false);
     const [creatingLink, setCreatingLink] = useState(false);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
     const [shareOpen, setShareOpen] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [themeCopied, setThemeCopied] = useState(false);
 
     // Refs to prevent double-firing across re-renders / accidental double-clicks
     const saveInFlightRef = useRef(false);
@@ -145,6 +147,14 @@ export function QuickActionsCard({ designSystem, onSave }: QuickActionsCardProps
                         <Share2 className="h-4 w-4 mr-2" aria-hidden="true" />
                         {creatingLink ? "Creating link…" : shareUrl ? "Share link" : "Share design"}
                     </Button>
+
+                    {onRestoreVersion && (
+                        <VersionHistorySheet
+                            designSystem={designSystem}
+                            onRestore={onRestoreVersion}
+                            triggerClassName="justify-start font-semibold rounded-xl w-full"
+                        />
+                    )}
                 </div>
                 {!user && (
                     <p className="mt-3 text-[11px] text-muted-foreground">Sign in to save and share.</p>
