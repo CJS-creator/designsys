@@ -826,6 +826,20 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
             {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
             Copy JSON
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              if (!user) { setAuthDialogOpen(true); return; }
+              try {
+                exportDesignSystemToPdf(designSystem);
+                toast.success("PDF downloaded");
+              } catch (e) {
+                toast.error("Could not generate PDF", { description: e instanceof Error ? e.message : undefined });
+              }
+            }}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Download PDF
+          </DropdownMenuItem>
           <Separator className="my-1" />
           <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Git Integration</div>
           <DropdownMenuItem
