@@ -98,6 +98,26 @@ export function QuickActionsCard({ designSystem, onSave, onRestoreVersion }: Qui
         }
     }, [shareUrl]);
 
+    const copyThemeUrl = useCallback(async () => {
+        if (isThemeUrlTooLong(designSystem)) {
+            toast.error("This theme is too large for a URL", {
+                description: "Use the public share link instead.",
+            });
+            return;
+        }
+        try {
+            const url = buildThemeUrl(designSystem);
+            await navigator.clipboard.writeText(url);
+            setThemeCopied(true);
+            toast.success("Theme URL copied", {
+                description: "Anyone opening this link will load the exact design system.",
+            });
+            setTimeout(() => setThemeCopied(false), 2000);
+        } catch {
+            toast.error("Could not copy theme URL");
+        }
+    }, [designSystem]);
+
     return (
         <>
             <section
