@@ -153,7 +153,7 @@ export function VersionHistorySheet({ designSystem, onRestore, triggerClassName 
                 </div>
 
                 {!user && (
-                    <div className="mt-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-xs text-amber-600 flex gap-2">
+                    <div className="mt-3 p-3 rounded-lg border border-warning/30 bg-warning/10 text-xs text-warning flex gap-2">
                         <AlertCircle className="h-4 w-4 shrink-0" /> Sign in to save snapshots.
                     </div>
                 )}
@@ -229,11 +229,11 @@ function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
     const sa = a.snapshot_data as unknown as GeneratedDesignSystem;
     const sb = b.snapshot_data as unknown as GeneratedDesignSystem;
     const diffs: { label: string; from: string; to: string }[] = [];
-    const colorsA = sa?.colors ?? ({} as Record<string, unknown>);
-    const colorsB = sb?.colors ?? ({} as Record<string, unknown>);
+    const colorsA = (sa?.colors ?? {}) as unknown as Record<string, unknown>;
+    const colorsB = (sb?.colors ?? {}) as unknown as Record<string, unknown>;
     for (const k of Object.keys({ ...colorsA, ...colorsB })) {
-        const va = (colorsA as Record<string, unknown>)[k];
-        const vb = (colorsB as Record<string, unknown>)[k];
+        const va = colorsA[k];
+        const vb = colorsB[k];
         if (typeof va === "string" && typeof vb === "string" && va !== vb) {
             diffs.push({ label: `colors.${k}`, from: va, to: vb });
         }
