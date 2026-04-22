@@ -1,4 +1,4 @@
-import { Save, Download, Share2, Zap, Copy, ExternalLink, Check } from "lucide-react";
+import { Save, Download, Share2, Zap, Copy, ExternalLink, Check, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +14,8 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { VersionHistorySheet } from "@/components/VersionHistorySheet";
+import { buildThemeUrl, isThemeUrlTooLong } from "@/lib/themeUrl";
 
 const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
 
