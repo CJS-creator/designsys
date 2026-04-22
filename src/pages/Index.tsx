@@ -425,7 +425,15 @@ const Index = () => {
                         </div>
                         <div className="lg:col-span-4 space-y-6 lg:order-2 order-1 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
                           <DesignHealthScore designSystem={designSystem} />
-                          <QuickActionsCard designSystem={designSystem} onSave={handleSave} />
+                          <QuickActionsCard
+                            designSystem={designSystem}
+                            onSave={handleSave}
+                            onRestoreVersion={handleRestoreVersion}
+                          />
+                          <AccessibilitySummaryCard
+                            designSystem={designSystem}
+                            onOpenDetails={() => handleTabChange("colors")}
+                          />
                           <AIAdvisor
                             designSystem={designSystem}
                             onUpdate={(next) => {
