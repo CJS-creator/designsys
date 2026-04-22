@@ -1,5 +1,61 @@
+# Plan — Versioning, Tokens Export, A11y Audit, Theme URL, PDF Export
 
-# Overview Page UI/UX Audit & Enhancement Plan
+Most building blocks already exist in the codebase. The plan is to **wire them into the Overview / sidebar** with minimal new logic, then add the two missing pieces (theme URL + token JSON/YAML download).
+
+## 1. Version History Sidebar
+**Status:** `VersionManager.tsx` + `VersionDiff.tsx` already exist (uses `design_system_versions` table).
+- Mount `VersionManager` in a new collapsible `Sheet` triggered from the sidebar `QuickActionsCard` ("History" button).
+- Pass `designSystemId` (button disabled until the system is saved).
+- Add `onRestore(snapshot)` callback wired to `Index.tsx` to swap the active `designSystem` from a snapshot.
+- Add "Save snapshot" at the top of the sheet → inserts into `design_system_versions`.
+
+## 2. Downloadable Tokens (JSON / YAML)
+**Status:** DTCG JSON exists; YAML does not.
+- New `tokensYaml.ts` (~30-line serializer for the flat token tree: colors / typography / spacing / shadows / radius / grid). No new dep.
+- Two new menu items in existing `ExportButton` dropdown: **Tokens (JSON)** and **Tokens (YAML)** — both call a shared `buildTokensPayload(designSystem)` then trigger download.
+- File names: `${name}-tokens.json` / `${name}-tokens.yaml`.
+
+## 3. Accessibility Audit Panel
+**Status:** `AccessibilityChecker.tsx` exists, mounted in the Colors tab.
+- Add a compact summary card to the Overview sidebar ("Accessibility — 3/5 AA") with top-line pass/fail counts.
+- Clicking it switches to the Colors tab (deep-link already supports this) and scrolls to the full checker.
+- Reuse `getContrastRatio` / `getWCAGCompliance` from `lib/colorUtils.ts` — no duplicate logic.
+
+## 4. Shareable Theme URL (state-in-URL)
+**Status:** Public-share via Supabase `share_id` exists, but no URL-encoded state link.
+- New `lib/themeUrl.ts` with `encodeTheme(ds)` / `decodeTheme(hash)` using base64url-encoded JSON (with optional `pako` deflate if already in deps; otherwise plain).
+- Hash format: `#theme=<base64>`. If encoded length > ~6 KB, fall back to existing public-share flow with a toast.
+- In `Index.tsx`, on mount check `window.location.hash` → if `theme=` present, hydrate state and toast "Loaded shared theme".
+- Add **Copy theme URL** action in the existing Share dialog next to the public link.
+
+## 5. One-click PDF Export
+**Status:** `BrandGuidelinesPDF.tsx` exists but requires filling a form first.
+- Refactor `BrandGuidelinesPDF` to expose a `generatePDF(opts)` function (extract the print/HTML pipeline) so callers can skip the dialog.
+- Add a **PDF** item in the `ExportButton` dropdown that calls `generatePDF()` directly with defaults (`companyName = designSystem.name`).
+- Reuses existing colors / typography / spacing / shadows / grid sections — no new layout work.
+
+## Files Touched
+**New:**
+- `src/lib/themeUrl.ts`
+- `src/lib/exporters/tokensPayload.ts` (shared shape for JSON+YAML)
+- `src/lib/exporters/tokensYaml.ts`
+
+**Modified:**
+- `src/components/QuickActionsCard.tsx` — History button, Copy theme URL in share dialog, A11y mini-summary
+- `src/components/ExportButton.tsx` — Tokens JSON, Tokens YAML, PDF menu items
+- `src/components/BrandGuidelinesPDF.tsx` — extract `generatePDF()` for one-click use
+- `src/components/VersionManager.tsx` — accept optional `onRestore` prop
+- `src/pages/Index.tsx` — mount History sheet, hydrate from `#theme=` hash, pass `onRestore`
+
+## Out of Scope
+- DB schema changes (versions table already exists)
+- Server-side PDF rendering
+- New auth / RLS rules
+- Landing page or unrelated tabs
+
+---
+
+# (Previous) Overview Page UI/UX Audit & Enhancement Plan
 
 ## Issues Found
 
