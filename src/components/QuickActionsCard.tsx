@@ -1,4 +1,4 @@
-import { Save, Download, Share2, Zap, Copy, ExternalLink, Check } from "lucide-react";
+import { Save, Download, Share2, Zap, Copy, ExternalLink, Check, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,21 +14,25 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { VersionHistorySheet } from "@/components/VersionHistorySheet";
+import { buildThemeUrl, isThemeUrlTooLong } from "@/lib/themeUrl";
 
 const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
 
 interface QuickActionsCardProps {
     designSystem: GeneratedDesignSystem;
     onSave: () => void | Promise<void>;
+    onRestoreVersion?: (ds: GeneratedDesignSystem) => void;
 }
 
-export function QuickActionsCard({ designSystem, onSave }: QuickActionsCardProps) {
+export function QuickActionsCard({ designSystem, onSave, onRestoreVersion }: QuickActionsCardProps) {
     const { user } = useAuth();
     const [saving, setSaving] = useState(false);
     const [creatingLink, setCreatingLink] = useState(false);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
     const [shareOpen, setShareOpen] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [themeCopied, setThemeCopied] = useState(false);
 
     // Refs to prevent double-firing across re-renders / accidental double-clicks
     const saveInFlightRef = useRef(false);
@@ -94,6 +98,26 @@ export function QuickActionsCard({ designSystem, onSave }: QuickActionsCardProps
         }
     }, [shareUrl]);
 
+    const copyThemeUrl = useCallback(async () => {
+        if (isThemeUrlTooLong(designSystem)) {
+            toast.error("This theme is too large for a URL", {
+                description: "Use the public share link instead.",
+            });
+            return;
+        }
+        try {
+            const url = buildThemeUrl(designSystem);
+            await navigator.clipboard.writeText(url);
+            setThemeCopied(true);
+            toast.success("Theme URL copied", {
+                description: "Anyone opening this link will load the exact design system.",
+            });
+            setTimeout(() => setThemeCopied(false), 2000);
+        } catch {
+            toast.error("Could not copy theme URL");
+        }
+    }, [designSystem]);
+
     return (
         <>
             <section
@@ -143,6 +167,14 @@ export function QuickActionsCard({ designSystem, onSave }: QuickActionsCardProps
                         <Share2 className="h-4 w-4 mr-2" aria-hidden="true" />
                         {creatingLink ? "Creating link…" : shareUrl ? "Share link" : "Share design"}
                     </Button>
+
+                    {onRestoreVersion && (
+                        <VersionHistorySheet
+                            designSystem={designSystem}
+                            onRestore={onRestoreVersion}
+                            triggerClassName="justify-start font-semibold rounded-xl w-full"
+                        />
+                    )}
                 </div>
                 {!user && (
                     <p className="mt-3 text-[11px] text-muted-foreground">Sign in to save and share.</p>
@@ -178,6 +210,15 @@ export function QuickActionsCard({ designSystem, onSave }: QuickActionsCardProps
                             {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                         </Button>
                     </div>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={copyThemeUrl}
+                        className="w-full justify-start rounded-xl"
+                    >
+                        {themeCopied ? <Check className="h-4 w-4 mr-2 text-primary" /> : <Link2 className="h-4 w-4 mr-2" />}
+                        Copy theme URL (no account needed)
+                    </Button>
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button
                             variant="ghost"
