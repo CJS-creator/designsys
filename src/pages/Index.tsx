@@ -27,6 +27,8 @@ import { GitSettings } from "@/components/GitSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { TeamSettings } from "@/components/TeamSettings";
 import { AIAdvisor } from "@/components/AIAdvisor";
+import { QuickActionsCard } from "@/components/QuickActionsCard";
+import { AccessibilitySummaryCard } from "@/components/AccessibilitySummaryCard";
 import { BrandSwapper } from "@/components/BrandSwapper";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { trackEvent } from "@/lib/analytics";
@@ -34,11 +36,7 @@ import { trackEvent } from "@/lib/analytics";
 
 
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { 
-  Sparkles, ArrowLeft, Wand2, HelpCircle, X, Lock, LogOut, User, 
-  Brain, Type, Palette, Ruler, Cast, Grid3X3, Menu, ArrowRight, Download, CheckCircle2,
-  Box, Settings, History, Zap, Activity, Shield, Settings2
-} from "lucide-react";
+import { Sparkles, ArrowLeft, Wand2, HelpCircle, X, Lock, LogOut, User, Brain, Type, Palette, Ruler, Cast, Grid3X3, Menu } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
 import { useTokens } from "@/hooks/useTokens";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
@@ -101,10 +99,40 @@ const Index = () => {
     }
   }, [searchParams]);
 
+  // Persist scroll position per tab and restore on switch (deep-link friendly)
+  const scrollPositionsRef = (typeof window !== "undefined")
+    ? ((window as unknown as { __dsScrollPositions?: Record<string, number> }).__dsScrollPositions ??= {})
+    : {};
+
   const handleTabChange = (value: string) => {
+    // Save current tab scroll
+    const main = document.querySelector<HTMLElement>("main[data-ds-main]");
+    if (main) scrollPositionsRef[activeTab] = main.scrollTop;
+
     setActiveTab(value);
     setSearchParams({ tab: value }, { replace: true });
+    // Update hash so the URL is shareable / browser-back friendly
+    if (typeof window !== "undefined" && window.location.hash !== `#${value}`) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search.includes("tab=") ? window.location.search : `?tab=${value}`}#${value}`);
+    }
+
+    // Restore on next paint
+    requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>("main[data-ds-main]");
+      if (target) target.scrollTop = scrollPositionsRef[value] ?? 0;
+    });
   };
+
+  // On mount, honour #hash if present (deep link from external share)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash.replace(/^#/, "");
+    if (hash && hash !== activeTab) {
+      setActiveTab(hash);
+      setSearchParams({ tab: hash }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleGenerate = useCallback(async (input: DesignSystemInput) => {
     setIsLoading(true);
@@ -382,301 +410,278 @@ const Index = () => {
         <div className="flex flex-1 relative z-10 min-h-0 h-[calc(100vh-73px)]">
           <DesignSystemSidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
-          <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
+          <main data-ds-main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
             <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
               {isLoading && !designSystem ? (
                 <DesignSystemSkeleton />
               ) : designSystem && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {activeTab === "overview" && (
-                    <div className="flex flex-col gap-8">
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                        {/* Main Content Area */}
-                        <div className="lg:col-span-8 space-y-8">
-                          <HeroSection designSystem={designSystem} />
-                          
-                          {/* Mobile-only Health Score positioning */}
-                          <div className="lg:hidden">
-                            <DesignHealthScore designSystem={designSystem} />
-                          </div>
-
+                    <div className="flex flex-col gap-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start scroll-mt-24">
+                        <div className="lg:col-span-8 space-y-6 lg:order-1 order-2">
+                          <HeroSection designSystem={designSystem} isSaved={Boolean(designSystem.id)} />
                           <FeaturesOverview designSystem={designSystem} />
-
-                          {/* Previews of main categories */}
-                          <OverviewCategory
-                            icon={<Palette className="h-5 w-5" />}
-                            title="Colors"
-                            description="Brand and semantic color foundations"
-                            onViewDetails={() => handleTabChange("colors")}
-                          >
-                            <ColorPaletteDisplay 
-                                colors={designSystem.colors} 
-                                renderItem={(color, idx) => idx < 6 ? null : <div key={color.key} className="hidden" />} // Hack to only show 6
-                            />
-                            {/* Re-implementing a simple preview loop since the original component might not support limiting easily without props change */}
-                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-4">
-                                {Object.entries(designSystem.colors)
-                                    .filter(([_, v]) => typeof v === 'string')
-                                    .slice(0, 6)
-                                    .map(([name, value]) => (
-                                        <div key={name} className="space-y-1.5 group cursor-pointer" onClick={() => handleTabChange("colors")}>
-                                            <div className="aspect-square rounded-lg shadow-sm border border-border/50 group-hover:scale-105 transition-transform" style={{ backgroundColor: value as string }} />
-                                            <div className="text-[10px] font-mono text-muted-foreground truncate text-center">{name}</div>
-                                        </div>
-                                    ))}
-                            </div>
-                          </OverviewCategory>
-
-                          <OverviewCategory
-                            icon={<Type className="h-5 w-5" />}
-                            title="Typography"
-                            description="Font pairings and type scale architecture"
-                            onViewDetails={() => handleTabChange("typography")}
-                          >
-                            <div className="space-y-4 p-4 rounded-xl bg-muted/20 border border-border/50">
-                                <div style={{ fontFamily: designSystem.typography.fontFamily.heading }} className="text-2xl font-bold truncate">
-                                    {designSystem.typography.fontFamily.heading} (Heading)
-                                </div>
-                                <div style={{ fontFamily: designSystem.typography.fontFamily.body }} className="text-sm leading-relaxed text-muted-foreground line-clamp-2">
-                                    The quick brown fox jumps over the lazy dog. {designSystem.typography.fontFamily.body} for body text provides optimal readability.
-                                </div>
-                            </div>
-                          </OverviewCategory>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <OverviewCategory
-                                icon={<Ruler className="h-5 w-5" />}
-                                title="Spacing & Radius"
-                                description="Spatial system tokens"
-                                onViewDetails={() => handleTabChange("spacing")}
-                            >
-                                <div className="flex items-end gap-2 h-12">
-                                    {Object.entries(designSystem.spacing.scale).slice(0, 5).map(([name, val]) => (
-                                        <div key={name} className="bg-primary/20 rounded-sm" style={{ width: val, height: val }} title={name} />
-                                    ))}
-                                </div>
-                            </OverviewCategory>
-
-                            <OverviewCategory
-                                icon={<Cast className="h-5 w-5" />}
-                                title="Shadows"
-                                description="Depth and elevation"
-                                onViewDetails={() => handleTabChange("shadows")}
-                            >
-                                <div className="flex gap-4">
-                                    {Object.entries(designSystem.shadows).slice(1, 4).map(([name, val]) => (
-                                        <div key={name} className="w-10 h-10 rounded-lg bg-card border border-border" style={{ boxShadow: val }} />
-                                    ))}
-                                </div>
-                            </OverviewCategory>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <OverviewCategory
-                                icon={<Zap className="h-5 w-5" />}
-                                title="Motion System"
-                                description="Animations & timing"
-                                onViewDetails={() => handleTabChange("motion")}
-                            >
-                                <div className="flex gap-3">
-                                    <div className="flex-1 h-12 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center group/motion overflow-hidden relative">
-                                        <div className="h-4 w-4 bg-primary rounded-full animate-pulse group-hover/motion:animate-bounce" />
-                                        <div className="absolute bottom-1 right-2 text-[8px] font-mono opacity-40">{designSystem.animations.durations.medium}</div>
-                                    </div>
-                                    <div className="flex-1 h-12 rounded-xl bg-orange-500/5 border border-orange-500/10 flex items-center justify-center group/motion overflow-hidden relative">
-                                        <div className="h-4 w-12 bg-orange-500 rounded-sm transition-all duration-500 group-hover/motion:w-4" />
-                                        <div className="absolute bottom-1 right-2 text-[8px] font-mono opacity-40">ease-in-out</div>
-                                    </div>
-                                </div>
-                            </OverviewCategory>
-
-                            <OverviewCategory
-                                icon={<Grid3X3 className="h-5 w-5" />}
-                                title="Layout Grid"
-                                description="Responsivity & columns"
-                                onViewDetails={() => handleTabChange("grid")}
-                            >
-                                <div className="h-12 w-full flex gap-1 items-stretch p-1 rounded-lg border border-border/50 bg-muted/20">
-                                    {Array.from({ length: 12 }).map((_, i) => (
-                                        <div key={i} className="flex-1 bg-primary/10 rounded-sm border border-primary/5" />
-                                    ))}
-                                </div>
-                            </OverviewCategory>
-                          </div>
-
-                          <OverviewCategory
-                            icon={<Box className="h-5 w-5" />}
-                            title="Interactive Components"
-                            description="Real-time rendering of generated tokens"
-                            onViewDetails={() => handleTabChange("components")}
-                          >
-                                <div className="flex flex-wrap gap-4 items-center justify-center p-6 rounded-2xl bg-gradient-to-br from-muted/20 to-card border border-border/50">
-                                    <Button 
-                                        className="rounded-[var(--radius-md)] shadow-lg"
-                                        style={{ 
-                                            backgroundColor: designSystem.colors.primary, 
-                                            borderRadius: designSystem.borderRadius.md,
-                                            boxShadow: designSystem.shadows.md
-                                        }}
-                                    >
-                                        Primary Button
-                                    </Button>
-                                    <div 
-                                        className="h-10 px-4 flex items-center bg-card border border-border shadow-sm text-sm font-medium"
-                                        style={{ borderRadius: designSystem.borderRadius.sm }}
-                                    >
-                                        Sample Input
-                                    </div>
-                                    <Badge 
-                                        variant="outline"
-                                        style={{ borderColor: designSystem.colors.secondary, color: designSystem.colors.secondary }}
-                                    >
-                                        Token Variant
-                                    </Badge>
-                                </div>
-                          </OverviewCategory>
                         </div>
-
-                        {/* Sticky Sidebar */}
-                        <div className="lg:col-span-4 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto pr-1 space-y-6 scrollbar-hide">
-                          <div className="hidden lg:block">
-                            <DesignHealthScore designSystem={designSystem} />
-                          </div>
-                          
-                          <AIAdvisor 
-                            designSystem={designSystem} 
-                            onUpdate={(updated) => {
-                              setDesignSystem(updated);
-                              setThemedDesignSystem(updated);
-                              injectDesignSystemVariables(updated);
-                            }} 
+                        <div className="lg:col-span-4 space-y-6 lg:order-2 order-1 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+                          <DesignHealthScore designSystem={designSystem} />
+                          <QuickActionsCard
+                            designSystem={designSystem}
+                            onSave={handleSave}
+                            onRestoreVersion={handleRestoreVersion}
                           />
-
-                          {/* Quick Actions Card */}
-                          <Card className="rounded-2xl border-primary/10 bg-gradient-to-br from-card to-muted/30">
-                            <CardHeader className="p-4 pb-2">
-                                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                    <Settings className="h-4 w-4 text-primary" />
-                                    System Actions
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-4 pt-0 space-y-2">
-                                <Button className="w-full justify-start gap-2 h-9 text-xs font-bold rounded-xl" onClick={handleSave}>
-                                    <CheckCircle2 className="h-4 w-4" /> Save Local Snapshot
-                                </Button>
-                                <Button variant="outline" className="w-full justify-start gap-2 h-9 text-xs font-bold rounded-xl" onClick={() => handleTabChange("assets")}>
-                                    <Download className="h-4 w-4" /> Export All Formats
-                                </Button>
-                                <Button variant="ghost" className="w-full justify-start gap-2 h-9 text-xs font-bold rounded-xl" onClick={() => handleTabChange("settings")}>
-                                    <Settings2 className="h-4 w-4" /> System Settings
-                                </Button>
-                                <div className="pt-2 flex items-center justify-between text-[10px] text-muted-foreground px-1 border-t border-border/50">
-                                    <span>Last Sync: {new Date().toLocaleTimeString()}</span>
-                                    <span className="flex items-center gap-1">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                        Live
-                                    </span>
-                                </div>
-                            </CardContent>
-                          </Card>
-
-                          {/* Activity Feed Card */}
-                          <Card className="rounded-2xl border-border/50 bg-card/40 backdrop-blur-sm">
-                            <CardHeader className="p-4 pb-2">
-                                <CardTitle className="text-xs font-bold flex items-center gap-2 uppercase tracking-widest text-muted-foreground">
-                                    <History className="h-3 w-3" />
-                                    Recent Activity
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-4 pt-0 space-y-4">
-                                {[
-                                    { user: user?.email?.split('@')[0] || "Guest", action: "generated system", time: "Just now", icon: Wand2 },
-                                    { user: "System", action: "calculated health", time: "1m ago", icon: Activity },
-                                    { user: "System", action: "verified a11y", time: "2m ago", icon: Shield },
-                                ].map((step, idx) => (
-                                    <div key={idx} className="flex gap-3 relative last:after:hidden after:absolute after:left-[11px] after:top-[22px] after:bottom-[-18px] after:w-px after:bg-border/30">
-                                        <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0 border border-border/50 z-10">
-                                            <step.icon className="h-3 w-3 text-primary" />
-                                        </div>
-                                        <div className="space-y-0.5 min-w-0">
-                                            <p className="text-[11px] leading-none font-bold truncate">
-                                                <span className="text-primary">{step.user}</span> {step.action}
-                                            </p>
-                                            <p className="text-[9px] text-muted-foreground uppercase font-medium">{step.time}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </CardContent>
-                          </Card>
+                          <AccessibilitySummaryCard
+                            designSystem={designSystem}
+                            onOpenDetails={() => handleTabChange("colors")}
+                          />
+                          <AIAdvisor
+                            designSystem={designSystem}
+                            onUpdate={(next) => {
+                              setDesignSystem(next);
+                              setThemedDesignSystem(next);
+                              injectDesignSystemVariables(next);
+                            }}
+                          />
                         </div>
                       </div>
+
+                      {/* Compact preview cards — full views live in dedicated tabs */}
+                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-colors">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Palette className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                            <h3 id="overview-colors" className="text-lg font-semibold text-foreground truncate">Brand Color Palette</h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleTabChange("colors")}
+                            className="text-xs font-semibold text-primary hover:underline shrink-0"
+                            aria-label="View all colors"
+                          >
+                            View all →
+                          </button>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">Top brand colors with semantic variants</p>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(designSystem.colors)
+                            .filter(([, v]) => typeof v === "string")
+                            .slice(0, 8)
+                            .map(([name, value]) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => handleTabChange("colors")}
+                                className="group flex flex-col items-center gap-1.5"
+                                aria-label={`${name} color`}
+                              >
+                                <div
+                                  className="h-12 w-12 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform"
+                                  style={{ backgroundColor: value as string }}
+                                />
+                                <span className="text-[10px] font-medium text-muted-foreground capitalize">{name}</span>
+                              </button>
+                            ))}
+                        </div>
+                      </section>
+
+                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-typography">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Type className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                            <h3 id="overview-typography" className="text-lg font-semibold text-foreground truncate">Typography</h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleTabChange("typography")}
+                            className="text-xs font-semibold text-primary hover:underline shrink-0"
+                            aria-label="View all typography"
+                          >
+                            View all →
+                          </button>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Heading · {designSystem.typography.fontFamily.heading}</p>
+                            <p className="text-2xl font-bold leading-tight" style={{ fontFamily: designSystem.typography.fontFamily.heading }}>
+                              The quick brown fox
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Body · {designSystem.typography.fontFamily.body}</p>
+                            <p className="text-base leading-relaxed" style={{ fontFamily: designSystem.typography.fontFamily.body }}>
+                              The quick brown fox jumps over the lazy dog.
+                            </p>
+                          </div>
+                        </div>
+                      </section>
+
+                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-spacing">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Ruler className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                            <h3 id="overview-spacing" className="text-lg font-semibold text-foreground truncate">Spacing & Radius</h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleTabChange("spacing")}
+                            className="text-xs font-semibold text-primary hover:underline shrink-0"
+                            aria-label="View all spacing tokens"
+                          >
+                            View all →
+                          </button>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">{designSystem.spacing.unit}px base unit · {designSystem.borderRadius.md} default radius</p>
+                        <div className="flex items-end gap-3 flex-wrap">
+                          {Object.entries(designSystem.spacing.scale || {}).slice(0, 6).map(([name, value]) => (
+                            <div key={name} className="flex flex-col items-center gap-1.5">
+                              <div className="bg-primary/20 rounded" style={{ width: value as string, height: value as string, minWidth: 8, minHeight: 8 }} />
+                              <span className="text-[10px] font-medium text-muted-foreground">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+
+                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-elevation">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Cast className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                            <h3 id="overview-elevation" className="text-lg font-semibold text-foreground truncate">Elevation</h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleTabChange("shadows")}
+                            className="text-xs font-semibold text-primary hover:underline shrink-0"
+                            aria-label="View all shadows"
+                          >
+                            View all →
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          {Object.entries(designSystem.shadows).slice(0, 4).map(([name, value]) => (
+                            <div key={name} className="flex flex-col items-center gap-2">
+                              <div className="h-12 w-full bg-background rounded-lg border border-border" style={{ boxShadow: value as string }} />
+                              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
                     </div>
                   )}
 
                   {activeTab === "colors" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Palette className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Brand Color Palette</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-colors-title">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Palette className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-colors-title" className="text-lg font-semibold text-foreground truncate">Brand Color Palette</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("accessibility")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View accessibility audit"
+                        >
+                          Accessibility audit →
+                        </button>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Primary, secondary, and accent colors with semantic variants</p>
                       <ColorPaletteDisplay colors={designSystem.colors} />
                       <div className="mt-6">
                         <InteractiveColorsDisplay colors={designSystem.colors} />
                       </div>
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "typography" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Type className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Typography System</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-typography-title">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Type className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-typography-title" className="text-lg font-semibold text-foreground truncate">Typography System</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("tokens")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View token management"
+                        >
+                          Manage tokens →
+                        </button>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Heading and body scales using modern font pairings</p>
                       <TypographyDisplay typography={designSystem.typography} />
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "spacing" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Ruler className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Spacing & Radius</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-spacing-title">
+                      <div className="flex items-center justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Ruler className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-spacing-title" className="text-lg font-semibold text-foreground truncate">Spacing & Radius</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("grid")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View grid system"
+                        >
+                          View grid →
+                        </button>
                       </div>
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-4">
-                          <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
                           <SpacingDisplay spacing={designSystem.spacing} />
                         </div>
                         <div className="space-y-4">
-                          <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Border Radius</h4>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Border Radius</h4>
                           <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
                         </div>
                       </div>
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "shadows" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Cast className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Elevation & Shadows</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-shadows-title">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Cast className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-shadows-title" className="text-lg font-semibold text-foreground truncate">Elevation & Shadows</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("motion")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View motion gallery"
+                        >
+                          View motion →
+                        </button>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Light and dark mode compatible elevation system</p>
                       <ShadowDisplay shadows={designSystem.shadows} />
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "grid" && (
-                    <div className="p-5 md:p-6 rounded-xl border border-border bg-card shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Grid3X3 className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">Layout Grid</h3>
+                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-grid-title">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Grid3X3 className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                          <h3 id="tab-grid-title" className="text-lg font-semibold text-foreground truncate">Layout Grid</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange("spacing")}
+                          className="text-xs font-semibold text-primary hover:underline shrink-0"
+                          aria-label="View spacing scale"
+                        >
+                          View spacing →
+                        </button>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">Responsive 12-column grid with flexible layout system</p>
                       <GridDisplay grid={designSystem.grid} />
-                    </div>
+                    </section>
                   )}
 
                   {activeTab === "tokens" && (
@@ -990,45 +995,3 @@ const Index = () => {
 };
 
 export default Index;
-
-// Helper component for Overview categories to maintain consistency
-function OverviewCategory({ 
-    icon, 
-    title, 
-    description, 
-    children, 
-    onViewDetails 
-}: { 
-    icon: React.ReactNode; 
-    title: string; 
-    description: string; 
-    children: React.ReactNode; 
-    onViewDetails: () => void;
-}) {
-    return (
-        <Card className="rounded-[2rem] p-6 border-border/50 bg-card/30 backdrop-blur-sm group hover:border-primary/20 transition-all duration-300">
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        {icon}
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-bold tracking-tight">{title}</h3>
-                        <p className="text-xs text-muted-foreground font-medium">{description}</p>
-                    </div>
-                </div>
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={onViewDetails}
-                    className="h-8 text-xs font-bold gap-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                    View details <ArrowRight className="h-3 w-3" />
-                </Button>
-            </div>
-            {children}
-        </Card>
-    );
-}
-
-

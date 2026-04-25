@@ -54,6 +54,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveTemplate } from "@/lib/exporters/custom-templating";
 import { DesignToken } from "@/types/tokens";
 import { Separator } from "@/components/ui/separator";
+import { buildTokensPayload, tokensToYaml } from "@/lib/exporters/tokensPayload";
+import { exportDesignSystemToPdf } from "@/lib/exporters/designSystemPdf";
 
 interface ExportButtonProps {
   designSystem: GeneratedDesignSystem;
@@ -582,7 +584,9 @@ ${Object.entries(ds.shadows).map(([name, val]) => `- **${name}**: ${val}`).join(
 }
 
 const exportOptions: ExportOption[] = [
-  { id: "json", label: "JSON", filename: "design-system.json", icon: <FileJson className="h-4 w-4" />, generator: (ds, tokens) => tokens ? JSON.stringify(tokens, null, 2) : JSON.stringify(ds, null, 2), description: "Raw design system data in JSON format" },
+  { id: "json" as ExportFormat, label: "Tokens (JSON)", filename: "tokens.json", icon: <FileJson className="h-4 w-4" />, generator: (ds) => JSON.stringify(buildTokensPayload(ds), null, 2), description: "Flat tokens — colors, type, spacing, shadows, grid" },
+  { id: "json" as ExportFormat, label: "Tokens (YAML)", filename: "tokens.yaml", icon: <FileText className="h-4 w-4" />, generator: (ds) => tokensToYaml(buildTokensPayload(ds)), description: "Same tokens as JSON but in YAML" },
+  { id: "json", label: "Full JSON", filename: "design-system.json", icon: <FileJson className="h-4 w-4" />, generator: (ds, tokens) => tokens ? JSON.stringify(tokens, null, 2) : JSON.stringify(ds, null, 2), description: "Raw design system data in JSON format" },
   { id: "css", label: "CSS Variables", filename: "design-system.css", icon: <FileCode className="h-4 w-4" />, generator: (ds) => generateCSSVariables(ds), description: "CSS custom properties for easy theming" },
   { id: "scss", label: "SCSS", filename: "design-system.scss", icon: <FileCode className="h-4 w-4" />, generator: (ds) => generateSCSS(ds), description: "SCSS variables for Sass-based projects" },
   { id: "tailwind", label: "Tailwind Config", filename: "tailwind.config.js", icon: <FileCode className="h-4 w-4" />, generator: (ds) => generateTailwindConfig(ds), description: "Tailwind CSS configuration file" },
@@ -821,6 +825,20 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
           <DropdownMenuItem onClick={copyJSON}>
             {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
             Copy JSON
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              if (!user) { setAuthDialogOpen(true); return; }
+              try {
+                exportDesignSystemToPdf(designSystem);
+                toast.success("PDF downloaded");
+              } catch (e) {
+                toast.error("Could not generate PDF", { description: e instanceof Error ? e.message : undefined });
+              }
+            }}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Download PDF
           </DropdownMenuItem>
           <Separator className="my-1" />
           <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Git Integration</div>

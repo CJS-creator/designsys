@@ -1,107 +1,218 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Brain, Lightbulb, CheckCircle2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Brain, Lightbulb, CheckCircle2, AlertCircle, Wand2, Loader2 } from "lucide-react";
 import { GeneratedDesignSystem } from "@/types/designSystem";
-import { getContrastRatio } from "@/lib/colorUtils";
+import {
+    getContrastRatio,
+    autoFixContrast,
+    parseHslString,
+    hexToHsl,
+    hslToString,
+    pickAccessibleForeground,
+} from "@/lib/colorUtils";
+import { toast } from "sonner";
 
 interface Suggestion {
     id: string;
     type: "harmony" | "usability" | "accessibility" | "naming";
     message: string;
     severity: "info" | "warning" | "success";
-    fixable?: boolean;
+    fix?: () => void | Promise<void>;
+    fixLabel?: string;
+    autoFix?: () => void | Promise<void>;
+    autoFixLabel?: string;
 }
 
 interface AIAdvisorProps {
     designSystem: GeneratedDesignSystem;
-    onUpdate?: (updated: GeneratedDesignSystem) => void;
+    onUpdate?: (next: GeneratedDesignSystem) => void;
+}
+
+/**
+ * After changing a primary color, recompute all derived/related tokens
+ * (foreground, interactive states) so the rest of the palette stays
+ * accessible & coherent.
+ */
+function recalcRelatedTokens(ds: GeneratedDesignSystem, newPrimary: string): GeneratedDesignSystem {
+    const next: GeneratedDesignSystem = {
+        ...ds,
+        colors: { ...ds.colors, primary: newPrimary },
+    };
+
+    // Foreground on primary
+    next.colors.onPrimary = pickAccessibleForeground(newPrimary);
+
+    // Interactive states derived from primary
+    let hsl = parseHslString(newPrimary);
+    if (!hsl && newPrimary.startsWith("#")) hsl = hexToHsl(newPrimary);
+    if (hsl) {
+        const { h, s, l } = hsl;
+        next.colors.interactive = {
+            ...ds.colors.interactive,
+            primary: {
+                hover: hslToString(h, Math.min(s + 5, 100), Math.max(l - 5, 0)),
+                active: hslToString(h, Math.min(s + 10, 100), Math.max(l - 10, 0)),
+                disabled: hslToString(h, Math.max(s - 40, 10), Math.min(l + 30, 90)),
+                focus: hslToString(h, Math.min(s + 15, 100), l),
+            },
+        };
+        // Container variants
+        next.colors.primaryContainer = hslToString(h, Math.max(s - 10, 5), Math.min(l + 35, 92));
+        next.colors.onPrimaryContainer = pickAccessibleForeground(next.colors.primaryContainer);
+    }
+
+    return next;
 }
 
 export function AIAdvisor({ designSystem, onUpdate }: AIAdvisorProps) {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+    const [autoFixing, setAutoFixing] = useState<string | null>(null);
 
     useEffect(() => {
         if (!designSystem) return;
 
         const newSuggestions: Suggestion[] = [];
 
-        // 1. Accessibility Checks
+        // 1. Accessibility — primary contrast
         const contrastRatio = getContrastRatio(designSystem.colors.primary, designSystem.colors.background);
         if (contrastRatio < 4.5) {
             newSuggestions.push({
                 id: "a11y-primary",
                 type: "accessibility",
-                message: "Primary color has low contrast on background. Use a darker shade for WCAG compliance.",
+                message: `Primary color contrast is ${contrastRatio.toFixed(2)}:1 (needs 4.5:1 for WCAG AA).`,
                 severity: "warning",
-                fixable: true
+                fixLabel: "Magic Fix",
+                fix: () => {
+                    if (!onUpdate) {
+                        toast.error("Cannot apply fix in this context");
+                        return;
+                    }
+                    const result = autoFixContrast(
+                        designSystem.colors.primary,
+                        designSystem.colors.background,
+                        { targetLevel: "AA", textSize: "normal", step: 2, maxLightnessDelta: 30 }
+                    );
+                    const next = recalcRelatedTokens(designSystem, result.color);
+                    onUpdate(next);
+                    if (result.passed) {
+                        toast.success(`Primary updated · contrast now ${result.ratio.toFixed(2)}:1`, {
+                            description: "Foreground & interactive tokens were also recalculated.",
+                        });
+                    } else {
+                        toast.warning("Could not reach AA in one pass", {
+                            description: `Try "Auto-fix until AA passes". Current ratio: ${result.ratio.toFixed(2)}:1`,
+                        });
+                    }
+                },
+                autoFixLabel: "Auto-fix until AA passes",
+                autoFix: async () => {
+                    if (!onUpdate) {
+                        toast.error("Cannot apply fix in this context");
+                        return;
+                    }
+                    setAutoFixing("a11y-primary");
+                    try {
+                        const result = autoFixContrast(
+                            designSystem.colors.primary,
+                            designSystem.colors.background,
+                            { targetLevel: "AA", textSize: "normal", step: 1, maxLightnessDelta: 100 }
+                        );
+                        const next = recalcRelatedTokens(designSystem, result.color);
+                        onUpdate(next);
+                        if (result.passed) {
+                            toast.success(`AA reached after ${result.iterations} steps`, {
+                                description: `Final ratio ${result.ratio.toFixed(2)}:1, lightness Δ ${result.deltaL > 0 ? "+" : ""}${result.deltaL}.`,
+                            });
+                        } else {
+                            toast.error("Reached the lightness limit before passing AA", {
+                                description: `Best ratio achieved: ${result.ratio.toFixed(2)}:1. Consider changing the hue.`,
+                            });
+                        }
+                    } finally {
+                        setAutoFixing(null);
+                    }
+                },
             });
         } else {
             newSuggestions.push({
                 id: "a11y-success",
                 type: "accessibility",
-                message: "Great job! Your primary color exceeds WCAG AA standards for accessibility.",
-                severity: "success"
+                message: `Primary contrast is ${contrastRatio.toFixed(2)}:1 — exceeds WCAG AA. Great work!`,
+                severity: "success",
             });
         }
 
-        // 2. Harmony Checks (Heuristic based)
+        // 2. Harmony — duplicate accent/secondary
         if (designSystem.colors.accent === designSystem.colors.secondary) {
             newSuggestions.push({
                 id: "harmony-duplicate",
                 type: "harmony",
-                message: "Accent and Secondary colors are identical. Try more variety for better visual hierarchy.",
-                severity: "info"
+                message: "Accent and Secondary colors are identical. Try more variety for better hierarchy.",
+                severity: "info",
+                fixLabel: "Differentiate",
+                fix: () => {
+                    if (!onUpdate) return;
+                    const base = designSystem.colors.accent;
+                    let hsl = parseHslString(base);
+                    if (!hsl && base.startsWith("#")) hsl = hexToHsl(base);
+                    if (!hsl) return;
+                    const shifted = hslToString((hsl.h + 30) % 360, hsl.s, hsl.l);
+                    onUpdate({
+                        ...designSystem,
+                        colors: { ...designSystem.colors, accent: shifted },
+                    });
+                    toast.success("Accent shifted 30° for better contrast with secondary");
+                },
             });
         }
 
-        // 3. Spacing Consistency
+        // 3. Spacing consistency
         if (designSystem.spacing.unit !== 4 && designSystem.spacing.unit !== 8) {
             newSuggestions.push({
                 id: "usability-spacing",
                 type: "usability",
-                message: "Non-standard spacing unit detected. 4px or 8px grids are recommended for modern UI consistency.",
+                message: `Spacing unit is ${designSystem.spacing.unit}px. 4px or 8px grids are recommended.`,
                 severity: "warning",
-                fixable: true
             });
         }
 
         setSuggestions(newSuggestions);
-    }, [designSystem]);
+    }, [designSystem, onUpdate]);
 
-    if (suggestions.length === 0) return null;
+    const visible = suggestions.filter((s) => !dismissed.has(s.id));
+    if (visible.length === 0) return null;
 
     return (
-        <Card className="border-primary/20 bg-primary/5 backdrop-blur-sm overflow-hidden relative rounded-2xl">
+        <Card className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden relative">
             <div className="absolute top-0 right-0 p-4 opacity-10" aria-hidden="true">
                 <Sparkles className="h-12 w-12 text-primary" />
             </div>
             <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 animate-pulse-soft px-2 py-0.5 text-[9px] font-bold">
+                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
                         <Brain className="h-3 w-3 mr-1" aria-hidden="true" />
-                        AI ADVISOR
+                        AI Advisor
                     </Badge>
-                    <CardTitle className="text-xs font-bold tracking-tight">Smart Insights</CardTitle>
+                    <CardTitle className="text-sm font-semibold">Smart Insights</CardTitle>
                 </div>
                 <CardDescription className="text-[10px] font-medium leading-relaxed">System-wide design audits</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-                {suggestions
-                    .filter(s => !dismissed.has(s.id))
-                    .map((suggestion) => (
-                    <div
-                        key={suggestion.id}
-                        className={`flex flex-col gap-2 p-3 rounded-xl border text-[11px] transition-all hover:translate-x-1 ${suggestion.severity === "success"
-                            ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                            : suggestion.severity === "warning"
-                                ? "bg-amber-500/5 border-amber-500/10 text-amber-700 dark:text-amber-400"
-                                : "bg-blue-500/5 border-blue-500/10 text-blue-700 dark:text-blue-400"
-                            }`}
-                        role="alert"
-                    >
-                        <div className="flex items-start gap-3">
+                {visible.map((suggestion) => {
+                    const isAutoFixing = autoFixing === suggestion.id;
+                    return (
+                        <div
+                            key={suggestion.id}
+                            className={`flex items-start gap-3 p-2.5 rounded-lg border text-xs transition-all ${suggestion.severity === "success"
+                                ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                                : suggestion.severity === "warning"
+                                    ? "bg-amber-500/5 border-amber-500/20 text-amber-700 dark:text-amber-400"
+                                    : "bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400"
+                                }`}
+                        >
                             {suggestion.severity === "success" ? (
                                 <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
                             ) : suggestion.severity === "warning" ? (
@@ -109,63 +220,57 @@ export function AIAdvisor({ designSystem, onUpdate }: AIAdvisorProps) {
                             ) : (
                                 <Lightbulb className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
                             )}
-                            <p className="font-semibold leading-normal flex-1">{suggestion.message}</p>
-                            <button 
-                                onClick={() => setDismissed(prev => new Set([...prev, suggestion.id]))}
-                                className="opacity-40 hover:opacity-100 transition-opacity"
-                                aria-label="Dismiss"
-                            >
-                                <X className="h-3 w-3" />
-                            </button>
-                        </div>
-                        
-                        {suggestion.fixable && onUpdate && (
-                            <div className="flex gap-2 pl-6.5">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="h-6 text-[9px] px-2 rounded-lg bg-background/50 border-primary/20 hover:bg-primary/10"
-                                    onClick={() => handleFix(suggestion.id)}
-                                >
-                                    <Wand2 className="h-2.5 w-2.5 mr-1" />
-                                    Magic Fix
-                                </Button>
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="h-6 text-[9px] px-2 rounded-lg"
-                                    onClick={() => setDismissed(prev => new Set([...prev, suggestion.id]))}
-                                >
-                                    Ignore
-                                </Button>
+                            <div className="flex-1 min-w-0 space-y-2">
+                                <p className="font-semibold leading-snug">{suggestion.message}</p>
+                                {(suggestion.fix || suggestion.autoFix || suggestion.severity !== "success") && (
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {suggestion.fix && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-6 px-2 text-[11px] font-semibold rounded-md"
+                                                onClick={suggestion.fix}
+                                                disabled={isAutoFixing}
+                                            >
+                                                <Wand2 className="h-3 w-3 mr-1" aria-hidden="true" />
+                                                {suggestion.fixLabel || "Fix"}
+                                            </Button>
+                                        )}
+                                        {suggestion.autoFix && (
+                                            <Button
+                                                size="sm"
+                                                variant="default"
+                                                className="h-6 px-2 text-[11px] font-semibold rounded-md"
+                                                onClick={suggestion.autoFix}
+                                                disabled={isAutoFixing}
+                                            >
+                                                {isAutoFixing ? (
+                                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" aria-hidden="true" />
+                                                ) : (
+                                                    <Sparkles className="h-3 w-3 mr-1" aria-hidden="true" />
+                                                )}
+                                                {isAutoFixing ? "Fixing…" : suggestion.autoFixLabel || "Auto-fix"}
+                                            </Button>
+                                        )}
+                                        {suggestion.severity !== "success" && (
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-6 px-2 text-[11px] font-medium rounded-md"
+                                                onClick={() => setDismissed((prev) => new Set(prev).add(suggestion.id))}
+                                                aria-label="Dismiss suggestion"
+                                                disabled={isAutoFixing}
+                                            >
+                                                Dismiss
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                ))}
+                        </div>
+                    );
+                })}
             </CardContent>
         </Card>
     );
-
-    function handleFix(id: string) {
-        if (!onUpdate) return;
-        
-        const updated = { ...designSystem };
-        
-        if (id === "a11y-primary") {
-            // Darken primary color slightly for demo
-            updated.colors = { ...updated.colors, primary: "#0f172a" };
-            toast.success("Primary color contrast improved");
-        } else if (id === "usability-spacing") {
-            // Standardize spacing to 8px
-            updated.spacing = { ...updated.spacing, unit: 8 };
-            toast.success("Spacing standardized to 8px grid");
-        }
-        
-        onUpdate(updated);
-        setDismissed(prev => new Set([...prev, id]));
-    }
 }
-
-import { X, Wand2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
