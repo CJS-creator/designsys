@@ -127,15 +127,61 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                     filename = "figma-tokens.json"; 
                     break;
                 // Mobile
-                case 'react-native':
+                case 'react-native': {
                     const { generateReactNative } = await import("@/lib/exporters/web-exporters");
                     content = generateReactNative(designSystem);
                     filename = "Theme.ts";
                     break;
+                }
+                case 'swiftui': {
+                    const { exportToSwiftUIPro } = await import("@/lib/exporters/swiftui");
+                    content = exportToSwiftUIPro(tokens, designSystem.name);
+                    filename = "Theme.swift";
+                    break;
+                }
+                case 'kotlin': {
+                    const { exportToKotlinPro } = await import("@/lib/exporters/kotlin");
+                    content = exportToKotlinPro(tokens, designSystem.name);
+                    filename = "Theme.kt";
+                    break;
+                }
+                case 'flutter': {
+                    const { exportToFlutterPro } = await import("@/lib/exporters/flutter");
+                    content = exportToFlutterPro(tokens, designSystem.name);
+                    filename = "Theme.dart";
+                    break;
+                }
+                // Tokens
+                case 'style-dictionary': {
+                    const { generateStyleDictionary } = await import("@/lib/exporters/web-exporters");
+                    content = generateStyleDictionary(designSystem);
+                    filename = "style-dictionary.json";
+                    break;
+                }
+                // Visual Assets
+                case 'swatches-svg': {
+                    const { generateColorSwatchesSVG } = await import("@/lib/exporters/swatch-renderer");
+                    content = generateColorSwatchesSVG(designSystem);
+                    filename = "color-swatches.svg";
+                    break;
+                }
+                case 'swatches-png': {
+                    const { renderSwatchesToPNG } = await import("@/lib/exporters/swatch-renderer");
+                    const blob = await renderSwatchesToPNG(designSystem);
+                    downloadBlob(blob, `${designSystem.name}-swatches.png`);
+                    toast.success("PNG Swatches Generated", { id: toastId });
+                    return;
+                }
+                case 'typo-preview': {
+                    const { generateTypographyPreviewSVG } = await import("@/lib/exporters/swatch-renderer");
+                    content = generateTypographyPreviewSVG(designSystem);
+                    filename = "typography-preview.svg";
+                    break;
+                }
                 // Logic
                 case 'readme': content = generateREADME(designSystem); filename = "README.md"; break;
                 default: 
-                    toast.info("This format is currently only available in the Full Bundle", { id: toastId }); 
+                    toast.info("This format is currently available in the Full Bundle", { id: toastId }); 
                     return;
             }
 
@@ -191,7 +237,7 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                 formats: [
                     { name: "DTCG Standard", type: 'dtcg', size: "65 KB" },
                     { name: "Figma Variables", type: 'figma', size: "12 KB" },
-                    { name: "Style Dictionary", size: "48 KB" },
+                    { name: "Style Dictionary", type: 'style-dictionary', size: "48 KB" },
                 ]
             },
             {
@@ -216,8 +262,9 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                 bg: "bg-pink-500/10",
                 formats: [
                     { name: "React Native", type: 'react-native', size: "14 KB" },
-                    { name: "iOS / SwiftUI", size: "32 KB" },
-                    { name: "Android / Kotlin", size: "42 KB" },
+                    { name: "iOS / SwiftUI", type: 'swiftui', size: "32 KB" },
+                    { name: "Android / Kotlin", type: 'kotlin', size: "42 KB" },
+                    { name: "Flutter Engine", type: 'flutter', size: "38 KB" },
                 ]
             },
             {
@@ -228,9 +275,9 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                 color: "text-orange-500",
                 bg: "bg-orange-500/10",
                 formats: [
-                    { name: "Palette (PNG)", size: "850 KB" },
-                    { name: "Swatches (SVG)", size: "122 KB" },
-                    { name: "Brand Preview", size: "410 KB" },
+                    { name: "Palette (PNG)", type: 'swatches-png', size: "850 KB" },
+                    { name: "Swatches (SVG)", type: 'swatches-svg', size: "122 KB" },
+                    { name: "Brand Preview", type: 'typo-preview', size: "410 KB" },
                 ]
             }
         ];
@@ -380,17 +427,34 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                     </CardContent>
                 </Card>
 
-                <Card className="border-dashed">
-                    <CardHeader>
+                <Card className="border-dashed border-primary/20 bg-primary/5">
+                    <CardHeader className="pb-2">
                         <CardTitle className="text-lg flex items-center gap-2">
-                            <ExternalLink className="h-5 w-5" /> Cloud Sync
+                            <ExternalLink className="h-5 w-5 text-primary" /> Cloud Sync
                         </CardTitle>
+                        <CardDescription className="text-xs">Direct push to S3, GCS, or Azure</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex items-center justify-center p-8 opacity-40">
-                        <div className="text-center space-y-2">
-                            <Download className="h-8 w-8 mx-auto mb-2" />
-                            <p className="text-xs font-bold">AWS S3 / Google Cloud Storage</p>
-                            <p className="text-[10px]">Premium Feature Coming Soon</p>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground">Provider</label>
+                                <select className="w-full bg-background border rounded-lg p-1.5 text-xs">
+                                    <option>Amazon S3</option>
+                                    <option>Google Cloud</option>
+                                    <option>Azure Blob</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground">Bucket</label>
+                                <input type="text" placeholder="ds-assets-prod" className="w-full bg-background border rounded-lg p-1.5 text-xs" />
+                            </div>
+                        </div>
+                        <Button variant="outline" size="sm" className="w-full text-[10px] font-bold h-8 border-primary/20 bg-primary/5 hover:bg-primary/10">
+                            Configure Credentials & Connect
+                        </Button>
+                        <div className="flex items-center gap-2 text-[9px] text-muted-foreground justify-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                            Awaiting Backend Integration
                         </div>
                     </CardContent>
                 </Card>
