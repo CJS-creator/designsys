@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { History, RotateCcw, Plus, Clock, GitCommit, AlertCircle } from "lucide-react";
+import { History, RotateCcw, Plus, Clock, GitCommit, AlertCircle, FileJson, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,6 +9,7 @@ import type { Json } from "@/integrations/supabase/types";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
 
 interface VersionRow {
     id: string;
