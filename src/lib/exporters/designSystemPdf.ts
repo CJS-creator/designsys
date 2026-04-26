@@ -2,11 +2,26 @@ import jsPDF from "jspdf";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import type { VersionInfo } from "./tokensPayload";
 
+export interface PdfSectionToggles {
+  colors?: boolean;
+  typography?: boolean;
+  spacing?: boolean;
+  shadows?: boolean;
+  borderRadius?: boolean;
+  grid?: boolean;
+}
+
 export interface DesignSystemPdfOptions {
   filename?: string;
   versionInfo?: VersionInfo;
   /** When true, the PDF is NOT saved to disk — useful for preview rendering. */
   previewOnly?: boolean;
+  /** Page orientation. Defaults to "portrait". */
+  orientation?: "portrait" | "landscape";
+  /** Toggle individual sections on/off. Missing keys default to true. */
+  sections?: PdfSectionToggles;
+  /** Optional dataURL (PNG/JPEG) shown on the cover page as a thumbnail. */
+  coverThumbnail?: string | null;
 }
 
 /**
