@@ -36,8 +36,9 @@ export function exportDesignSystemToPdf(
   // Back-compat: previously the second argument was just a filename string.
   const opts: DesignSystemPdfOptions =
     typeof options === "string" ? { filename: options } : options;
-  const { filename, versionInfo, previewOnly } = opts;
-  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+  const { filename, versionInfo, previewOnly, orientation = "portrait", sections, coverThumbnail } = opts;
+  const include = (k: keyof PdfSectionToggles) => (sections ? sections[k] !== false : true);
+  const pdf = new jsPDF({ unit: "pt", format: "a4", orientation });
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
   const margin = 40;
