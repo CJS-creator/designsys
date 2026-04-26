@@ -1,25 +1,36 @@
 import { GeneratedDesignSystem } from "@/types/designSystem";
+import { deflate, inflate } from "pako";
 
 /**
  * Encodes a design system as a URL-safe base64 string suitable for use in a hash.
  * Intended for sharing the *exact* state without a server round-trip.
  *
- * Format: base64url(JSON.stringify(ds))
+ * Format: prefix + base64url(payload)
+ *   prefix "z:" → DEFLATE-compressed JSON (default for new links — much shorter)
+ *   no prefix  → legacy uncompressed JSON (still decoded for backwards compat)
  */
-function toBase64Url(input: string): string {
-  // Use TextEncoder + btoa fallback path that handles unicode safely.
-  const bytes = new TextEncoder().encode(input);
+const COMPRESSED_PREFIX = "z:";
+
+function bytesToBase64Url(bytes: Uint8Array): string {
   let binary = "";
   for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function fromBase64Url(input: string): string {
+function base64UrlToBytes(input: string): Uint8Array {
   const padded = input.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((input.length + 3) % 4);
   const binary = atob(padded);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new TextDecoder().decode(bytes);
+  return bytes;
+}
+
+function toBase64Url(input: string): string {
+  return bytesToBase64Url(new TextEncoder().encode(input));
+}
+
+function fromBase64Url(input: string): string {
+  return new TextDecoder().decode(base64UrlToBytes(input));
 }
 
 export const MAX_THEME_URL_LENGTH = 7000;
