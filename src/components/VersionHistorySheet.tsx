@@ -390,11 +390,17 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 
 function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
     const diffs = computeColorDiffs(a, b);
+    const s = summarize(diffs);
     return (
         <div className="border-t mt-3 pt-3 max-h-56 overflow-y-auto">
             <div className="flex items-center justify-between mb-2 gap-2">
                 <p className="text-xs font-semibold">
-                    v{a.version_number} → v{b.version_number} · {diffs.length} color change{diffs.length === 1 ? "" : "s"}
+                    v{a.version_number} → v{b.version_number} · {s.total} change{s.total === 1 ? "" : "s"}
+                    {s.total > 0 && (
+                        <span className="ml-1 font-normal text-muted-foreground">
+                            ({s.added} added · {s.removed} removed · {s.changed} changed)
+                        </span>
+                    )}
                 </p>
                 <div className="flex items-center gap-1">
                     <Button
@@ -421,17 +427,27 @@ function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
                 <ul className="space-y-1 text-[11px] font-mono">
                     {diffs.slice(0, 12).map((d) => (
                         <li key={d.label} className="flex items-center gap-2">
-                            <span className="text-muted-foreground truncate w-32">{d.label}</span>
+                            <Badge
+                                variant="outline"
+                                className={`text-[9px] px-1 py-0 h-4 ${
+                                    d.kind === "added" ? "text-success border-success/40"
+                                    : d.kind === "removed" ? "text-destructive border-destructive/40"
+                                    : "text-muted-foreground"
+                                }`}
+                            >
+                                {d.kind}
+                            </Badge>
+                            <span className="text-muted-foreground truncate w-28">{d.label}</span>
                             <span
                                 className="w-3 h-3 rounded-sm border"
-                                style={{ backgroundColor: d.from }}
-                                title={d.from}
+                                style={{ backgroundColor: d.from ?? "transparent" }}
+                                title={d.from ?? "—"}
                             />
                             <span className="text-muted-foreground">→</span>
                             <span
                                 className="w-3 h-3 rounded-sm border"
-                                style={{ backgroundColor: d.to }}
-                                title={d.to}
+                                style={{ backgroundColor: d.to ?? "transparent" }}
+                                title={d.to ?? "—"}
                             />
                         </li>
                     ))}
