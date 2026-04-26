@@ -40,7 +40,16 @@ export function encodeTheme(ds: GeneratedDesignSystem): string {
   const { id: _id, live_version_id: _live, ...slim } = ds;
   void _id;
   void _live;
-  return toBase64Url(JSON.stringify(slim));
+  const json = JSON.stringify(slim);
+  // DEFLATE then base64url. Typical theme payloads compress 4–6×, which keeps
+  // shared links comfortably below most URL length limits.
+  try {
+    const compressed = deflate(json, { level: 9 });
+    return COMPRESSED_PREFIX + bytesToBase64Url(compressed);
+  } catch {
+    // Extremely unlikely, but fall back to the legacy uncompressed format.
+    return toBase64Url(json);
+  }
 }
 
 export function buildThemeUrl(ds: GeneratedDesignSystem, base?: string): string {
