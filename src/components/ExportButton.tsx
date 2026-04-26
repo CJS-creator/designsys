@@ -55,7 +55,7 @@ import { resolveTemplate } from "@/lib/exporters/custom-templating";
 import { DesignToken } from "@/types/tokens";
 import { Separator } from "@/components/ui/separator";
 import { buildTokensPayload, tokensToYaml } from "@/lib/exporters/tokensPayload";
-import { exportDesignSystemToPdf } from "@/lib/exporters/designSystemPdf";
+import { exportDesignSystemToPdf, previewDesignSystemPdf } from "@/lib/exporters/designSystemPdf";
 
 interface ExportButtonProps {
   designSystem: GeneratedDesignSystem;
