@@ -229,8 +229,22 @@ export function exportDesignSystemToPdf(
   }
 
   const safeName = (filename || `${ds.name || "design-system"}.pdf`).replace(/\s+/g, "-").toLowerCase();
-  pdf.save(safeName.endsWith(".pdf") ? safeName : `${safeName}.pdf`);
+  if (!previewOnly) {
+    pdf.save(safeName.endsWith(".pdf") ? safeName : `${safeName}.pdf`);
+  }
   return pdf;
+}
+
+/** Build a blob URL preview for an in-app PDF preview (caller must revoke). */
+export function previewDesignSystemPdf(
+  ds: GeneratedDesignSystem,
+  versionInfo?: VersionInfo,
+): { url: string; blob: Blob; filename: string; pdf: jsPDF } {
+  const pdf = exportDesignSystemToPdf(ds, { previewOnly: true, versionInfo });
+  const blob = pdf.output("blob");
+  const url = URL.createObjectURL(blob);
+  const safe = (ds.name || "design-system").replace(/\s+/g, "-").toLowerCase();
+  return { url, blob, filename: `${safe}.pdf`, pdf };
 }
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
