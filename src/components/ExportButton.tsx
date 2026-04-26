@@ -910,6 +910,38 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
         </DialogContent>
       </Dialog>
 
+      {/* PDF Preview Dialog — confirm layout before download */}
+      <Dialog open={pdfPreviewOpen} onOpenChange={(o) => (o ? setPdfPreviewOpen(true) : closePdfPreview())}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              PDF preview · {pdfFilename}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="w-full h-[70vh] rounded-md border bg-muted/40 overflow-hidden">
+            {pdfPreviewUrl ? (
+              <iframe
+                title="Design system PDF preview"
+                src={pdfPreviewUrl}
+                className="w-full h-full"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
+                Generating preview…
+              </div>
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={closePdfPreview}>Cancel</Button>
+            <Button onClick={confirmPdfDownload}>
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Auth Required Dialog */}
       <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
         <DialogContent className="sm:max-w-md">
