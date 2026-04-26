@@ -1001,14 +1001,64 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
 
       {/* PDF Preview Dialog — confirm layout before download */}
       <Dialog open={pdfPreviewOpen} onOpenChange={(o) => (o ? setPdfPreviewOpen(true) : closePdfPreview())}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent className="max-w-5xl max-h-[92vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               PDF preview · {pdfFilename}
             </DialogTitle>
           </DialogHeader>
-          <div className="w-full h-[70vh] rounded-md border bg-muted/40 overflow-hidden">
+
+          {/* Export settings */}
+          <div className="rounded-xl border bg-muted/30 p-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-foreground">Orientation</span>
+              <div className="inline-flex rounded-lg border bg-background p-0.5">
+                {(["portrait", "landscape"] as const).map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    onClick={() => setOrientation(o)}
+                    className={`px-2.5 py-1 rounded-md capitalize transition-colors ${
+                      pdfOrientation === o
+                        ? "bg-primary text-primary-foreground font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {o}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-foreground">Sections</span>
+              {(Object.keys(pdfSections) as Array<keyof typeof pdfSections>).map((key) => (
+                <label
+                  key={key}
+                  className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 cursor-pointer select-none transition-colors ${
+                    pdfSections[key] ? "bg-primary/10 border-primary/40 text-foreground" : "bg-background border-border text-muted-foreground"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="h-3 w-3 accent-primary"
+                    checked={pdfSections[key]}
+                    onChange={() => toggleSection(key)}
+                  />
+                  <span className="capitalize">{key === "borderRadius" ? "radius" : key}</span>
+                </label>
+              ))}
+            </div>
+
+            {pdfBuilding && (
+              <span className="text-muted-foreground ml-auto inline-flex items-center gap-1">
+                <RefreshCw className="h-3 w-3 animate-spin" /> Updating preview…
+              </span>
+            )}
+          </div>
+
+          <div className="w-full h-[60vh] rounded-md border bg-muted/40 overflow-hidden mt-2">
             {pdfPreviewUrl ? (
               <iframe
                 title="Design system PDF preview"
@@ -1023,7 +1073,7 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={closePdfPreview}>Cancel</Button>
-            <Button onClick={confirmPdfDownload}>
+            <Button onClick={confirmPdfDownload} disabled={pdfBuilding}>
               <Download className="h-4 w-4 mr-2" />
               Download PDF
             </Button>
