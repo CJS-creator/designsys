@@ -112,7 +112,13 @@ export function decodeThemeFromHash(hash: string): GeneratedDesignSystem | null 
   const value = params.get("theme") ?? (cleaned.startsWith("theme=") ? cleaned.slice(6) : null);
   if (!value) return null;
   try {
-    const json = fromBase64Url(value);
+    let json: string;
+    if (value.startsWith(COMPRESSED_PREFIX)) {
+      const bytes = base64UrlToBytes(value.slice(COMPRESSED_PREFIX.length));
+      json = inflate(bytes, { to: "string" });
+    } else {
+      json = fromBase64Url(value);
+    }
     const parsed = JSON.parse(json);
     if (!parsed || typeof parsed !== "object") return null;
     // A theme is only useful if at least colors are present.
