@@ -1,12 +1,27 @@
 import jsPDF from "jspdf";
 import { GeneratedDesignSystem } from "@/types/designSystem";
+import type { VersionInfo } from "./tokensPayload";
+
+export interface DesignSystemPdfOptions {
+  filename?: string;
+  versionInfo?: VersionInfo;
+  /** When true, the PDF is NOT saved to disk — useful for preview rendering. */
+  previewOnly?: boolean;
+}
 
 /**
  * One-click PDF export of a generated design system.
  * Renders Colors, Typography, Spacing, Shadows, Border Radius and Grid sections.
- * Returns the generated jsPDF instance (already saved to disk).
+ * When `previewOnly` is true, the PDF is returned without triggering a download.
  */
-export function exportDesignSystemToPdf(ds: GeneratedDesignSystem, filename?: string): jsPDF {
+export function exportDesignSystemToPdf(
+  ds: GeneratedDesignSystem,
+  options: DesignSystemPdfOptions | string = {},
+): jsPDF {
+  // Back-compat: previously the second argument was just a filename string.
+  const opts: DesignSystemPdfOptions =
+    typeof options === "string" ? { filename: options } : options;
+  const { filename, versionInfo, previewOnly } = opts;
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
