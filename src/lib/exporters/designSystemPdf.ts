@@ -71,12 +71,24 @@ export function exportDesignSystemToPdf(
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(34);
   pdf.setTextColor(20, 20, 30);
-  pdf.text(ds.name || "Design System", margin, pageH / 2 - 20);
+  pdf.text(ds.name || "Design System", margin, pageH / 2 - 40);
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(12);
   pdf.setTextColor(110, 110, 120);
-  pdf.text("Design System Export · DesignForge", margin, pageH / 2 + 4);
-  pdf.text(new Date().toLocaleDateString(), margin, pageH / 2 + 22);
+  pdf.text("Design System Export · DesignForge", margin, pageH / 2 - 16);
+  pdf.text(`Exported: ${new Date().toLocaleString()}`, margin, pageH / 2 + 2);
+  if (versionInfo?.versionName || versionInfo?.versionNumber !== undefined) {
+    const label = versionInfo.versionName
+      ?? (versionInfo.versionNumber !== undefined ? `Version ${versionInfo.versionNumber}` : "");
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(60, 80, 200);
+    pdf.text(`Version: ${label}`, margin, pageH / 2 + 22);
+    if (versionInfo.versionCreatedAt) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(110, 110, 120);
+      pdf.text(`Saved: ${new Date(versionInfo.versionCreatedAt).toLocaleString()}`, margin, pageH / 2 + 38);
+    }
+  }
   pdf.addPage();
   y = margin;
 
