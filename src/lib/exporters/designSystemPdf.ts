@@ -1,12 +1,27 @@
 import jsPDF from "jspdf";
 import { GeneratedDesignSystem } from "@/types/designSystem";
+import type { VersionInfo } from "./tokensPayload";
+
+export interface DesignSystemPdfOptions {
+  filename?: string;
+  versionInfo?: VersionInfo;
+  /** When true, the PDF is NOT saved to disk — useful for preview rendering. */
+  previewOnly?: boolean;
+}
 
 /**
  * One-click PDF export of a generated design system.
  * Renders Colors, Typography, Spacing, Shadows, Border Radius and Grid sections.
- * Returns the generated jsPDF instance (already saved to disk).
+ * When `previewOnly` is true, the PDF is returned without triggering a download.
  */
-export function exportDesignSystemToPdf(ds: GeneratedDesignSystem, filename?: string): jsPDF {
+export function exportDesignSystemToPdf(
+  ds: GeneratedDesignSystem,
+  options: DesignSystemPdfOptions | string = {},
+): jsPDF {
+  // Back-compat: previously the second argument was just a filename string.
+  const opts: DesignSystemPdfOptions =
+    typeof options === "string" ? { filename: options } : options;
+  const { filename, versionInfo, previewOnly } = opts;
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
@@ -56,12 +71,24 @@ export function exportDesignSystemToPdf(ds: GeneratedDesignSystem, filename?: st
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(34);
   pdf.setTextColor(20, 20, 30);
-  pdf.text(ds.name || "Design System", margin, pageH / 2 - 20);
+  pdf.text(ds.name || "Design System", margin, pageH / 2 - 40);
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(12);
   pdf.setTextColor(110, 110, 120);
-  pdf.text("Design System Export · DesignForge", margin, pageH / 2 + 4);
-  pdf.text(new Date().toLocaleDateString(), margin, pageH / 2 + 22);
+  pdf.text("Design System Export · DesignForge", margin, pageH / 2 - 16);
+  pdf.text(`Exported: ${new Date().toLocaleString()}`, margin, pageH / 2 + 2);
+  if (versionInfo?.versionName || versionInfo?.versionNumber !== undefined) {
+    const label = versionInfo.versionName
+      ?? (versionInfo.versionNumber !== undefined ? `Version ${versionInfo.versionNumber}` : "");
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(60, 80, 200);
+    pdf.text(`Version: ${label}`, margin, pageH / 2 + 22);
+    if (versionInfo.versionCreatedAt) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(110, 110, 120);
+      pdf.text(`Saved: ${new Date(versionInfo.versionCreatedAt).toLocaleString()}`, margin, pageH / 2 + 38);
+    }
+  }
   pdf.addPage();
   y = margin;
 
@@ -202,8 +229,22 @@ export function exportDesignSystemToPdf(ds: GeneratedDesignSystem, filename?: st
   }
 
   const safeName = (filename || `${ds.name || "design-system"}.pdf`).replace(/\s+/g, "-").toLowerCase();
-  pdf.save(safeName.endsWith(".pdf") ? safeName : `${safeName}.pdf`);
+  if (!previewOnly) {
+    pdf.save(safeName.endsWith(".pdf") ? safeName : `${safeName}.pdf`);
+  }
   return pdf;
+}
+
+/** Build a blob URL preview for an in-app PDF preview (caller must revoke). */
+export function previewDesignSystemPdf(
+  ds: GeneratedDesignSystem,
+  versionInfo?: VersionInfo,
+): { url: string; blob: Blob; filename: string; pdf: jsPDF } {
+  const pdf = exportDesignSystemToPdf(ds, { previewOnly: true, versionInfo });
+  const blob = pdf.output("blob");
+  const url = URL.createObjectURL(blob);
+  const safe = (ds.name || "design-system").replace(/\s+/g, "-").toLowerCase();
+  return { url, blob, filename: `${safe}.pdf`, pdf };
 }
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {

@@ -1,10 +1,22 @@
 import { GeneratedDesignSystem } from "@/types/designSystem";
 
+export interface VersionInfo {
+  /** Human-readable version label, e.g. "Manual snapshot v3" */
+  versionName?: string;
+  /** Numeric version, when available */
+  versionNumber?: number;
+  /** ISO timestamp of when the version was created */
+  versionCreatedAt?: string;
+}
+
 /**
  * Builds a flat, serializer-friendly payload of the user's design tokens.
  * Used for both JSON and YAML downloads. Strips internal/computed fields.
+ *
+ * Optional `versionInfo` is included in the payload header so consumers
+ * (and downloaded files) record exactly which version they came from.
  */
-export function buildTokensPayload(ds: GeneratedDesignSystem) {
+export function buildTokensPayload(ds: GeneratedDesignSystem, versionInfo?: VersionInfo) {
   const flatColors = Object.fromEntries(
     Object.entries(ds.colors).filter(([, v]) => typeof v === "string")
   ) as Record<string, string>;
@@ -13,6 +25,13 @@ export function buildTokensPayload(ds: GeneratedDesignSystem) {
     name: ds.name,
     description: ds.description ?? "",
     generatedAt: new Date().toISOString(),
+    version: versionInfo
+      ? {
+          name: versionInfo.versionName ?? null,
+          number: versionInfo.versionNumber ?? null,
+          createdAt: versionInfo.versionCreatedAt ?? null,
+        }
+      : undefined,
     colors: flatColors,
     typography: {
       fontFamily: ds.typography.fontFamily,

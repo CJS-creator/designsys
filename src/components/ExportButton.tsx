@@ -55,7 +55,7 @@ import { resolveTemplate } from "@/lib/exporters/custom-templating";
 import { DesignToken } from "@/types/tokens";
 import { Separator } from "@/components/ui/separator";
 import { buildTokensPayload, tokensToYaml } from "@/lib/exporters/tokensPayload";
-import { exportDesignSystemToPdf } from "@/lib/exporters/designSystemPdf";
+import { exportDesignSystemToPdf, previewDesignSystemPdf } from "@/lib/exporters/designSystemPdf";
 
 interface ExportButtonProps {
   designSystem: GeneratedDesignSystem;
@@ -618,6 +618,44 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
   const dsId = searchParams.get("id") || "";
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // PDF preview-before-download state
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [pdfFilename, setPdfFilename] = useState<string>("design-system.pdf");
+  const [pdfBuilding, setPdfBuilding] = useState(false);
+
+  const closePdfPreview = () => {
+    setPdfPreviewOpen(false);
+    if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
+    setPdfPreviewUrl(null);
+  };
+
+  const openPdfPreview = () => {
+    if (!user) { setAuthDialogOpen(true); return; }
+    setPdfBuilding(true);
+    try {
+      if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
+      const { url, filename } = previewDesignSystemPdf(designSystem);
+      setPdfPreviewUrl(url);
+      setPdfFilename(filename);
+      setPdfPreviewOpen(true);
+    } catch (e) {
+      toast.error("Could not generate PDF preview", { description: e instanceof Error ? e.message : undefined });
+    } finally {
+      setPdfBuilding(false);
+    }
+  };
+
+  const confirmPdfDownload = () => {
+    try {
+      exportDesignSystemToPdf(designSystem);
+      toast.success("PDF downloaded");
+      closePdfPreview();
+    } catch (e) {
+      toast.error("Could not generate PDF", { description: e instanceof Error ? e.message : undefined });
+    }
+  };
+
   const handleGitHubSync = async () => {
     if (!user) {
       setAuthDialogOpen(true);
@@ -826,19 +864,9 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
             {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
             Copy JSON
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              if (!user) { setAuthDialogOpen(true); return; }
-              try {
-                exportDesignSystemToPdf(designSystem);
-                toast.success("PDF downloaded");
-              } catch (e) {
-                toast.error("Could not generate PDF", { description: e instanceof Error ? e.message : undefined });
-              }
-            }}
-          >
+          <DropdownMenuItem onClick={openPdfPreview} disabled={pdfBuilding}>
             <FileText className="h-4 w-4 mr-2" />
-            Download PDF
+            {pdfBuilding ? "Preparing PDF…" : "Preview & download PDF"}
           </DropdownMenuItem>
           <Separator className="my-1" />
           <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Git Integration</div>
@@ -877,6 +905,38 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
               <Download className="h-4 w-4 mr-2" />
               Download
               {!user && <Lock className="h-3 w-3 ml-1" />}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* PDF Preview Dialog — confirm layout before download */}
+      <Dialog open={pdfPreviewOpen} onOpenChange={(o) => (o ? setPdfPreviewOpen(true) : closePdfPreview())}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              PDF preview · {pdfFilename}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="w-full h-[70vh] rounded-md border bg-muted/40 overflow-hidden">
+            {pdfPreviewUrl ? (
+              <iframe
+                title="Design system PDF preview"
+                src={pdfPreviewUrl}
+                className="w-full h-full"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
+                Generating preview…
+              </div>
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={closePdfPreview}>Cancel</Button>
+            <Button onClick={confirmPdfDownload}>
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
             </Button>
           </DialogFooter>
         </DialogContent>

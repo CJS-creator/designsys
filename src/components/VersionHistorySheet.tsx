@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { History, RotateCcw, Plus, Clock, GitCommit, AlertCircle } from "lucide-react";
+import { History, RotateCcw, Plus, Clock, GitCommit, AlertCircle, FileJson, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,6 +9,7 @@ import type { Json } from "@/integrations/supabase/types";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
 
 interface VersionRow {
     id: string;
@@ -225,10 +226,12 @@ export function VersionHistorySheet({ designSystem, onRestore, triggerClassName 
     );
 }
 
-function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
+interface ColorDiff { label: string; from: string; to: string }
+
+function computeColorDiffs(a: VersionRow, b: VersionRow): ColorDiff[] {
     const sa = a.snapshot_data as unknown as GeneratedDesignSystem;
     const sb = b.snapshot_data as unknown as GeneratedDesignSystem;
-    const diffs: { label: string; from: string; to: string }[] = [];
+    const diffs: ColorDiff[] = [];
     const colorsA = (sa?.colors ?? {}) as unknown as Record<string, unknown>;
     const colorsB = (sb?.colors ?? {}) as unknown as Record<string, unknown>;
     for (const k of Object.keys({ ...colorsA, ...colorsB })) {
@@ -236,13 +239,135 @@ function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
         const vb = colorsB[k];
         if (typeof va === "string" && typeof vb === "string" && va !== vb) {
             diffs.push({ label: `colors.${k}`, from: va, to: vb });
+        } else if (va !== vb && (typeof va === "string" || typeof vb === "string")) {
+            diffs.push({ label: `colors.${k}`, from: typeof va === "string" ? va : "—", to: typeof vb === "string" ? vb : "—" });
         }
     }
+    return diffs;
+}
+
+function downloadBlob(content: BlobPart, filename: string, mime: string) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function exportDiffJson(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
+    const payload = {
+        generatedAt: new Date().toISOString(),
+        from: { name: a.name, versionNumber: a.version_number, createdAt: a.created_at },
+        to: { name: b.name, versionNumber: b.version_number, createdAt: b.created_at },
+        summary: { colorChanges: diffs.length },
+        diffs,
+    };
+    const filename = `diff-v${a.version_number}-to-v${b.version_number}.json`;
+    downloadBlob(JSON.stringify(payload, null, 2), filename, "application/json");
+    toast.success(`Downloaded ${filename}`);
+}
+
+function exportDiffPdf(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
+    const pdf = new jsPDF({ unit: "pt", format: "a4" });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const margin = 40;
+    let y = margin;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(20);
+    pdf.text("Version comparison", margin, y);
+    y += 26;
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+    pdf.setTextColor(110);
+    pdf.text(`Generated ${new Date().toLocaleString()}`, margin, y);
+    y += 22;
+
+    pdf.setTextColor(20);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.text(`From: ${a.name || `v${a.version_number}`} (v${a.version_number})`, margin, y); y += 14;
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(110);
+    pdf.text(`Saved ${new Date(a.created_at).toLocaleString()}`, margin, y); y += 18;
+
+    pdf.setTextColor(20);
+    pdf.setFont("helvetica", "bold");
+    pdf.text(`To:   ${b.name || `v${b.version_number}`} (v${b.version_number})`, margin, y); y += 14;
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(110);
+    pdf.text(`Saved ${new Date(b.created_at).toLocaleString()}`, margin, y); y += 24;
+
+    pdf.setTextColor(20);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(12);
+    pdf.text(`Color changes (${diffs.length})`, margin, y); y += 16;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+    if (diffs.length === 0) {
+        pdf.setTextColor(110);
+        pdf.text("No color differences between these versions.", margin, y);
+    } else {
+        for (const d of diffs) {
+            if (y > 780) { pdf.addPage(); y = margin; }
+            const fromRgb = hexToRgb(d.from);
+            const toRgb = hexToRgb(d.to);
+            pdf.setTextColor(40);
+            pdf.text(d.label, margin, y + 10);
+            if (fromRgb) pdf.setFillColor(fromRgb.r, fromRgb.g, fromRgb.b); else pdf.setFillColor(220, 220, 220);
+            pdf.rect(margin + 180, y, 16, 14, "F");
+            pdf.setTextColor(110);
+            pdf.text(d.from, margin + 202, y + 10);
+            pdf.text("→", margin + 290, y + 10);
+            if (toRgb) pdf.setFillColor(toRgb.r, toRgb.g, toRgb.b); else pdf.setFillColor(220, 220, 220);
+            pdf.rect(margin + 308, y, 16, 14, "F");
+            pdf.text(d.to, margin + 330, y + 10);
+            y += 20;
+        }
+    }
+    void pageW;
+    const filename = `diff-v${a.version_number}-to-v${b.version_number}.pdf`;
+    pdf.save(filename);
+    toast.success(`Downloaded ${filename}`);
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex || "").trim());
+    if (!m) return null;
+    return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+}
+
+function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
+    const diffs = computeColorDiffs(a, b);
     return (
-        <div className="border-t mt-3 pt-3 max-h-40 overflow-y-auto">
-            <p className="text-xs font-semibold mb-2">
-                v{a.version_number} → v{b.version_number} · {diffs.length} color change{diffs.length === 1 ? "" : "s"}
-            </p>
+        <div className="border-t mt-3 pt-3 max-h-56 overflow-y-auto">
+            <div className="flex items-center justify-between mb-2 gap-2">
+                <p className="text-xs font-semibold">
+                    v{a.version_number} → v{b.version_number} · {diffs.length} color change{diffs.length === 1 ? "" : "s"}
+                </p>
+                <div className="flex items-center gap-1">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[11px] rounded-lg"
+                        onClick={() => exportDiffJson(a, b, diffs)}
+                    >
+                        <FileJson className="h-3 w-3 mr-1" /> JSON
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[11px] rounded-lg"
+                        onClick={() => exportDiffPdf(a, b, diffs)}
+                    >
+                        <FileText className="h-3 w-3 mr-1" /> PDF
+                    </Button>
+                </div>
+            </div>
             {diffs.length === 0 ? (
                 <p className="text-xs text-muted-foreground">No color differences.</p>
             ) : (
