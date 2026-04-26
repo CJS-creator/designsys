@@ -226,7 +226,18 @@ export function VersionHistorySheet({ designSystem, onRestore, triggerClassName 
     );
 }
 
-interface ColorDiff { label: string; from: string; to: string }
+/** Schema version for diff exports. Bump when the diff payload shape changes. */
+const DIFF_SCHEMA_VERSION = "1.1.0";
+
+type ChangeKind = "added" | "removed" | "changed";
+interface ColorDiff {
+    label: string;
+    /** Old value, or null for added tokens. */
+    from: string | null;
+    /** New value, or null for removed tokens. */
+    to: string | null;
+    kind: ChangeKind;
+}
 
 function computeColorDiffs(a: VersionRow, b: VersionRow): ColorDiff[] {
     const sa = a.snapshot_data as unknown as GeneratedDesignSystem;
@@ -234,16 +245,30 @@ function computeColorDiffs(a: VersionRow, b: VersionRow): ColorDiff[] {
     const diffs: ColorDiff[] = [];
     const colorsA = (sa?.colors ?? {}) as unknown as Record<string, unknown>;
     const colorsB = (sb?.colors ?? {}) as unknown as Record<string, unknown>;
-    for (const k of Object.keys({ ...colorsA, ...colorsB })) {
+    const keys = Array.from(new Set([...Object.keys(colorsA), ...Object.keys(colorsB)])).sort();
+    for (const k of keys) {
         const va = colorsA[k];
         const vb = colorsB[k];
-        if (typeof va === "string" && typeof vb === "string" && va !== vb) {
-            diffs.push({ label: `colors.${k}`, from: va, to: vb });
-        } else if (va !== vb && (typeof va === "string" || typeof vb === "string")) {
-            diffs.push({ label: `colors.${k}`, from: typeof va === "string" ? va : "—", to: typeof vb === "string" ? vb : "—" });
+        const aIs = typeof va === "string";
+        const bIs = typeof vb === "string";
+        if (!aIs && bIs) {
+            diffs.push({ label: `colors.${k}`, from: null, to: vb as string, kind: "added" });
+        } else if (aIs && !bIs) {
+            diffs.push({ label: `colors.${k}`, from: va as string, to: null, kind: "removed" });
+        } else if (aIs && bIs && va !== vb) {
+            diffs.push({ label: `colors.${k}`, from: va as string, to: vb as string, kind: "changed" });
         }
     }
     return diffs;
+}
+
+function summarize(diffs: ColorDiff[]) {
+    return {
+        total: diffs.length,
+        added: diffs.filter((d) => d.kind === "added").length,
+        removed: diffs.filter((d) => d.kind === "removed").length,
+        changed: diffs.filter((d) => d.kind === "changed").length,
+    };
 }
 
 function downloadBlob(content: BlobPart, filename: string, mime: string) {
@@ -260,10 +285,12 @@ function downloadBlob(content: BlobPart, filename: string, mime: string) {
 
 function exportDiffJson(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
     const payload = {
+        schemaVersion: DIFF_SCHEMA_VERSION,
+        kind: "design-system.color-diff",
         generatedAt: new Date().toISOString(),
         from: { name: a.name, versionNumber: a.version_number, createdAt: a.created_at },
         to: { name: b.name, versionNumber: b.version_number, createdAt: b.created_at },
-        summary: { colorChanges: diffs.length },
+        summary: summarize(diffs),
         diffs,
     };
     const filename = `diff-v${a.version_number}-to-v${b.version_number}.json`;
@@ -283,7 +310,7 @@ function exportDiffPdf(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(10);
     pdf.setTextColor(110);
-    pdf.text(`Generated ${new Date().toLocaleString()}`, margin, y);
+    pdf.text(`Generated ${new Date().toLocaleString()}  ·  Schema v${DIFF_SCHEMA_VERSION}`, margin, y);
     y += 22;
 
     pdf.setTextColor(20);
@@ -299,12 +326,18 @@ function exportDiffPdf(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
     pdf.text(`To:   ${b.name || `v${b.version_number}`} (v${b.version_number})`, margin, y); y += 14;
     pdf.setFont("helvetica", "normal");
     pdf.setTextColor(110);
-    pdf.text(`Saved ${new Date(b.created_at).toLocaleString()}`, margin, y); y += 24;
+    pdf.text(`Saved ${new Date(b.created_at).toLocaleString()}`, margin, y); y += 18;
+
+    const s = summarize(diffs);
+    pdf.setTextColor(20);
+    pdf.setFont("helvetica", "bold");
+    pdf.text(`Summary: ${s.total} change${s.total === 1 ? "" : "s"} — ${s.added} added · ${s.removed} removed · ${s.changed} changed`, margin, y);
+    y += 22;
 
     pdf.setTextColor(20);
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(12);
-    pdf.text(`Color changes (${diffs.length})`, margin, y); y += 16;
+    pdf.text(`Color tokens (${diffs.length})`, margin, y); y += 16;
 
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(9);
@@ -314,18 +347,32 @@ function exportDiffPdf(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
     } else {
         for (const d of diffs) {
             if (y > 780) { pdf.addPage(); y = margin; }
-            const fromRgb = hexToRgb(d.from);
-            const toRgb = hexToRgb(d.to);
             pdf.setTextColor(40);
-            pdf.text(d.label, margin, y + 10);
-            if (fromRgb) pdf.setFillColor(fromRgb.r, fromRgb.g, fromRgb.b); else pdf.setFillColor(220, 220, 220);
-            pdf.rect(margin + 180, y, 16, 14, "F");
+            // Tag column
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(7);
+            const tagColor = d.kind === "added" ? [22, 130, 70] : d.kind === "removed" ? [180, 40, 40] : [80, 80, 160];
+            pdf.setTextColor(tagColor[0], tagColor[1], tagColor[2]);
+            pdf.text(d.kind.toUpperCase(), margin, y + 10);
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(9);
+            pdf.setTextColor(40);
+            pdf.text(d.label, margin + 60, y + 10);
+
+            const fromRgb = d.from ? hexToRgb(d.from) : null;
+            const toRgb = d.to ? hexToRgb(d.to) : null;
+
+            if (fromRgb) pdf.setFillColor(fromRgb.r, fromRgb.g, fromRgb.b); else pdf.setFillColor(245, 245, 245);
+            pdf.setDrawColor(220);
+            pdf.rect(margin + 220, y, 16, 14, fromRgb ? "F" : "FD");
             pdf.setTextColor(110);
-            pdf.text(d.from, margin + 202, y + 10);
-            pdf.text("→", margin + 290, y + 10);
-            if (toRgb) pdf.setFillColor(toRgb.r, toRgb.g, toRgb.b); else pdf.setFillColor(220, 220, 220);
-            pdf.rect(margin + 308, y, 16, 14, "F");
-            pdf.text(d.to, margin + 330, y + 10);
+            pdf.text(d.from ?? "—", margin + 242, y + 10);
+
+            pdf.text("→", margin + 320, y + 10);
+
+            if (toRgb) pdf.setFillColor(toRgb.r, toRgb.g, toRgb.b); else pdf.setFillColor(245, 245, 245);
+            pdf.rect(margin + 338, y, 16, 14, toRgb ? "F" : "FD");
+            pdf.text(d.to ?? "—", margin + 360, y + 10);
             y += 20;
         }
     }
