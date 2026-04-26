@@ -84,27 +84,54 @@ export function exportDesignSystemToPdf(
   // ---- Cover ----
   pdf.setFillColor(245, 245, 250);
   pdf.rect(0, 0, pageW, pageH, "F");
+
+  // Optional preview thumbnail (top half of cover)
+  if (coverThumbnail) {
+    try {
+      const maxThumbW = pageW - margin * 2;
+      const maxThumbH = pageH * 0.42;
+      const fmt = coverThumbnail.startsWith("data:image/png") ? "PNG" : "JPEG";
+      pdf.addImage(coverThumbnail, fmt, margin, margin, maxThumbW, maxThumbH, undefined, "FAST");
+      pdf.setDrawColor(220);
+      pdf.roundedRect(margin, margin, maxThumbW, maxThumbH, 8, 8, "S");
+    } catch {
+      // ignore — thumbnail is best-effort
+    }
+  }
+
+  const coverTextY = coverThumbnail ? pageH * 0.55 : pageH / 2 - 40;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(34);
   pdf.setTextColor(20, 20, 30);
-  pdf.text(ds.name || "Design System", margin, pageH / 2 - 40);
+  pdf.text(ds.name || "Design System", margin, coverTextY);
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(12);
   pdf.setTextColor(110, 110, 120);
-  pdf.text("Design System Export · DesignForge", margin, pageH / 2 - 16);
-  pdf.text(`Exported: ${new Date().toLocaleString()}`, margin, pageH / 2 + 2);
+  pdf.text("Design System Export · DesignForge", margin, coverTextY + 24);
+  pdf.text(`Exported: ${new Date().toLocaleString()}`, margin, coverTextY + 42);
   if (versionInfo?.versionName || versionInfo?.versionNumber !== undefined) {
     const label = versionInfo.versionName
       ?? (versionInfo.versionNumber !== undefined ? `Version ${versionInfo.versionNumber}` : "");
     pdf.setFont("helvetica", "bold");
     pdf.setTextColor(60, 80, 200);
-    pdf.text(`Version: ${label}`, margin, pageH / 2 + 22);
+    pdf.text(`Version: ${label}`, margin, coverTextY + 64);
     if (versionInfo.versionCreatedAt) {
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(110, 110, 120);
-      pdf.text(`Saved: ${new Date(versionInfo.versionCreatedAt).toLocaleString()}`, margin, pageH / 2 + 38);
+      pdf.text(`Saved: ${new Date(versionInfo.versionCreatedAt).toLocaleString()}`, margin, coverTextY + 80);
     }
   }
+
+  // Sections summary on cover
+  const enabled: string[] = [];
+  (["colors","typography","spacing","shadows","borderRadius","grid"] as const).forEach((k) => {
+    if (include(k)) enabled.push(k);
+  });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  pdf.setTextColor(140, 140, 150);
+  pdf.text(`Includes: ${enabled.join(" · ") || "(no sections selected)"}`, margin, pageH - margin);
+
   pdf.addPage();
   y = margin;
 
