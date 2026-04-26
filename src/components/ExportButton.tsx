@@ -623,6 +623,63 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFilename, setPdfFilename] = useState<string>("design-system.pdf");
   const [pdfBuilding, setPdfBuilding] = useState(false);
+  const [pdfOrientation, setPdfOrientation] = useState<"portrait" | "landscape">("portrait");
+  const [pdfSections, setPdfSections] = useState({
+    colors: true,
+    typography: true,
+    spacing: true,
+    shadows: true,
+    borderRadius: true,
+    grid: true,
+  });
+  const [pdfThumbnail, setPdfThumbnail] = useState<string | null>(null);
+
+  /** Build a tiny SVG-based thumbnail showing the palette + name as a cover preview. */
+  const buildPaletteThumbnail = (): string | null => {
+    try {
+      const swatches = Object.entries(designSystem.colors)
+        .filter(([, v]) => typeof v === "string")
+        .slice(0, 8) as [string, string][];
+      const w = 800;
+      const h = 320;
+      const sw = w / Math.max(1, swatches.length);
+      const rects = swatches.map(([, hex], i) =>
+        `<rect x="${i * sw}" y="0" width="${sw}" height="${h - 80}" fill="${hex}" />`
+      ).join("");
+      const safeName = (designSystem.name || "Design System").replace(/[<>&]/g, "");
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+        `<rect width="${w}" height="${h}" fill="#f5f5fa"/>` + rects +
+        `<text x="20" y="${h - 30}" font-family="Helvetica,Arial,sans-serif" font-size="28" font-weight="700" fill="#222">${safeName}</text>` +
+        `<text x="20" y="${h - 8}" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#777">App preview · ${swatches.length} key colors</text>` +
+        `</svg>`;
+      // jsPDF accepts PNG/JPEG dataURLs directly, so rasterize the SVG via canvas.
+      // We synchronously return the SVG dataURL — caller will convert to PNG.
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    } catch {
+      return null;
+    }
+  };
+
+  const svgToPngDataUrl = (svgUrl: string, width = 800, height = 320): Promise<string | null> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(null);
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/png"));
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = svgUrl;
+    });
 
   const closePdfPreview = () => {
     setPdfPreviewOpen(false);
@@ -630,15 +687,26 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
     setPdfPreviewUrl(null);
   };
 
-  const openPdfPreview = () => {
-    if (!user) { setAuthDialogOpen(true); return; }
+  const regeneratePdfPreview = async (overrides?: { orientation?: "portrait" | "landscape"; sections?: typeof pdfSections; thumbnail?: string | null }) => {
     setPdfBuilding(true);
     try {
       if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
-      const { url, filename } = previewDesignSystemPdf(designSystem);
+      const orientation = overrides?.orientation ?? pdfOrientation;
+      const sections = overrides?.sections ?? pdfSections;
+      let thumb = overrides?.thumbnail ?? pdfThumbnail;
+      if (thumb === null) {
+        const svgUrl = buildPaletteThumbnail();
+        if (svgUrl) thumb = await svgToPngDataUrl(svgUrl);
+        setPdfThumbnail(thumb);
+      }
+      const { url, filename } = previewDesignSystemPdf(designSystem, {
+        previewOnly: true,
+        orientation,
+        sections,
+        coverThumbnail: thumb,
+      });
       setPdfPreviewUrl(url);
       setPdfFilename(filename);
-      setPdfPreviewOpen(true);
     } catch (e) {
       toast.error("Could not generate PDF preview", { description: e instanceof Error ? e.message : undefined });
     } finally {
@@ -646,14 +714,35 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
     }
   };
 
+  const openPdfPreview = async () => {
+    if (!user) { setAuthDialogOpen(true); return; }
+    setPdfPreviewOpen(true);
+    await regeneratePdfPreview();
+  };
+
   const confirmPdfDownload = () => {
     try {
-      exportDesignSystemToPdf(designSystem);
+      exportDesignSystemToPdf(designSystem, {
+        orientation: pdfOrientation,
+        sections: pdfSections,
+        coverThumbnail: pdfThumbnail,
+      });
       toast.success("PDF downloaded");
       closePdfPreview();
     } catch (e) {
       toast.error("Could not generate PDF", { description: e instanceof Error ? e.message : undefined });
     }
+  };
+
+  const toggleSection = (key: keyof typeof pdfSections) => {
+    const next = { ...pdfSections, [key]: !pdfSections[key] };
+    setPdfSections(next);
+    regeneratePdfPreview({ sections: next });
+  };
+
+  const setOrientation = (o: "portrait" | "landscape") => {
+    setPdfOrientation(o);
+    regeneratePdfPreview({ orientation: o });
   };
 
   const handleGitHubSync = async () => {
