@@ -618,6 +618,44 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
   const dsId = searchParams.get("id") || "";
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // PDF preview-before-download state
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [pdfFilename, setPdfFilename] = useState<string>("design-system.pdf");
+  const [pdfBuilding, setPdfBuilding] = useState(false);
+
+  const closePdfPreview = () => {
+    setPdfPreviewOpen(false);
+    if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
+    setPdfPreviewUrl(null);
+  };
+
+  const openPdfPreview = () => {
+    if (!user) { setAuthDialogOpen(true); return; }
+    setPdfBuilding(true);
+    try {
+      if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
+      const { url, filename } = previewDesignSystemPdf(designSystem);
+      setPdfPreviewUrl(url);
+      setPdfFilename(filename);
+      setPdfPreviewOpen(true);
+    } catch (e) {
+      toast.error("Could not generate PDF preview", { description: e instanceof Error ? e.message : undefined });
+    } finally {
+      setPdfBuilding(false);
+    }
+  };
+
+  const confirmPdfDownload = () => {
+    try {
+      exportDesignSystemToPdf(designSystem);
+      toast.success("PDF downloaded");
+      closePdfPreview();
+    } catch (e) {
+      toast.error("Could not generate PDF", { description: e instanceof Error ? e.message : undefined });
+    }
+  };
+
   const handleGitHubSync = async () => {
     if (!user) {
       setAuthDialogOpen(true);
