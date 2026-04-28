@@ -1112,11 +1112,66 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
               ))}
             </div>
 
+            <label
+              className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 cursor-pointer select-none transition-colors ${
+                pdfIncludeThumbnail ? "bg-primary/10 border-primary/40 text-foreground" : "bg-background border-border text-muted-foreground"
+              }`}
+              title="Disable for restricted browsers where SVG→PNG rendering is slow or blocked"
+            >
+              <input
+                type="checkbox"
+                className="h-3 w-3 accent-primary"
+                checked={pdfIncludeThumbnail}
+                onChange={toggleIncludeThumbnail}
+              />
+              <span>Cover thumbnail</span>
+            </label>
+
             {pdfBuilding && (
               <span className="text-muted-foreground ml-auto inline-flex items-center gap-1">
                 <RefreshCw className="h-3 w-3 animate-spin" /> Updating preview…
               </span>
             )}
+          </div>
+
+          {/* PDF presets — save & quickly reuse preferred orientation/sections */}
+          <div className="rounded-xl border bg-muted/20 p-3 flex flex-wrap items-center gap-2 text-xs mt-2">
+            <span className="font-semibold text-foreground">Presets</span>
+            {pdfPresets.length === 0 ? (
+              <span className="text-muted-foreground">None saved yet — save current settings below.</span>
+            ) : (
+              pdfPresets.map((p) => (
+                <span key={p.name} className="inline-flex items-center gap-1 rounded-md border bg-background px-1.5 py-0.5">
+                  <button
+                    type="button"
+                    className="font-medium hover:text-primary"
+                    onClick={() => applyPdfPreset(p)}
+                    title={`${p.orientation} · ${Object.entries(p.sections).filter(([, v]) => v).map(([k]) => k).join(", ")}`}
+                  >
+                    {p.name}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Delete preset ${p.name}`}
+                    className="text-muted-foreground hover:text-destructive px-1"
+                    onClick={() => deletePdfPreset(p.name)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))
+            )}
+            <span className="ml-auto inline-flex items-center gap-1">
+              <Input
+                value={presetNameInput}
+                onChange={(e) => setPresetNameInput(e.target.value)}
+                placeholder="Preset name"
+                className="h-7 text-xs w-32"
+              />
+              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={savePdfPreset}>
+                Save preset
+              </Button>
+            </span>
           </div>
 
           <div className="w-full h-[60vh] rounded-md border bg-muted/40 overflow-hidden mt-2">
