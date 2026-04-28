@@ -623,16 +623,68 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFilename, setPdfFilename] = useState<string>("design-system.pdf");
   const [pdfBuilding, setPdfBuilding] = useState(false);
-  const [pdfOrientation, setPdfOrientation] = useState<"portrait" | "landscape">("portrait");
-  const [pdfSections, setPdfSections] = useState({
-    colors: true,
-    typography: true,
-    spacing: true,
-    shadows: true,
-    borderRadius: true,
-    grid: true,
-  });
+  // PDF preset persistence (orientation, sections, thumbnail toggle).
+  const PDF_PRESET_KEY = "designforge:pdf-presets:v1";
+  const PDF_LAST_KEY = "designforge:pdf-last:v1";
+  type PdfSectionsState = { colors: boolean; typography: boolean; spacing: boolean; shadows: boolean; borderRadius: boolean; grid: boolean };
+  type PdfPreset = { name: string; orientation: "portrait" | "landscape"; sections: PdfSectionsState; includeCoverThumbnail: boolean };
+  const DEFAULT_SECTIONS: PdfSectionsState = { colors: true, typography: true, spacing: true, shadows: true, borderRadius: true, grid: true };
+  const loadLastPreset = (): { orientation: "portrait" | "landscape"; sections: PdfSectionsState; includeCoverThumbnail: boolean } => {
+    try {
+      const raw = localStorage.getItem(PDF_LAST_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        return {
+          orientation: p.orientation === "landscape" ? "landscape" : "portrait",
+          sections: { ...DEFAULT_SECTIONS, ...(p.sections || {}) },
+          includeCoverThumbnail: p.includeCoverThumbnail !== false,
+        };
+      }
+    } catch { /* ignore */ }
+    return { orientation: "portrait", sections: DEFAULT_SECTIONS, includeCoverThumbnail: true };
+  };
+  const initialPreset = loadLastPreset();
+  const [pdfOrientation, setPdfOrientation] = useState<"portrait" | "landscape">(initialPreset.orientation);
+  const [pdfSections, setPdfSections] = useState<PdfSectionsState>(initialPreset.sections);
+  const [pdfIncludeThumbnail, setPdfIncludeThumbnail] = useState<boolean>(initialPreset.includeCoverThumbnail);
   const [pdfThumbnail, setPdfThumbnail] = useState<string | null>(null);
+  const [pdfPresets, setPdfPresets] = useState<PdfPreset[]>(() => {
+    try { return JSON.parse(localStorage.getItem(PDF_PRESET_KEY) || "[]"); } catch { return []; }
+  });
+  const [presetNameInput, setPresetNameInput] = useState("");
+
+  // Persist last-used settings
+  useEffect(() => {
+    try {
+      localStorage.setItem(PDF_LAST_KEY, JSON.stringify({
+        orientation: pdfOrientation,
+        sections: pdfSections,
+        includeCoverThumbnail: pdfIncludeThumbnail,
+      }));
+    } catch { /* ignore quota */ }
+  }, [pdfOrientation, pdfSections, pdfIncludeThumbnail]);
+
+  const savePdfPreset = () => {
+    const name = presetNameInput.trim();
+    if (!name) { toast.error("Give your preset a name"); return; }
+    const next = [...pdfPresets.filter((p) => p.name !== name), { name, orientation: pdfOrientation, sections: pdfSections, includeCoverThumbnail: pdfIncludeThumbnail }];
+    setPdfPresets(next);
+    try { localStorage.setItem(PDF_PRESET_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    setPresetNameInput("");
+    toast.success(`Saved preset "${name}"`);
+  };
+  const applyPdfPreset = (p: PdfPreset) => {
+    setPdfOrientation(p.orientation);
+    setPdfSections({ ...DEFAULT_SECTIONS, ...p.sections });
+    setPdfIncludeThumbnail(p.includeCoverThumbnail);
+    regeneratePdfPreview({ orientation: p.orientation, sections: { ...DEFAULT_SECTIONS, ...p.sections }, includeCoverThumbnail: p.includeCoverThumbnail });
+    toast.success(`Applied preset "${p.name}"`);
+  };
+  const deletePdfPreset = (name: string) => {
+    const next = pdfPresets.filter((p) => p.name !== name);
+    setPdfPresets(next);
+    try { localStorage.setItem(PDF_PRESET_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  };
 
   /** Build a tiny SVG-based thumbnail showing the palette + name as a cover preview. */
   const buildPaletteThumbnail = (): string | null => {
