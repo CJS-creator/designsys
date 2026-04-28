@@ -227,11 +227,13 @@ export function VersionHistorySheet({ designSystem, onRestore, triggerClassName 
 }
 
 /** Schema version for diff exports. Bump when the diff payload shape changes. */
-const DIFF_SCHEMA_VERSION = "1.1.0";
+const DIFF_SCHEMA_VERSION = "1.2.0";
 
 type ChangeKind = "added" | "removed" | "changed";
+type DiffCategory = "colors" | "typography" | "spacing" | "shadows" | "grid";
 interface ColorDiff {
     label: string;
+    category: DiffCategory;
     /** Old value, or null for added tokens. */
     from: string | null;
     /** New value, or null for removed tokens. */
@@ -239,35 +241,66 @@ interface ColorDiff {
     kind: ChangeKind;
 }
 
-function computeColorDiffs(a: VersionRow, b: VersionRow): ColorDiff[] {
-    const sa = a.snapshot_data as unknown as GeneratedDesignSystem;
-    const sb = b.snapshot_data as unknown as GeneratedDesignSystem;
+/** Walk a nested object and return flat key→string-value pairs. */
+function flatten(obj: unknown, prefix = ""): Record<string, string> {
+    const out: Record<string, string> = {};
+    if (obj === null || obj === undefined) return out;
+    if (typeof obj !== "object") {
+        out[prefix] = String(obj);
+        return out;
+    }
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+        const key = prefix ? `${prefix}.${k}` : k;
+        if (v !== null && typeof v === "object") {
+            Object.assign(out, flatten(v, key));
+        } else if (v !== undefined) {
+            out[key] = String(v);
+        }
+    }
+    return out;
+}
+
+function diffSection(category: DiffCategory, labelPrefix: string, a: unknown, b: unknown): ColorDiff[] {
+    const fa = flatten(a);
+    const fb = flatten(b);
+    const keys = Array.from(new Set([...Object.keys(fa), ...Object.keys(fb)])).sort();
     const diffs: ColorDiff[] = [];
-    const colorsA = (sa?.colors ?? {}) as unknown as Record<string, unknown>;
-    const colorsB = (sb?.colors ?? {}) as unknown as Record<string, unknown>;
-    const keys = Array.from(new Set([...Object.keys(colorsA), ...Object.keys(colorsB)])).sort();
     for (const k of keys) {
-        const va = colorsA[k];
-        const vb = colorsB[k];
-        const aIs = typeof va === "string";
-        const bIs = typeof vb === "string";
-        if (!aIs && bIs) {
-            diffs.push({ label: `colors.${k}`, from: null, to: vb as string, kind: "added" });
-        } else if (aIs && !bIs) {
-            diffs.push({ label: `colors.${k}`, from: va as string, to: null, kind: "removed" });
-        } else if (aIs && bIs && va !== vb) {
-            diffs.push({ label: `colors.${k}`, from: va as string, to: vb as string, kind: "changed" });
+        const va = fa[k];
+        const vb = fb[k];
+        const label = `${labelPrefix}.${k}`;
+        if (va === undefined && vb !== undefined) {
+            diffs.push({ category, label, from: null, to: vb, kind: "added" });
+        } else if (va !== undefined && vb === undefined) {
+            diffs.push({ category, label, from: va, to: null, kind: "removed" });
+        } else if (va !== undefined && vb !== undefined && va !== vb) {
+            diffs.push({ category, label, from: va, to: vb, kind: "changed" });
         }
     }
     return diffs;
 }
 
+function computeColorDiffs(a: VersionRow, b: VersionRow): ColorDiff[] {
+    const sa = a.snapshot_data as unknown as GeneratedDesignSystem;
+    const sb = b.snapshot_data as unknown as GeneratedDesignSystem;
+    return [
+        ...diffSection("colors", "colors", sa?.colors, sb?.colors),
+        ...diffSection("typography", "typography", sa?.typography, sb?.typography),
+        ...diffSection("spacing", "spacing", sa?.spacing, sb?.spacing),
+        ...diffSection("shadows", "shadows", sa?.shadows, sb?.shadows),
+        ...diffSection("grid", "grid", sa?.grid, sb?.grid),
+    ];
+}
+
 function summarize(diffs: ColorDiff[]) {
+    const byCategory: Record<DiffCategory, number> = { colors: 0, typography: 0, spacing: 0, shadows: 0, grid: 0 };
+    for (const d of diffs) byCategory[d.category]++;
     return {
         total: diffs.length,
         added: diffs.filter((d) => d.kind === "added").length,
         removed: diffs.filter((d) => d.kind === "removed").length,
         changed: diffs.filter((d) => d.kind === "changed").length,
+        byCategory,
     };
 }
 
@@ -286,7 +319,8 @@ function downloadBlob(content: BlobPart, filename: string, mime: string) {
 function exportDiffJson(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
     const payload = {
         schemaVersion: DIFF_SCHEMA_VERSION,
-        kind: "design-system.color-diff",
+        kind: "design-system.token-diff",
+        categories: ["colors", "typography", "spacing", "shadows", "grid"],
         generatedAt: new Date().toISOString(),
         from: { name: a.name, versionNumber: a.version_number, createdAt: a.created_at },
         to: { name: b.name, versionNumber: b.version_number, createdAt: b.created_at },
@@ -335,45 +369,68 @@ function exportDiffPdf(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
     y += 22;
 
     pdf.setTextColor(20);
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(12);
-    pdf.text(`Color tokens (${diffs.length})`, margin, y); y += 16;
-
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(9);
+    pdf.text(
+        `By category: ${(Object.entries(s.byCategory) as [DiffCategory, number][])
+            .map(([c, n]) => `${c} ${n}`)
+            .join(" · ")}`,
+        margin, y,
+    );
+    y += 18;
+
     if (diffs.length === 0) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
         pdf.setTextColor(110);
-        pdf.text("No color differences between these versions.", margin, y);
+        pdf.text("No token differences between these versions.", margin, y);
     } else {
-        for (const d of diffs) {
-            if (y > 780) { pdf.addPage(); y = margin; }
-            pdf.setTextColor(40);
-            // Tag column
+        const categories: DiffCategory[] = ["colors", "typography", "spacing", "shadows", "grid"];
+        for (const category of categories) {
+            const items = diffs.filter((d) => d.category === category);
+            if (items.length === 0) continue;
+            if (y > 760) { pdf.addPage(); y = margin; }
+            pdf.setTextColor(20);
             pdf.setFont("helvetica", "bold");
-            pdf.setFontSize(7);
-            const tagColor = d.kind === "added" ? [22, 130, 70] : d.kind === "removed" ? [180, 40, 40] : [80, 80, 160];
-            pdf.setTextColor(tagColor[0], tagColor[1], tagColor[2]);
-            pdf.text(d.kind.toUpperCase(), margin, y + 10);
+            pdf.setFontSize(12);
+            pdf.text(`${category.charAt(0).toUpperCase()}${category.slice(1)} (${items.length})`, margin, y);
+            y += 16;
             pdf.setFont("helvetica", "normal");
             pdf.setFontSize(9);
-            pdf.setTextColor(40);
-            pdf.text(d.label, margin + 60, y + 10);
+            for (const d of items) {
+                if (y > 780) { pdf.addPage(); y = margin; }
+                pdf.setFont("helvetica", "bold");
+                pdf.setFontSize(7);
+                const tagColor = d.kind === "added" ? [22, 130, 70] : d.kind === "removed" ? [180, 40, 40] : [80, 80, 160];
+                pdf.setTextColor(tagColor[0], tagColor[1], tagColor[2]);
+                pdf.text(d.kind.toUpperCase(), margin, y + 10);
+                pdf.setFont("helvetica", "normal");
+                pdf.setFontSize(9);
+                pdf.setTextColor(40);
+                pdf.text(d.label, margin + 60, y + 10, { maxWidth: 150 });
 
-            const fromRgb = d.from ? hexToRgb(d.from) : null;
-            const toRgb = d.to ? hexToRgb(d.to) : null;
+                const fromRgb = category === "colors" && d.from ? hexToRgb(d.from) : null;
+                const toRgb = category === "colors" && d.to ? hexToRgb(d.to) : null;
+                const showSwatch = category === "colors";
 
-            if (fromRgb) pdf.setFillColor(fromRgb.r, fromRgb.g, fromRgb.b); else pdf.setFillColor(245, 245, 245);
-            pdf.setDrawColor(220);
-            pdf.rect(margin + 220, y, 16, 14, fromRgb ? "F" : "FD");
-            pdf.setTextColor(110);
-            pdf.text(d.from ?? "—", margin + 242, y + 10);
+                if (showSwatch) {
+                    if (fromRgb) pdf.setFillColor(fromRgb.r, fromRgb.g, fromRgb.b); else pdf.setFillColor(245, 245, 245);
+                    pdf.setDrawColor(220);
+                    pdf.rect(margin + 220, y, 16, 14, fromRgb ? "F" : "FD");
+                }
+                pdf.setTextColor(110);
+                pdf.text(String(d.from ?? "—").slice(0, 22), margin + (showSwatch ? 242 : 220), y + 10);
 
-            pdf.text("→", margin + 320, y + 10);
+                pdf.text("→", margin + 320, y + 10);
 
-            if (toRgb) pdf.setFillColor(toRgb.r, toRgb.g, toRgb.b); else pdf.setFillColor(245, 245, 245);
-            pdf.rect(margin + 338, y, 16, 14, toRgb ? "F" : "FD");
-            pdf.text(d.to ?? "—", margin + 360, y + 10);
-            y += 20;
+                if (showSwatch) {
+                    if (toRgb) pdf.setFillColor(toRgb.r, toRgb.g, toRgb.b); else pdf.setFillColor(245, 245, 245);
+                    pdf.rect(margin + 338, y, 16, 14, toRgb ? "F" : "FD");
+                }
+                pdf.text(String(d.to ?? "—").slice(0, 22), margin + (showSwatch ? 360 : 338), y + 10);
+                y += 20;
+            }
+            y += 6;
         }
     }
     void pageW;
@@ -422,11 +479,11 @@ function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
                 </div>
             </div>
             {diffs.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No color differences.</p>
+                <p className="text-xs text-muted-foreground">No token differences.</p>
             ) : (
                 <ul className="space-y-1 text-[11px] font-mono">
-                    {diffs.slice(0, 12).map((d) => (
-                        <li key={d.label} className="flex items-center gap-2">
+                    {diffs.slice(0, 16).map((d) => (
+                        <li key={`${d.category}:${d.label}`} className="flex items-center gap-2">
                             <Badge
                                 variant="outline"
                                 className={`text-[9px] px-1 py-0 h-4 ${
@@ -437,18 +494,29 @@ function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
                             >
                                 {d.kind}
                             </Badge>
-                            <span className="text-muted-foreground truncate w-28">{d.label}</span>
-                            <span
-                                className="w-3 h-3 rounded-sm border"
-                                style={{ backgroundColor: d.from ?? "transparent" }}
-                                title={d.from ?? "—"}
-                            />
-                            <span className="text-muted-foreground">→</span>
-                            <span
-                                className="w-3 h-3 rounded-sm border"
-                                style={{ backgroundColor: d.to ?? "transparent" }}
-                                title={d.to ?? "—"}
-                            />
+                            <span className="text-[9px] uppercase tracking-wider text-muted-foreground/70 w-14 shrink-0">
+                                {d.category}
+                            </span>
+                            <span className="text-muted-foreground truncate flex-1 min-w-0">{d.label}</span>
+                            {d.category === "colors" ? (
+                                <>
+                                    <span
+                                        className="w-3 h-3 rounded-sm border shrink-0"
+                                        style={{ backgroundColor: d.from ?? "transparent" }}
+                                        title={d.from ?? "—"}
+                                    />
+                                    <span className="text-muted-foreground">→</span>
+                                    <span
+                                        className="w-3 h-3 rounded-sm border shrink-0"
+                                        style={{ backgroundColor: d.to ?? "transparent" }}
+                                        title={d.to ?? "—"}
+                                    />
+                                </>
+                            ) : (
+                                <span className="text-muted-foreground/80 truncate max-w-[10rem]">
+                                    {d.from ?? "—"} → {d.to ?? "—"}
+                                </span>
+                            )}
                         </li>
                     ))}
                 </ul>

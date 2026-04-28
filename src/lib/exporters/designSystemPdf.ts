@@ -22,6 +22,13 @@ export interface DesignSystemPdfOptions {
   sections?: PdfSectionToggles;
   /** Optional dataURL (PNG/JPEG) shown on the cover page as a thumbnail. */
   coverThumbnail?: string | null;
+  /**
+   * When false, skip rendering the cover thumbnail entirely — even if
+   * `coverThumbnail` is provided. Useful for restricted browsers where the
+   * SVG→PNG canvas pipeline is slow or blocked (CSP, tainted canvas, etc.).
+   * Defaults to true.
+   */
+  includeCoverThumbnail?: boolean;
 }
 
 /**
@@ -36,7 +43,8 @@ export function exportDesignSystemToPdf(
   // Back-compat: previously the second argument was just a filename string.
   const opts: DesignSystemPdfOptions =
     typeof options === "string" ? { filename: options } : options;
-  const { filename, versionInfo, previewOnly, orientation = "portrait", sections, coverThumbnail } = opts;
+  const { filename, versionInfo, previewOnly, orientation = "portrait", sections, coverThumbnail, includeCoverThumbnail = true } = opts;
+  const showThumbnail = includeCoverThumbnail && !!coverThumbnail;
   const include = (k: keyof PdfSectionToggles) => (sections ? sections[k] !== false : true);
   const pdf = new jsPDF({ unit: "pt", format: "a4", orientation });
   const pageW = pdf.internal.pageSize.getWidth();
@@ -86,7 +94,7 @@ export function exportDesignSystemToPdf(
   pdf.rect(0, 0, pageW, pageH, "F");
 
   // Optional preview thumbnail (top half of cover)
-  if (coverThumbnail) {
+  if (showThumbnail) {
     try {
       const maxThumbW = pageW - margin * 2;
       const maxThumbH = pageH * 0.42;
@@ -99,7 +107,7 @@ export function exportDesignSystemToPdf(
     }
   }
 
-  const coverTextY = coverThumbnail ? pageH * 0.55 : pageH / 2 - 40;
+  const coverTextY = showThumbnail ? pageH * 0.55 : pageH / 2 - 40;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(34);
   pdf.setTextColor(20, 20, 30);
