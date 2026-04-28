@@ -227,11 +227,13 @@ export function VersionHistorySheet({ designSystem, onRestore, triggerClassName 
 }
 
 /** Schema version for diff exports. Bump when the diff payload shape changes. */
-const DIFF_SCHEMA_VERSION = "1.1.0";
+const DIFF_SCHEMA_VERSION = "1.2.0";
 
 type ChangeKind = "added" | "removed" | "changed";
+type DiffCategory = "colors" | "typography" | "spacing" | "shadows" | "grid";
 interface ColorDiff {
     label: string;
+    category: DiffCategory;
     /** Old value, or null for added tokens. */
     from: string | null;
     /** New value, or null for removed tokens. */
@@ -239,27 +241,55 @@ interface ColorDiff {
     kind: ChangeKind;
 }
 
-function computeColorDiffs(a: VersionRow, b: VersionRow): ColorDiff[] {
-    const sa = a.snapshot_data as unknown as GeneratedDesignSystem;
-    const sb = b.snapshot_data as unknown as GeneratedDesignSystem;
+/** Walk a nested object and return flat key→string-value pairs. */
+function flatten(obj: unknown, prefix = ""): Record<string, string> {
+    const out: Record<string, string> = {};
+    if (obj === null || obj === undefined) return out;
+    if (typeof obj !== "object") {
+        out[prefix] = String(obj);
+        return out;
+    }
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+        const key = prefix ? `${prefix}.${k}` : k;
+        if (v !== null && typeof v === "object") {
+            Object.assign(out, flatten(v, key));
+        } else if (v !== undefined) {
+            out[key] = String(v);
+        }
+    }
+    return out;
+}
+
+function diffSection(category: DiffCategory, labelPrefix: string, a: unknown, b: unknown): ColorDiff[] {
+    const fa = flatten(a);
+    const fb = flatten(b);
+    const keys = Array.from(new Set([...Object.keys(fa), ...Object.keys(fb)])).sort();
     const diffs: ColorDiff[] = [];
-    const colorsA = (sa?.colors ?? {}) as unknown as Record<string, unknown>;
-    const colorsB = (sb?.colors ?? {}) as unknown as Record<string, unknown>;
-    const keys = Array.from(new Set([...Object.keys(colorsA), ...Object.keys(colorsB)])).sort();
     for (const k of keys) {
-        const va = colorsA[k];
-        const vb = colorsB[k];
-        const aIs = typeof va === "string";
-        const bIs = typeof vb === "string";
-        if (!aIs && bIs) {
-            diffs.push({ label: `colors.${k}`, from: null, to: vb as string, kind: "added" });
-        } else if (aIs && !bIs) {
-            diffs.push({ label: `colors.${k}`, from: va as string, to: null, kind: "removed" });
-        } else if (aIs && bIs && va !== vb) {
-            diffs.push({ label: `colors.${k}`, from: va as string, to: vb as string, kind: "changed" });
+        const va = fa[k];
+        const vb = fb[k];
+        const label = `${labelPrefix}.${k}`;
+        if (va === undefined && vb !== undefined) {
+            diffs.push({ category, label, from: null, to: vb, kind: "added" });
+        } else if (va !== undefined && vb === undefined) {
+            diffs.push({ category, label, from: va, to: null, kind: "removed" });
+        } else if (va !== undefined && vb !== undefined && va !== vb) {
+            diffs.push({ category, label, from: va, to: vb, kind: "changed" });
         }
     }
     return diffs;
+}
+
+function computeColorDiffs(a: VersionRow, b: VersionRow): ColorDiff[] {
+    const sa = a.snapshot_data as unknown as GeneratedDesignSystem;
+    const sb = b.snapshot_data as unknown as GeneratedDesignSystem;
+    return [
+        ...diffSection("colors", "colors", sa?.colors, sb?.colors),
+        ...diffSection("typography", "typography", sa?.typography, sb?.typography),
+        ...diffSection("spacing", "spacing", sa?.spacing, sb?.spacing),
+        ...diffSection("shadows", "shadows", sa?.shadows, sb?.shadows),
+        ...diffSection("grid", "grid", sa?.grid, sb?.grid),
+    ];
 }
 
 function summarize(diffs: ColorDiff[]) {
