@@ -34,6 +34,14 @@ export function QuickActionsCard({ designSystem, onSave, onRestoreVersion }: Qui
     const [copied, setCopied] = useState(false);
     const [themeCopied, setThemeCopied] = useState(false);
 
+    // Compute the encoded theme URL length so the user can verify it stays
+    // under common URL limits (browsers commonly tolerate 2k–8k chars).
+    const themeUrlLength = useMemo(() => {
+        try { return buildThemeUrl(designSystem).length; } catch { return 0; }
+    }, [designSystem]);
+    const themeOverLimit = themeUrlLength > MAX_THEME_URL_LENGTH;
+    const themeNearLimit = !themeOverLimit && themeUrlLength > MAX_THEME_URL_LENGTH * 0.8;
+
     // Refs to prevent double-firing across re-renders / accidental double-clicks
     const saveInFlightRef = useRef(false);
     const shareInFlightRef = useRef(false);
