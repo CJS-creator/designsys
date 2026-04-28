@@ -107,7 +107,7 @@ export function exportDesignSystemToPdf(
     }
   }
 
-  const coverTextY = coverThumbnail ? pageH * 0.55 : pageH / 2 - 40;
+  const coverTextY = showThumbnail ? pageH * 0.55 : pageH / 2 - 40;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(34);
   pdf.setTextColor(20, 20, 30);
