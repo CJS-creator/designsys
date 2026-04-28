@@ -319,7 +319,8 @@ function downloadBlob(content: BlobPart, filename: string, mime: string) {
 function exportDiffJson(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
     const payload = {
         schemaVersion: DIFF_SCHEMA_VERSION,
-        kind: "design-system.color-diff",
+        kind: "design-system.token-diff",
+        categories: ["colors", "typography", "spacing", "shadows", "grid"],
         generatedAt: new Date().toISOString(),
         from: { name: a.name, versionNumber: a.version_number, createdAt: a.created_at },
         to: { name: b.name, versionNumber: b.version_number, createdAt: b.created_at },
