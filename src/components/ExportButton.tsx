@@ -739,14 +739,15 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
     setPdfPreviewUrl(null);
   };
 
-  const regeneratePdfPreview = async (overrides?: { orientation?: "portrait" | "landscape"; sections?: typeof pdfSections; thumbnail?: string | null }) => {
+  const regeneratePdfPreview = async (overrides?: { orientation?: "portrait" | "landscape"; sections?: typeof pdfSections; thumbnail?: string | null; includeCoverThumbnail?: boolean }) => {
     setPdfBuilding(true);
     try {
       if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
       const orientation = overrides?.orientation ?? pdfOrientation;
       const sections = overrides?.sections ?? pdfSections;
+      const includeThumb = overrides?.includeCoverThumbnail ?? pdfIncludeThumbnail;
       let thumb = overrides?.thumbnail ?? pdfThumbnail;
-      if (thumb === null) {
+      if (includeThumb && thumb === null) {
         const svgUrl = buildPaletteThumbnail();
         if (svgUrl) thumb = await svgToPngDataUrl(svgUrl);
         setPdfThumbnail(thumb);
@@ -755,7 +756,8 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
         previewOnly: true,
         orientation,
         sections,
-        coverThumbnail: thumb,
+        coverThumbnail: includeThumb ? thumb : null,
+        includeCoverThumbnail: includeThumb,
       });
       setPdfPreviewUrl(url);
       setPdfFilename(filename);
@@ -777,7 +779,8 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
       exportDesignSystemToPdf(designSystem, {
         orientation: pdfOrientation,
         sections: pdfSections,
-        coverThumbnail: pdfThumbnail,
+        coverThumbnail: pdfIncludeThumbnail ? pdfThumbnail : null,
+        includeCoverThumbnail: pdfIncludeThumbnail,
       });
       toast.success("PDF downloaded");
       closePdfPreview();
@@ -795,6 +798,12 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
   const setOrientation = (o: "portrait" | "landscape") => {
     setPdfOrientation(o);
     regeneratePdfPreview({ orientation: o });
+  };
+
+  const toggleIncludeThumbnail = () => {
+    const next = !pdfIncludeThumbnail;
+    setPdfIncludeThumbnail(next);
+    regeneratePdfPreview({ includeCoverThumbnail: next });
   };
 
   const handleGitHubSync = async () => {
