@@ -293,11 +293,14 @@ function computeColorDiffs(a: VersionRow, b: VersionRow): ColorDiff[] {
 }
 
 function summarize(diffs: ColorDiff[]) {
+    const byCategory: Record<DiffCategory, number> = { colors: 0, typography: 0, spacing: 0, shadows: 0, grid: 0 };
+    for (const d of diffs) byCategory[d.category]++;
     return {
         total: diffs.length,
         added: diffs.filter((d) => d.kind === "added").length,
         removed: diffs.filter((d) => d.kind === "removed").length,
         changed: diffs.filter((d) => d.kind === "changed").length,
+        byCategory,
     };
 }
 
