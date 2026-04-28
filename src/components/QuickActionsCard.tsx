@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { VersionHistorySheet } from "@/components/VersionHistorySheet";
-import { buildThemeUrl, isThemeUrlTooLong } from "@/lib/themeUrl";
+import { buildThemeUrl, isThemeUrlTooLong, MAX_THEME_URL_LENGTH } from "@/lib/themeUrl";
 
 const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
 
