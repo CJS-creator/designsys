@@ -479,11 +479,11 @@ function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
                 </div>
             </div>
             {diffs.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No color differences.</p>
+                <p className="text-xs text-muted-foreground">No token differences.</p>
             ) : (
                 <ul className="space-y-1 text-[11px] font-mono">
-                    {diffs.slice(0, 12).map((d) => (
-                        <li key={d.label} className="flex items-center gap-2">
+                    {diffs.slice(0, 16).map((d) => (
+                        <li key={`${d.category}:${d.label}`} className="flex items-center gap-2">
                             <Badge
                                 variant="outline"
                                 className={`text-[9px] px-1 py-0 h-4 ${
@@ -494,18 +494,29 @@ function CompareSummary({ a, b }: { a: VersionRow; b: VersionRow }) {
                             >
                                 {d.kind}
                             </Badge>
-                            <span className="text-muted-foreground truncate w-28">{d.label}</span>
-                            <span
-                                className="w-3 h-3 rounded-sm border"
-                                style={{ backgroundColor: d.from ?? "transparent" }}
-                                title={d.from ?? "—"}
-                            />
-                            <span className="text-muted-foreground">→</span>
-                            <span
-                                className="w-3 h-3 rounded-sm border"
-                                style={{ backgroundColor: d.to ?? "transparent" }}
-                                title={d.to ?? "—"}
-                            />
+                            <span className="text-[9px] uppercase tracking-wider text-muted-foreground/70 w-14 shrink-0">
+                                {d.category}
+                            </span>
+                            <span className="text-muted-foreground truncate flex-1 min-w-0">{d.label}</span>
+                            {d.category === "colors" ? (
+                                <>
+                                    <span
+                                        className="w-3 h-3 rounded-sm border shrink-0"
+                                        style={{ backgroundColor: d.from ?? "transparent" }}
+                                        title={d.from ?? "—"}
+                                    />
+                                    <span className="text-muted-foreground">→</span>
+                                    <span
+                                        className="w-3 h-3 rounded-sm border shrink-0"
+                                        style={{ backgroundColor: d.to ?? "transparent" }}
+                                        title={d.to ?? "—"}
+                                    />
+                                </>
+                            ) : (
+                                <span className="text-muted-foreground/80 truncate max-w-[10rem]">
+                                    {d.from ?? "—"} → {d.to ?? "—"}
+                                </span>
+                            )}
                         </li>
                     ))}
                 </ul>
