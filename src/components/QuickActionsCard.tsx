@@ -218,15 +218,30 @@ export function QuickActionsCard({ designSystem, onSave, onRestoreVersion }: Qui
                             {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                         </Button>
                     </div>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={copyThemeUrl}
-                        className="w-full justify-start rounded-xl"
-                    >
-                        {themeCopied ? <Check className="h-4 w-4 mr-2 text-primary" /> : <Link2 className="h-4 w-4 mr-2" />}
-                        Copy theme URL (no account needed)
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={copyThemeUrl}
+                            className="flex-1 justify-start rounded-xl"
+                        >
+                            {themeCopied ? <Check className="h-4 w-4 mr-2 text-primary" /> : <Link2 className="h-4 w-4 mr-2" />}
+                            Copy theme URL (no account needed)
+                        </Button>
+                        <span
+                            className={`shrink-0 font-mono text-[11px] px-2 py-1 rounded-md border ${
+                                themeOverLimit
+                                    ? "border-destructive/40 bg-destructive/10 text-destructive"
+                                    : themeNearLimit
+                                    ? "border-warning/40 bg-warning/10 text-warning"
+                                    : "border-border bg-muted/40 text-muted-foreground"
+                            }`}
+                            title={`Encoded URL length · limit ${MAX_THEME_URL_LENGTH.toLocaleString()} chars`}
+                            aria-label={`Theme URL length ${themeUrlLength} of ${MAX_THEME_URL_LENGTH} characters`}
+                        >
+                            {themeUrlLength.toLocaleString()} / {MAX_THEME_URL_LENGTH.toLocaleString()}
+                        </span>
+                    </div>
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button
                             variant="ghost"
