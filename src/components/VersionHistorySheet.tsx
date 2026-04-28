@@ -369,45 +369,68 @@ function exportDiffPdf(a: VersionRow, b: VersionRow, diffs: ColorDiff[]) {
     y += 22;
 
     pdf.setTextColor(20);
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(12);
-    pdf.text(`Color tokens (${diffs.length})`, margin, y); y += 16;
-
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(9);
+    pdf.text(
+        `By category: ${(Object.entries(s.byCategory) as [DiffCategory, number][])
+            .map(([c, n]) => `${c} ${n}`)
+            .join(" · ")}`,
+        margin, y,
+    );
+    y += 18;
+
     if (diffs.length === 0) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
         pdf.setTextColor(110);
-        pdf.text("No color differences between these versions.", margin, y);
+        pdf.text("No token differences between these versions.", margin, y);
     } else {
-        for (const d of diffs) {
-            if (y > 780) { pdf.addPage(); y = margin; }
-            pdf.setTextColor(40);
-            // Tag column
+        const categories: DiffCategory[] = ["colors", "typography", "spacing", "shadows", "grid"];
+        for (const category of categories) {
+            const items = diffs.filter((d) => d.category === category);
+            if (items.length === 0) continue;
+            if (y > 760) { pdf.addPage(); y = margin; }
+            pdf.setTextColor(20);
             pdf.setFont("helvetica", "bold");
-            pdf.setFontSize(7);
-            const tagColor = d.kind === "added" ? [22, 130, 70] : d.kind === "removed" ? [180, 40, 40] : [80, 80, 160];
-            pdf.setTextColor(tagColor[0], tagColor[1], tagColor[2]);
-            pdf.text(d.kind.toUpperCase(), margin, y + 10);
+            pdf.setFontSize(12);
+            pdf.text(`${category.charAt(0).toUpperCase()}${category.slice(1)} (${items.length})`, margin, y);
+            y += 16;
             pdf.setFont("helvetica", "normal");
             pdf.setFontSize(9);
-            pdf.setTextColor(40);
-            pdf.text(d.label, margin + 60, y + 10);
+            for (const d of items) {
+                if (y > 780) { pdf.addPage(); y = margin; }
+                pdf.setFont("helvetica", "bold");
+                pdf.setFontSize(7);
+                const tagColor = d.kind === "added" ? [22, 130, 70] : d.kind === "removed" ? [180, 40, 40] : [80, 80, 160];
+                pdf.setTextColor(tagColor[0], tagColor[1], tagColor[2]);
+                pdf.text(d.kind.toUpperCase(), margin, y + 10);
+                pdf.setFont("helvetica", "normal");
+                pdf.setFontSize(9);
+                pdf.setTextColor(40);
+                pdf.text(d.label, margin + 60, y + 10, { maxWidth: 150 });
 
-            const fromRgb = d.from ? hexToRgb(d.from) : null;
-            const toRgb = d.to ? hexToRgb(d.to) : null;
+                const fromRgb = category === "colors" && d.from ? hexToRgb(d.from) : null;
+                const toRgb = category === "colors" && d.to ? hexToRgb(d.to) : null;
+                const showSwatch = category === "colors";
 
-            if (fromRgb) pdf.setFillColor(fromRgb.r, fromRgb.g, fromRgb.b); else pdf.setFillColor(245, 245, 245);
-            pdf.setDrawColor(220);
-            pdf.rect(margin + 220, y, 16, 14, fromRgb ? "F" : "FD");
-            pdf.setTextColor(110);
-            pdf.text(d.from ?? "—", margin + 242, y + 10);
+                if (showSwatch) {
+                    if (fromRgb) pdf.setFillColor(fromRgb.r, fromRgb.g, fromRgb.b); else pdf.setFillColor(245, 245, 245);
+                    pdf.setDrawColor(220);
+                    pdf.rect(margin + 220, y, 16, 14, fromRgb ? "F" : "FD");
+                }
+                pdf.setTextColor(110);
+                pdf.text(String(d.from ?? "—").slice(0, 22), margin + (showSwatch ? 242 : 220), y + 10);
 
-            pdf.text("→", margin + 320, y + 10);
+                pdf.text("→", margin + 320, y + 10);
 
-            if (toRgb) pdf.setFillColor(toRgb.r, toRgb.g, toRgb.b); else pdf.setFillColor(245, 245, 245);
-            pdf.rect(margin + 338, y, 16, 14, toRgb ? "F" : "FD");
-            pdf.text(d.to ?? "—", margin + 360, y + 10);
-            y += 20;
+                if (showSwatch) {
+                    if (toRgb) pdf.setFillColor(toRgb.r, toRgb.g, toRgb.b); else pdf.setFillColor(245, 245, 245);
+                    pdf.rect(margin + 338, y, 16, 14, toRgb ? "F" : "FD");
+                }
+                pdf.text(String(d.to ?? "—").slice(0, 22), margin + (showSwatch ? 360 : 338), y + 10);
+                y += 20;
+            }
+            y += 6;
         }
     }
     void pageW;
