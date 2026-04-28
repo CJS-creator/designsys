@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Suspense, lazy, useCallback, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
     Dialog,
