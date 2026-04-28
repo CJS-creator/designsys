@@ -94,7 +94,7 @@ export function exportDesignSystemToPdf(
   pdf.rect(0, 0, pageW, pageH, "F");
 
   // Optional preview thumbnail (top half of cover)
-  if (coverThumbnail) {
+  if (showThumbnail) {
     try {
       const maxThumbW = pageW - margin * 2;
       const maxThumbH = pageH * 0.42;
