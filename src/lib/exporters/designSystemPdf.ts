@@ -22,6 +22,13 @@ export interface DesignSystemPdfOptions {
   sections?: PdfSectionToggles;
   /** Optional dataURL (PNG/JPEG) shown on the cover page as a thumbnail. */
   coverThumbnail?: string | null;
+  /**
+   * When false, skip rendering the cover thumbnail entirely — even if
+   * `coverThumbnail` is provided. Useful for restricted browsers where the
+   * SVG→PNG canvas pipeline is slow or blocked (CSP, tainted canvas, etc.).
+   * Defaults to true.
+   */
+  includeCoverThumbnail?: boolean;
 }
 
 /**
