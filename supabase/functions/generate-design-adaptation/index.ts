@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/design-system.ts";
 
 const adaptationSystemPrompt = `You are a specialized Design System Adaptation Engine.
@@ -26,6 +27,24 @@ serve(async (req: Request) => {
     }
 
     try {
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+        const supabase = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            { global: { headers: { Authorization: authHeader } } }
+        );
+        const { data: { user }, error: authErr } = await supabase.auth.getUser();
+        if (authErr || !user) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+
         const { description, brandMood, config } = await req.json();
 
         // OPTIMIZATION: Check flags to reduce token usage
@@ -119,7 +138,7 @@ serve(async (req: Request) => {
 
     } catch (error) {
         console.error("Error in generate-design-adaptation:", error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: "Internal server error" }), {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

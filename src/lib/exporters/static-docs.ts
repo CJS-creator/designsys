@@ -126,7 +126,10 @@ export function exportToStaticDocs(ds: GeneratedDesignSystem): string {
 
     <script>
         const ds = ${dsJson};
-        const escapeHtml = (str) => String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const escapeHtml = (str) => String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        const isValidColor = (c) => typeof c === 'string' && /^(#[0-9a-fA-F]{3,8}|(rgb|hsl)a?\([^)]*\)|var\(--[\w-]+\)|[a-zA-Z]+)$/.test(c.trim());
+        const safeColor = (c) => isValidColor(c) ? c : 'transparent';
+        const safeLen = (v) => typeof v === 'string' && /^[\d.]+(px|rem|em|%)?$/.test(v.trim()) ? v : '0';
 
         // Render Colors
         const colorGrid = document.getElementById('color-grid');
@@ -136,13 +139,18 @@ export function exportToStaticDocs(ds: GeneratedDesignSystem): string {
             if (!ds.colors[key]) return;
             const card = document.createElement('div');
             card.className = 'token-card p-4 flex flex-col gap-4';
-            card.innerHTML = \`
-                <div class="swatch h-24 w-full shadow-inner" style="background-color: \${ds.colors[key]}"></div>
-                <div>
-                    <h4 class="font-bold text-sm uppercase tracking-wider">\${escapeHtml(key)}</h4>
-                    <p class="text-[10px] font-mono text-gray-400">\${escapeHtml(ds.colors[key])}</p>
-                </div>
-            \`;
+            const swatch = document.createElement('div');
+            swatch.className = 'swatch h-24 w-full shadow-inner';
+            swatch.style.backgroundColor = safeColor(ds.colors[key]);
+            const meta = document.createElement('div');
+            const h4 = document.createElement('h4');
+            h4.className = 'font-bold text-sm uppercase tracking-wider';
+            h4.textContent = key;
+            const p = document.createElement('p');
+            p.className = 'text-[10px] font-mono text-gray-400';
+            p.textContent = String(ds.colors[key] ?? '');
+            meta.appendChild(h4); meta.appendChild(p);
+            card.appendChild(swatch); card.appendChild(meta);
             colorGrid.appendChild(card);
         });
 
@@ -152,15 +160,23 @@ export function exportToStaticDocs(ds: GeneratedDesignSystem): string {
         Object.entries(fontSizes).reverse().forEach(([key, size]) => {
             const item = document.createElement('div');
             item.className = 'flex items-baseline justify-between py-4 border-b border-gray-50 last:border-0';
-            item.innerHTML = \`
-                <div class="flex-1">
-                    <p style="font-size: \${size}; line-height: 1.2; font-weight: \${ds.typography.weights.bold}">The quick brown fox jumps over the lazy dog</p>
-                </div>
-                <div class="text-right ml-8">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-300 mb-1">\${key}</p>
-                    <p class="text-xs font-mono font-bold">\${size}</p>
-                </div>
-            \`;
+            const left = document.createElement('div');
+            left.className = 'flex-1';
+            const sample = document.createElement('p');
+            sample.style.fontSize = safeLen(size);
+            sample.style.lineHeight = '1.2';
+            sample.textContent = 'The quick brown fox jumps over the lazy dog';
+            left.appendChild(sample);
+            const right = document.createElement('div');
+            right.className = 'text-right ml-8';
+            const lab = document.createElement('p');
+            lab.className = 'text-[10px] font-black uppercase tracking-widest text-gray-300 mb-1';
+            lab.textContent = key;
+            const val = document.createElement('p');
+            val.className = 'text-xs font-mono font-bold';
+            val.textContent = String(size);
+            right.appendChild(lab); right.appendChild(val);
+            item.appendChild(left); item.appendChild(right);
             typoDisplay.appendChild(item);
         });
 
@@ -169,11 +185,10 @@ export function exportToStaticDocs(ds: GeneratedDesignSystem): string {
         Object.entries(ds.spacing.scale).slice(0, 8).forEach(([key, val]) => {
             const item = document.createElement('div');
             item.className = 'flex items-center gap-4';
-            item.innerHTML = \`
-                <div class="text-[10px] font-mono w-4">\${key}</div>
-                <div class="h-2 bg-[var(--primary)] opacity-40 rounded-full" style="width: \${val}"></div>
-                <div class="text-[10px] font-mono ml-auto opacity-40">\${val}</div>
-            \`;
+            const k = document.createElement('div'); k.className = 'text-[10px] font-mono w-4'; k.textContent = key;
+            const bar = document.createElement('div'); bar.className = 'h-2 bg-[var(--primary)] opacity-40 rounded-full'; bar.style.width = safeLen(val);
+            const v = document.createElement('div'); v.className = 'text-[10px] font-mono ml-auto opacity-40'; v.textContent = String(val);
+            item.appendChild(k); item.appendChild(bar); item.appendChild(v);
             spacingGrid.appendChild(item);
         });
 
@@ -182,11 +197,10 @@ export function exportToStaticDocs(ds: GeneratedDesignSystem): string {
         Object.entries(ds.borderRadius).forEach(([key, val]) => {
             const item = document.createElement('div');
             item.className = 'flex items-center gap-4';
-            item.innerHTML = \`
-                <div class="text-[10px] font-mono w-6">\${key}</div>
-                <div class="h-10 w-10 border-2 border-[var(--primary)] border-dashed opacity-50" style="border-radius: \${val}"></div>
-                <div class="text-[10px] font-mono ml-auto opacity-40">\${val}</div>
-            \`;
+            const k = document.createElement('div'); k.className = 'text-[10px] font-mono w-6'; k.textContent = key;
+            const box = document.createElement('div'); box.className = 'h-10 w-10 border-2 border-[var(--primary)] border-dashed opacity-50'; box.style.borderRadius = safeLen(val);
+            const v = document.createElement('div'); v.className = 'text-[10px] font-mono ml-auto opacity-40'; v.textContent = String(val);
+            item.appendChild(k); item.appendChild(box); item.appendChild(v);
             radiusGrid.appendChild(item);
         });
     </script>

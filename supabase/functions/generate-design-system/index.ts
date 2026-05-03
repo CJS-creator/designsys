@@ -1,5 +1,5 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, inputSchema, generateWithAI } from "../_shared/design-system.ts";
 
 serve(async (req: Request) => {
@@ -8,6 +8,25 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Auth check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    if (authErr || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     let rawInput;
     try {
       rawInput = await req.json();
@@ -41,7 +60,7 @@ serve(async (req: Request) => {
   } catch (error) {
     console.error("Error in generate-design-system function:", error);
     return new Response(JSON.stringify({
-      error: error instanceof Error ? error.message : "Unknown error occurred"
+      error: "Internal server error"
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

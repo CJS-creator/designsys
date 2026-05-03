@@ -1,3 +1,4 @@
+/**
  * SENTRY INTEGRATION:
  * The service now uses @sentry/react for production monitoring.
  * Ensure VITE_SENTRY_DSN is set in your environment variables.
