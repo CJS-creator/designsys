@@ -63,3 +63,33 @@ export const sanitizeStyle = (style: Record<string, unknown>): React.CSSProperti
 
     return safeStyle;
 };
+/**
+ * Sanitizes a string for use in HTML content.
+ */
+export const sanitizeHtml = (str: string): string => {
+    if (typeof str !== 'string') return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
+
+/**
+ * Escapes a string for use in a JavaScript template literal.
+ */
+export const escapeJS = (str: string): string => {
+    if (typeof str !== 'string') return '';
+    return str
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t')
+        .replace(/\f/g, '\\f')
+        .replace(/\v/g, '\\v')
+        .replace(/\u2028/g, '\\u2028')
+        .replace(/\u2029/g, '\\u2029');
+};

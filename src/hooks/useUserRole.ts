@@ -3,8 +3,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/components/TeamSettings";
 import { supabase } from "@/integrations/supabase/client";
 
+// Module-level cache to store roles across component mounts
+const roleCache: Record<string, UserRole | null> = {};
+
 /**
  * useUserRole hook - Fetches the user's role for a specific design system
+ * Optimized with client-side caching.
  */
 export function useUserRole(designSystemId: string) {
     const { user } = useAuth();
@@ -14,6 +18,13 @@ export function useUserRole(designSystemId: string) {
     useEffect(() => {
         if (!user || !designSystemId) {
             setRole(null);
+            setLoading(false);
+            return;
+        }
+
+        const cacheKey = `${user.id}:${designSystemId}`;
+        if (roleCache[cacheKey] !== undefined) {
+            setRole(roleCache[cacheKey]);
             setLoading(false);
             return;
         }
@@ -29,7 +40,9 @@ export function useUserRole(designSystemId: string) {
                     .maybeSingle();
 
                 if (error) throw error;
-                setRole((data?.role as UserRole) || null);
+                const userRole = (data?.role as UserRole) || null;
+                roleCache[cacheKey] = userRole;
+                setRole(userRole);
             } catch (error) {
                 console.error("Error fetching user role", error);
                 setRole(null);

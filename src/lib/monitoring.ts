@@ -1,11 +1,8 @@
-/**
- * Monitoring and Logging Utility
- * Provides a centralized way to track errors and events in production.
- * 
  * SENTRY INTEGRATION:
- * To enable Sentry, install @sentry/react and uncomment the Sentry lines below.
- * Then set VITE_SENTRY_DSN in your environment variables.
+ * The service now uses @sentry/react for production monitoring.
+ * Ensure VITE_SENTRY_DSN is set in your environment variables.
  */
+import * as Sentry from "@sentry/react";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -40,13 +37,22 @@ class MonitoringService {
 
     private initSentry() {
         if (this.sentryEnabled) {
-            // In a real implementation, we would import Sentry here
-            // import * as Sentry from "@sentry/react";
-
-            // For now, we simulate initialization
-            this.info("Sentry monitoring initialized (Simulated)", {
+            Sentry.init({
+                dsn: import.meta.env.VITE_SENTRY_DSN,
+                integrations: [
+                    Sentry.browserTracingIntegration(),
+                    Sentry.replayIntegration(),
+                ],
+                // Performance Monitoring
+                tracesSampleRate: 1.0,
+                // Session Replay
+                replaysSessionSampleRate: 0.1,
+                replaysOnErrorSampleRate: 1.0,
                 environment: import.meta.env.MODE,
-                dsn: "Simulated DSN"
+            });
+
+            this.info("Sentry monitoring initialized", {
+                environment: import.meta.env.MODE
             });
         }
     }
@@ -73,6 +79,15 @@ class MonitoringService {
             timestamp: event.timestamp
         });
 
+        if (this.sentryEnabled) {
+            Sentry.addBreadcrumb({
+                message: event.message,
+                category: event.category || event.level,
+                level: event.level as Sentry.SeverityLevel,
+                data: event.context
+            });
+        }
+
         // Keep only last 50 breadcrumbs
         if (this.breadcrumbs.length > 50) {
             this.breadcrumbs.shift();
@@ -98,19 +113,12 @@ class MonitoringService {
             consoleFn(`[${event.level.toUpperCase()}] ${event.message}`);
         }
 
-        // Simulate Sentry capture for errors
+        // Sentry capture for errors
         if (this.sentryEnabled && event.level === "error" && event.error) {
-            this.mockSentryCaptureException(event.error, { extra: event.context });
+            Sentry.captureException(event.error, { extra: event.context });
         }
     }
 
-    // Mock Sentry methods for simulation
-    private mockSentryCaptureException(error: Error, context?: Record<string, unknown>) {
-        if (!this.isProduction) {
-            console.debug("[Sentry-Sim] Capturing Exception:", error.message, context);
-        }
-        // In production, this would be replaced with actual Sentry.captureException()
-    }
 
     public debug(message: string, context?: Record<string, unknown>) {
         this.log({ level: "debug", message, context, timestamp: new Date().toISOString() });
@@ -146,8 +154,8 @@ class MonitoringService {
         this.error(error.message, error, context);
 
         if (this.sentryEnabled) {
-            this.mockSentryCaptureException(error, {
-                user: options?.user,
+            Sentry.captureException(error, {
+                user: options?.user as Sentry.User,
                 tags: options?.tags,
                 fingerprint: options?.fingerprint
             });

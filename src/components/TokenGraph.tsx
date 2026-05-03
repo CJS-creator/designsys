@@ -100,20 +100,20 @@ export const TokenGraph: React.FC<TokenGraphProps> = ({ designSystem }) => {
             if (isSemantic) {
                 type = 'semantic';
                 x = 350;
-                y = semanticCount * 100 + 50;
+                y = semanticCount * 120 + 60;
                 semanticCount++;
             } else if (isComponent) {
                 type = 'component';
-                x = 700;
-                y = componentCount * 150 + 75;
+                x = 750;
+                y = componentCount * 180 + 90;
                 componentCount++;
             } else {
-                y = foundationCount * 100 + 50;
+                y = foundationCount * 120 + 60;
                 foundationCount++;
             }
 
             // Preview for colors
-            const colorValue = typeof token.value === 'string' && token.value.startsWith('hsl') ? token.value : undefined;
+            const colorValue = typeof token.value === 'string' && (token.value.startsWith('hsl') || token.value.startsWith('#')) ? token.value : undefined;
 
             dsNodes.push({
                 id: token.path,

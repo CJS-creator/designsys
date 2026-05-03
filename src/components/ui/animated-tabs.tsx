@@ -35,8 +35,8 @@ const AnimatedTabsTrigger = React.forwardRef<
         {isSelected && (
             <motion.div
                 layoutId="active-tab-pill"
-                className="absolute inset-0 bg-primary/10 rounded-full border border-primary/20 -z-10 shadow-[0_0_10px_rgba(var(--primary),0.1)]"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                className="absolute inset-0 bg-primary/20 rounded-full border border-primary/40 -z-10 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
+                transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
             />
         )}
         {children}

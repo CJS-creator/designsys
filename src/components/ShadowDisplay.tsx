@@ -20,12 +20,13 @@ export function ShadowDisplay({ shadows }: ShadowDisplayProps) {
           className="flex flex-col items-center gap-2 group transition-all min-w-0"
         >
           <div
-            className="h-16 sm:h-20 w-full bg-background rounded-xl border border-border/50 shadow-sm transition-all duration-300 group-hover:border-primary/50 relative flex items-center justify-center p-2"
+            className="h-20 sm:h-24 w-full bg-background rounded-2xl border border-border/50 shadow-sm transition-all duration-300 group-hover:border-primary/50 relative flex flex-col items-center justify-center p-3 overflow-hidden"
             style={{ boxShadow: value }}
           >
-            <span className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase leading-relaxed truncate">{name}</span>
+            <span className="text-[10px] sm:text-xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1.5 group-hover:text-primary transition-colors">{name}</span>
+            <span className="text-[8px] font-mono text-muted-foreground/40 truncate w-full text-center">{value}</span>
           </div>
-          <p className="text-[10px] sm:text-xs font-mono text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity truncate max-w-full">Copy</p>
+          <p className="text-[10px] font-bold text-primary uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">Click to copy</p>
         </button>
       ))}
     </div>

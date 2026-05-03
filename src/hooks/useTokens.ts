@@ -1,58 +1,101 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DesignToken } from "@/types/tokens";
 import { toast } from "sonner";
 import { monitor } from "@/lib/monitoring";
 import { useAuth } from "@/contexts/AuthContext";
-import { Json } from "@/integrations/supabase/types";
 
 /**
  * useTokens hook
  * 
- * This hook stores tokens in the design_system_data JSONB column
- * since the design_tokens table doesn't exist yet.
- * 
- * When the design_tokens table is created via migration,
- * this hook can be updated to use it directly.
+ * Migrated to use the relational design_tokens table.
+ * Includes a legacy sync mechanism for systems still using JSONB.
  */
 export function useTokens(designSystemId?: string) {
     const [tokens, setTokens] = useState<DesignToken[]>([]);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
 
-    const fetchTokens = async () => {
+    const fetchTokens = useCallback(async () => {
         if (!designSystemId) {
             setLoading(false);
             return;
         }
         setLoading(true);
         try {
-            // Fetch tokens from design_system_data JSONB column
-            const { data, error } = await supabase
+            // 1. Try to fetch from the relational table
+            const { data: tableData, error: tableError } = await supabase
+                .from("design_tokens")
+                .select("*")
+                .eq("design_system_id", designSystemId)
+                .order('path', { ascending: true });
+
+            if (tableError) throw tableError;
+
+            if (tableData && tableData.length > 0) {
+                setTokens(tableData as unknown as DesignToken[]);
+                setLoading(false);
+                return;
+            }
+
+            // 2. Fallback: Check legacy JSONB if table is empty
+            const { data: dsData, error: dsError } = await supabase
                 .from("design_systems")
                 .select("design_system_data")
                 .eq("id", designSystemId)
                 .single();
 
-            if (error) throw error;
+            if (dsError) throw dsError;
 
-            // Extract tokens from design_system_data
-            const dsData = data?.design_system_data as Record<string, unknown> | null;
-            const storedTokens = (dsData?.tokens as DesignToken[]) || [];
+            const legacyData = dsData?.design_system_data as any;
+            const legacyTokens = legacyData?.tokens as DesignToken[];
 
-            setTokens(storedTokens);
+            if (legacyTokens && legacyTokens.length > 0) {
+                setTokens(legacyTokens);
+                // Trigger background migration if user is owner/editor
+                await migrateLegacyTokens(legacyTokens);
+            } else {
+                setTokens([]);
+            }
         } catch (error) {
             monitor.error("Error fetching tokens", error as Error);
-            // Don't show error toast for missing data
             setTokens([]);
         } finally {
             setLoading(false);
+        }
+    }, [designSystemId]);
+
+    const migrateLegacyTokens = async (legacyTokens: DesignToken[]) => {
+        if (!designSystemId || !user) return;
+        
+        try {
+            const tokensToInsert = legacyTokens.map(t => ({
+                design_system_id: designSystemId,
+                name: t.name,
+                path: t.path,
+                type: t.type,
+                value: t.value as any,
+                description: t.description,
+                ref: t.ref,
+                status: t.status || 'published',
+                created_by: user.id
+            }));
+
+            const { error } = await supabase
+                .from("design_tokens")
+                .insert(tokensToInsert);
+
+            if (!error) {
+                monitor.info(`Successfully migrated ${legacyTokens.length} tokens for DS ${designSystemId}`);
+            }
+        } catch (err) {
+            monitor.error("Migration failed", err as Error);
         }
     };
 
     const resolveToken = (path: string, visited = new Set<string>()): DesignToken | null => {
         if (visited.has(path)) {
-            monitor.warn(`Circular reference detected for token: ${path}`);
+            monitor.warn(`Circular reference detected: ${path}`);
             return null;
         }
         visited.add(path);
@@ -68,33 +111,6 @@ export function useTokens(designSystemId?: string) {
         return token;
     };
 
-    const saveTokensToDesignSystem = async (updatedTokens: DesignToken[]) => {
-        if (!designSystemId || !user) return;
-
-        // Get current design_system_data
-        const { data: currentData } = await supabase
-            .from("design_systems")
-            .select("design_system_data")
-            .eq("id", designSystemId)
-            .single();
-
-        const currentDsData = (currentData?.design_system_data as Record<string, unknown>) || {};
-
-        // Update with new tokens - cast to Json for Supabase compatibility
-        const { error } = await supabase
-            .from("design_systems")
-            .update({
-                design_system_data: {
-                    ...currentDsData,
-                    tokens: updatedTokens as unknown as Json[]
-                } as Json
-            })
-            .eq("id", designSystemId);
-
-        if (error) throw error;
-        setTokens(updatedTokens);
-    };
-
     const saveToken = async (token: DesignToken) => {
         if (!user || !designSystemId) {
             toast.error("Sign in to save tokens");
@@ -102,37 +118,37 @@ export function useTokens(designSystemId?: string) {
         }
 
         // Validation
-        if (!token.name || token.name.trim().length === 0) {
+        if (!token.name?.trim()) {
             toast.error("Token name is required");
             return;
         }
         if (!token.path || !/^[a-zA-Z0-9._-]+$/.test(token.path)) {
-            toast.error("Invalid token path. Use only alphanumeric characters, dots, underscores, and hyphens.");
-            return;
-        }
-        if (typeof token.value === 'string' && (token.value.includes('<script') || token.value.toLowerCase().includes('javascript:'))) {
-            toast.error("Malicious content detected in token value");
+            toast.error("Invalid token path");
             return;
         }
 
         try {
-            const existingIndex = tokens.findIndex(t => t.path === token.path);
-            let updatedTokens: DesignToken[];
+            const tokenData = {
+                design_system_id: designSystemId,
+                name: token.name,
+                path: token.path,
+                type: token.type,
+                value: token.value as any,
+                description: token.description,
+                ref: token.ref,
+                status: token.status || 'published',
+                created_by: user.id,
+                updated_at: new Date().toISOString()
+            };
 
-            if (existingIndex >= 0) {
-                // Update existing token
-                updatedTokens = [...tokens];
-                updatedTokens[existingIndex] = {
-                    ...token,
-                    id: tokens[existingIndex].id || crypto.randomUUID()
-                };
-            } else {
-                // Add new token
-                updatedTokens = [...tokens, { ...token, id: crypto.randomUUID() }];
-            }
+            const { error } = await supabase
+                .from("design_tokens")
+                .upsert(tokenData, { onConflict: 'design_system_id,path' });
 
-            await saveTokensToDesignSystem(updatedTokens);
+            if (error) throw error;
+            
             toast.success("Token saved");
+            fetchTokens(); // Refresh
         } catch (error) {
             monitor.error("Error saving token", error as Error);
             toast.error("Failed to save token");
@@ -146,81 +162,72 @@ export function useTokens(designSystemId?: string) {
         }
 
         try {
-            const updatedTokens = [...tokens];
+            const tokensData = tokensToSave.map(token => ({
+                design_system_id: designSystemId,
+                name: token.name,
+                path: token.path,
+                type: token.type,
+                value: token.value as any,
+                description: token.description,
+                ref: token.ref,
+                status: token.status || 'published',
+                created_by: user.id,
+                updated_at: new Date().toISOString()
+            }));
 
-            for (const token of tokensToSave) {
-                const existingIndex = updatedTokens.findIndex(t => t.path === token.path);
-                if (existingIndex >= 0) {
-                    updatedTokens[existingIndex] = {
-                        ...token,
-                        id: updatedTokens[existingIndex].id || crypto.randomUUID()
-                    };
-                } else {
-                    updatedTokens.push({ ...token, id: crypto.randomUUID() });
-                }
-            }
+            const { error } = await supabase
+                .from("design_tokens")
+                .upsert(tokensData, { onConflict: 'design_system_id,path' });
 
-            await saveTokensToDesignSystem(updatedTokens);
+            if (error) throw error;
+            
             toast.success(`${tokensToSave.length} tokens updated`);
+            fetchTokens();
         } catch (error) {
-            monitor.error("Error batch saving tokens", error as Error);
-            toast.error("Failed to save multiple tokens");
+            monitor.error("Batch save failed", error as Error);
+            toast.error("Failed to save tokens");
         }
     };
 
     const deleteToken = async (path: string) => {
         if (!designSystemId) return;
-
         try {
-            const tokenToArchive = tokens.find(t => t.path === path);
-            if (!tokenToArchive) return;
+            const { error } = await supabase
+                .from("design_tokens")
+                .update({ status: 'archived' })
+                .eq("design_system_id", designSystemId)
+                .eq("path", path);
 
-            const updatedTokens = tokens.map(t =>
-                t.path === path ? { ...t, status: 'archived' as const } : t
-            );
-
-            await saveTokensToDesignSystem(updatedTokens);
+            if (error) throw error;
             toast.success("Token archived");
+            fetchTokens();
         } catch (error) {
-            monitor.error("Error archiving token", error as Error);
+            monitor.error("Archive failed", error as Error);
             toast.error("Failed to archive token");
-        }
-    };
-
-    const restoreToken = async (path: string) => {
-        if (!designSystemId) return;
-
-        try {
-            const updatedTokens = tokens.map(t =>
-                t.path === path ? { ...t, status: 'published' as const } : t
-            );
-
-            await saveTokensToDesignSystem(updatedTokens);
-            toast.success("Token restored");
-        } catch (error) {
-            monitor.error("Error restoring token", error as Error);
-            toast.error("Failed to restore token");
         }
     };
 
     const permanentlyDeleteToken = async (path: string) => {
         if (!designSystemId) return;
-
         try {
-            const updatedTokens = tokens.filter(t => t.path !== path);
+            const { error } = await supabase
+                .from("design_tokens")
+                .delete()
+                .eq("design_system_id", designSystemId)
+                .eq("path", path);
 
-            await saveTokensToDesignSystem(updatedTokens);
-            toast.success("Token permanently deleted");
+            if (error) throw error;
+            toast.success("Token deleted");
+            fetchTokens();
         } catch (error) {
-            monitor.error("Error deleting token", error as Error);
+            monitor.error("Delete failed", error as Error);
             toast.error("Failed to delete token");
         }
     };
 
     useEffect(() => {
         fetchTokens();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [designSystemId]);
+    }, [fetchTokens]);
 
     return {
         tokens,
@@ -229,7 +236,6 @@ export function useTokens(designSystemId?: string) {
         saveToken,
         batchSaveTokens,
         deleteToken,
-        restoreToken,
         permanentlyDeleteToken,
         resolveToken,
         refresh: fetchTokens,

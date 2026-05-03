@@ -9,7 +9,7 @@ export interface PresenceUser {
     online_at: string;
 }
 
-export function usePresence(designSystemId: string, onUpdate?: (data: any) => void) {
+export function usePresence(designSystemId: string, onUpdate?: (data: any, timestamp?: number) => void) {
     const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
     const { user } = useAuth();
     const channelRef = useRef<RealtimeChannel | null>(null);
@@ -65,7 +65,7 @@ export function usePresence(designSystemId: string, onUpdate?: (data: any) => vo
             })
             .on("broadcast", { event: "token-update" }, (payload) => {
                 if (isMounted.current && onUpdateRef.current && payload.payload.user_id !== user.id) {
-                    onUpdateRef.current(payload.payload.designSystem);
+                    onUpdateRef.current(payload.payload.designSystem, payload.payload.timestamp);
                 }
             })
             .subscribe(async (status) => {
@@ -90,7 +90,8 @@ export function usePresence(designSystemId: string, onUpdate?: (data: any) => vo
                 event: "token-update",
                 payload: {
                     user_id: user.id,
-                    designSystem
+                    designSystem,
+                    timestamp: Date.now()
                 }
             });
         }

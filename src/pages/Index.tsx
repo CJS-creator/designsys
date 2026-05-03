@@ -1,177 +1,106 @@
-import { useState, useEffect, useCallback, Suspense, lazy } from "react";
+import { useState, useEffect, useCallback, Suspense, lazy, useRef } from "react";
 import { monitor } from "@/lib/monitoring";
 import { Link, useSearchParams } from "react-router-dom";
 import { BrandSwitcher } from "@/components/BrandSwitcher";
-import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
-import { DesignSystemForm } from "@/components/DesignSystemForm";
-import { ColorPaletteDisplay } from "@/components/ColorPaletteDisplay";
-import { TypographyDisplay } from "@/components/TypographyDisplay";
-import { SpacingDisplay } from "@/components/SpacingDisplay";
-import { ShadowDisplay } from "@/components/ShadowDisplay";
-import { GridDisplay } from "@/components/GridDisplay";
-import { BorderRadiusDisplay } from "@/components/BorderRadiusDisplay";
-// Moved ExportButton to lazy load to defer heavy libraries
-const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
 import { Button } from "@/components/ui/button";
-
 import { DesignSystemSidebar, DesignSystemSidebarMobile } from "@/components/DesignSystemSidebar";
 import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
-import { generateDesignSystemWithAI, generateDesignSystemFallback } from "@/lib/generateDesignSystem";
-import { DesignSystemDashboard } from "@/components/DesignSystemDashboard";
-import { AnimationDisplay } from "@/components/AnimationDisplay";
-import { InteractiveColorsDisplay } from "@/components/InteractiveColorsDisplay";
-import { DesignSystemPresets } from "@/components/DesignSystemPresets";
 import { useOnboarding } from "@/contexts/OnboardingContext";
-import { GitSettings } from "@/components/GitSettings";
 import { useUserRole } from "@/hooks/useUserRole";
-import { TeamSettings } from "@/components/TeamSettings";
-import { AIAdvisor } from "@/components/AIAdvisor";
-import { QuickActionsCard } from "@/components/QuickActionsCard";
-import { AccessibilitySummaryCard } from "@/components/AccessibilitySummaryCard";
-import { BrandSwapper } from "@/components/BrandSwapper";
-import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
-import { trackEvent } from "@/lib/analytics";
-
-
-
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { Sparkles, ArrowLeft, Wand2, HelpCircle, X, Lock, LogOut, User, Brain, Type, Palette, Ruler, Cast, Grid3X3, Menu } from "lucide-react";
+import { ArrowLeft, X, Lock, LogOut, User, HelpCircle, Palette, Type, Ruler, Cast, Grid3X3, History, Settings, Brain, Sparkles, Wand2 } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
-import { useTokens } from "@/hooks/useTokens";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
-
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ModeToggle } from "@/components/mode-toggle";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Spotlight } from "@/components/ui/spotlight";
 import { BackgroundBeams } from "@/components/ui/background-beams";
-import { useDesignSystemShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useDesignSystemShortcuts } from "@/hooks/useDesignSystemShortcuts";
+import { DesignSystemSkeleton } from "@/components/DesignSystemSkeleton";
+import { useDesignSystemActions } from "@/hooks/useDesignSystemActions";
+import { DashboardTabs } from "@/components/layout/DashboardTabs";
+import { flattenDesignSystemToTokens } from "@/lib/token-utils";
+import { HeroSection } from "@/components/HeroSection";
+import { FeaturesSection } from "@/components/FeaturesSection";
+import { DesignSystemForm } from "@/components/DesignSystemForm";
+import { DesignSystemPresets } from "@/components/DesignSystemPresets";
 import { ShortcutOverlay } from "@/components/ShortcutOverlay";
 import { FeatureTour } from "@/components/FeatureTour";
-import { DesignSystemSkeleton } from "@/components/DesignSystemSkeleton";
-import { HeroSection } from "../components/HeroSection";
-import { FeaturesOverview } from "../components/FeaturesOverview";
-import { DesignHealthScore } from "@/components/DesignHealthScore";
-import { AIChatPanel } from "@/components/AIChatPanel";
-import { ComponentSandbox } from "@/components/ComponentSandbox";
-import { ApprovalWorkflow } from "@/components/ApprovalWorkflow";
 
-// Lazy-loaded heavy components
-const AnimationSystemDocs = lazy(() => import("@/components/AnimationSystemDocs").then(m => ({ default: m.AnimationSystemDocs })));
-const ComponentLibraryPreview = lazy(() => import("@/components/ComponentLibraryPreview").then(m => ({ default: m.ComponentLibraryPreview })));
-const DesignInsights = lazy(() => import("@/components/DesignInsights").then(m => ({ default: m.DesignInsights })));
-const MotionGallery = lazy(() => import("@/components/MotionGallery").then(m => ({ default: m.MotionGallery })));
-const VisionGenerator = lazy(() => import("@/components/VisionGenerator").then(m => ({ default: m.VisionGenerator })));
-const FigmaSync = lazy(() => import("@/components/FigmaSync").then(m => ({ default: m.FigmaSync })));
-const ComponentBlueprints = lazy(() => import("@/components/ComponentBlueprints").then(m => ({ default: m.ComponentBlueprints })));
-const DesignSystemSettings = lazy(() => import("@/components/DesignSystemSettings").then(m => ({ default: m.DesignSystemSettings })));
-// Phase 2/3 Components are imported directly
-const AccessibilityChecker = lazy(() => import("@/components/AccessibilityChecker").then(m => ({ default: m.AccessibilityChecker })));
-const ColorBlindnessSimulator = lazy(() => import("@/components/ColorBlindnessSimulator").then(m => ({ default: m.ColorBlindnessSimulator })));
-const TokenManagementDashboard = lazy(() => import("@/components/tokens/TokenManagementDashboard").then(m => ({ default: m.TokenManagementDashboard })));
-const DocEditor = lazy(() => import("@/components/docs/DocEditor").then(m => ({ default: m.DocEditor })));
-const Marketplace = lazy(() => import("@/components/marketplace/Marketplace").then(m => ({ default: m.Marketplace })));
-const AssetHub = lazy(() => import("@/components/AssetHub").then(m => ({ default: m.AssetHub })));
-// const GitSettings = lazy(() => import("@/components/GitSettings").then(m => ({ default: m.GitSettings }))); // GitSettings is now directly imported
-// const TeamSettings = lazy(() => import("@/components/TeamSettings").then(m => ({ default: m.TeamSettings }))); // TeamSettings is now directly imported
+// Lazy-loaded components
+const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
+const AIChatPanel = lazy(() => import("@/components/AIChatPanel").then(m => ({ default: m.AIChatPanel })));
+
 const Index = () => {
   const [designSystem, setDesignSystem] = useState<GeneratedDesignSystem | null>(null);
   const [themedDesignSystem, setThemedDesignSystem] = useState<GeneratedDesignSystem | null>(null);
+  const lastUpdateRef = useRef<number>(Date.now());
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
   const [currentInput, setCurrentInput] = useState<DesignSystemInput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  // const [userRole, setUserRole] = useState<UserRole>("owner"); // TODO: Implement in Phase 2
+  
+  const { user, signOut } = useAuth();
+  const { resetOnboarding, selectedTemplate } = useOnboarding();
   const { role: userRole } = useUserRole(designSystem?.id || "");
+  
   const [showGuestBanner, setShowGuestBanner] = useState(() => {
     return !localStorage.getItem("guest_banner_dismissed");
   });
-  const { user, signOut } = useAuth();
-  const { resetOnboarding, selectedTemplate } = useOnboarding();
-  const { tokens } = useTokens(designSystem?.id || "");
+
+  const { isLoading, handleGenerate, handleSave } = useDesignSystemActions(
+    designSystem,
+    setDesignSystem,
+    setThemedDesignSystem,
+    injectDesignSystemVariables
+  );
 
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab && tab !== activeTab) {
       setActiveTab(tab);
     }
-  }, [searchParams]);
+  }, [searchParams, activeTab]);
 
-  // Persist scroll position per tab and restore on switch (deep-link friendly)
-  const scrollPositionsRef = (typeof window !== "undefined")
-    ? ((window as unknown as { __dsScrollPositions?: Record<string, number> }).__dsScrollPositions ??= {})
-    : {};
+  const scrollPositionsRef = useRef<Record<string, number>>({});
 
   const handleTabChange = (value: string) => {
-    // Save current tab scroll
     const main = document.querySelector<HTMLElement>("main[data-ds-main]");
-    if (main) scrollPositionsRef[activeTab] = main.scrollTop;
+    if (main) scrollPositionsRef.current[activeTab] = main.scrollTop;
 
     setActiveTab(value);
     setSearchParams({ tab: value }, { replace: true });
-    // Update hash so the URL is shareable / browser-back friendly
+    
     if (typeof window !== "undefined" && window.location.hash !== `#${value}`) {
       window.history.replaceState(null, "", `${window.location.pathname}${window.location.search.includes("tab=") ? window.location.search : `?tab=${value}`}#${value}`);
     }
 
-    // Restore on next paint
     requestAnimationFrame(() => {
       const target = document.querySelector<HTMLElement>("main[data-ds-main]");
-      if (target) target.scrollTop = scrollPositionsRef[value] ?? 0;
+      if (target) target.scrollTop = scrollPositionsRef.current[value] ?? 0;
     });
   };
 
-  // On mount, honour #hash if present (deep link from external share)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const hash = window.location.hash.replace(/^#/, "");
-    if (hash && hash !== activeTab) {
-      setActiveTab(hash);
-      setSearchParams({ tab: hash }, { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { onlineUsers, broadcastUpdate } = usePresence(designSystem?.id || "", (updatedDS, timestamp) => {
+    if (timestamp && timestamp <= lastUpdateRef.current) return;
+    if (timestamp) lastUpdateRef.current = timestamp;
+    setDesignSystem(updatedDS);
+    setThemedDesignSystem(updatedDS);
+    injectDesignSystemVariables(updatedDS);
+  });
 
-  const handleGenerate = useCallback(async (input: DesignSystemInput) => {
-    setIsLoading(true);
-    setCurrentInput(input);
-
-    try {
-      const generated = await generateDesignSystemWithAI(input);
-      setDesignSystem(generated);
-      setThemedDesignSystem(generated);
-      injectDesignSystemVariables(generated);
-      trackEvent(generated.id || searchParams.get("id") || "", "design_generated", {
-        input: input as unknown as Json,
-      });
-      toast.success("AI-powered design system generated!", {
-        description: "Your custom design system is ready to use.",
-      });
-    } catch (error) {
-      monitor.error("AI generation failed, using fallback", error as Error);
-      const fallbackSystem = generateDesignSystemFallback(input);
-      setDesignSystem(fallbackSystem);
-      toast.warning("Generated with fallback algorithm", {
-        description: error instanceof Error ? error.message : "AI generation unavailable",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [searchParams]);
-
-  const handleReset = () => {
-    setDesignSystem(null);
-    setCurrentInput(null);
+  const handleRestoreVersion = (system: GeneratedDesignSystem) => {
+    setDesignSystem(system);
+    setThemedDesignSystem(system);
+    injectDesignSystemVariables(system);
   };
 
-  const handleLoadDesign = useCallback((system: GeneratedDesignSystem) => {
+  const handleLoadDesign = (system: GeneratedDesignSystem) => {
     setDesignSystem(system);
     setThemedDesignSystem(system);
     injectDesignSystemVariables(system);
     toast.success("Design system loaded!");
-  }, []);
+  };
 
   const handleApplyPreset = (preset: GeneratedDesignSystem) => {
     setDesignSystem(preset);
@@ -185,108 +114,23 @@ const Index = () => {
     toast.success(`${preset.name} preset applied!`);
   };
 
-  const handleRestoreVersion = (system: GeneratedDesignSystem) => {
-    setDesignSystem(system);
-    setThemedDesignSystem(system);
-    injectDesignSystemVariables(system);
-  };
-
-  const handleVisionGenerate = (color: string) => {
-    handleGenerate({
-      appType: "web",
-      industry: "Modern",
-      brandMood: ["Modern", "Creative"],
-      primaryColor: color,
-      description: "Design system generated from visual inspiration",
-    });
-  };
-
-  const handleSave = useCallback(async () => {
-    if (!user) {
-      toast.error("Sign in to save your design system");
-      return;
-    }
-    if (!designSystem) return;
-
-    const toastId = toast.loading("Saving design...");
-
-    const snapshotVersion = async (designSystemId: string) => {
-      try {
-        // Get next version number
-        const { data: latest } = await supabase
-          .from("design_system_versions")
-          .select("version_number")
-          .eq("design_system_id", designSystemId)
-          .order("version_number", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        const nextNumber = (latest?.version_number ?? 0) + 1;
-
-        await supabase.from("design_system_versions").insert({
-          design_system_id: designSystemId,
-          version_number: nextNumber,
-          name: `Auto-snapshot v${nextNumber}`,
-          description: `Automatic snapshot taken on ${new Date().toLocaleString()}`,
-          snapshot_data: designSystem as unknown as Json,
-          created_by: user.id,
-        });
-      } catch (e) {
-        monitor.warn("Failed to create version snapshot");
-      }
-    };
-
-    // If the design system already has an ID, update it; otherwise insert
-    if (designSystem.id) {
-      const { error } = await supabase
-        .from("design_systems")
-        .update({
-          name: designSystem.name,
-          design_system_data: designSystem as unknown as Json,
-        })
-        .eq("id", designSystem.id);
-
-      if (error) {
-        toast.error("Failed to save", { id: toastId, description: error.message });
-      } else {
-        await snapshotVersion(designSystem.id);
-        toast.success("Design updated!", { id: toastId });
-      }
-    } else {
-      const { data, error } = await supabase.from("design_systems").insert({
-        user_id: user.id,
-        name: designSystem.name,
-        description: `Generated styles`,
-        design_system_data: designSystem as unknown as Json,
-      }).select("id").single();
-
-      if (error) {
-        toast.error("Failed to save", { id: toastId, description: error.message });
-      } else {
-        setDesignSystem(prev => prev ? { ...prev, id: data.id } : prev);
-        await snapshotVersion(data.id);
-        toast.success("Design saved!", { id: toastId });
-      }
-    }
-  }, [designSystem, user]);
-
-  const { onlineUsers, broadcastUpdate } = usePresence(designSystem?.id || "", (updatedDs) => {
-    setDesignSystem(updatedDs);
-  });
-
   useEffect(() => {
     if (designSystem) {
-      broadcastUpdate(designSystem);
+      const timeout = setTimeout(() => {
+        lastUpdateRef.current = Date.now();
+        broadcastUpdate(designSystem);
+      }, 500);
+      return () => clearTimeout(timeout);
     }
-  }, [designSystem]);
+  }, [designSystem, broadcastUpdate]);
 
   useDesignSystemShortcuts({
-    onReset: handleReset,
+    onReset: () => { setDesignSystem(null); setCurrentInput(null); },
     hasDesignSystem: !!designSystem,
     onSave: handleSave,
   });
 
-  // Result View
+  // Result View (Dashboard)
   if ((designSystem || isLoading) && currentInput) {
     return (
       <div className="min-h-screen bg-background dark:bg-black/[0.96] antialiased bg-grid-black/[0.02] dark:bg-grid-white/[0.02] relative overflow-hidden transition-colors duration-300">
@@ -298,7 +142,7 @@ const Index = () => {
         <header className="sticky top-0 z-50 border-b border-border/40 bg-background/60 dark:bg-black/40 backdrop-blur-xl supports-[backdrop-filter]:bg-background/20 animate-slide-in-down transition-all duration-300">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={handleReset} aria-label="Go back" className="hover:rotate-[-10deg] transition-transform duration-300 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full">
+              <Button variant="ghost" size="icon" onClick={() => setDesignSystem(null)} aria-label="Go back" className="hover:rotate-[-10deg] transition-transform duration-300 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <DesignSystemSidebarMobile activeTab={activeTab} onTabChange={handleTabChange} />
@@ -316,35 +160,28 @@ const Index = () => {
               <Button variant="ghost" size="icon" onClick={resetOnboarding} aria-label="Restart tour" title="Restart tour" className="hover-scale text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full" disabled={isLoading}>
                 <HelpCircle className="h-4 w-4" />
               </Button>
-
               <PresenceAvatars users={onlineUsers} />
-
               {user ? (
                 <>
                   <Button variant="ghost" size="sm" asChild className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
-                    <Link to="/profile" aria-label="Profile">
-                      <User className="h-4 w-4 mr-2" />
-                      Profile
+                    <Link to="/profile">
+                      <User className="h-4 w-4 mr-2" /> Profile
                     </Link>
                   </Button>
                   <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    <LogOut className="h-4 w-4 mr-2" /> Sign Out
                   </Button>
                 </>
               ) : (
                 <Button variant="ghost" size="sm" asChild className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
                   <Link to="/auth">
-                    <User className="h-4 w-4 mr-2" />
-                    Sign In
+                    <User className="h-4 w-4 mr-2" /> Sign In
                   </Link>
                 </Button>
               )}
               <ModeToggle />
               <div className="h-6 w-px bg-border/40 mx-2" />
-              {designSystem && (
-                <BrandSwitcher designSystemId={designSystem.id || ""} />
-              )}
+              {designSystem && <BrandSwitcher designSystemId={designSystem.id || ""} />}
               <div id="tour-export">
                 {designSystem && (
                   <Suspense fallback={<Button disabled size="lg">Export</Button>}>
@@ -353,53 +190,23 @@ const Index = () => {
                 )}
               </div>
             </div>
-
-            {/* Mobile actions */}
-            <div className="md:hidden flex items-center gap-1">
-              {designSystem && user && (
-                <Button size="sm" variant="ghost" onClick={handleSave} aria-label="Save design">
-                  Save
-                </Button>
-              )}
-              {designSystem && (
-                <Suspense fallback={<Button size="sm" disabled>Export</Button>}>
-                  <ExportButton designSystem={designSystem} />
-                </Suspense>
-              )}
-              <ModeToggle />
-            </div>
           </div>
         </header>
 
         {!user && showGuestBanner && (
           <div className="bg-primary/10 border-b border-primary/20 animate-fade-in backdrop-blur-md relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
             <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4 relative z-10">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 shadow-inner">
-                  <Lock className="h-4 w-4 text-primary" />
-                </div>
+                <Lock className="h-4 w-4 text-primary" />
                 <p className="text-sm text-foreground font-medium">
-                  You are previewing as a guest. <span className="text-muted-foreground">Sign in to export, save, and access all features.</span>
+                  Guest Mode: <span className="text-muted-foreground">Sign in to save and access all features.</span>
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" asChild className="rounded-full shadow-lg shadow-primary/20">
-                  <Link to="/auth">
-                    <User className="h-4 w-4 mr-2" />
-                    Sign In Free
-                  </Link>
+                <Button size="sm" asChild className="rounded-full">
+                  <Link to="/auth">Sign In Free</Link>
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full"
-                  aria-label="Dismiss banner"
-                  onClick={() => {
-                    setShowGuestBanner(false);
-                    localStorage.setItem("guest_banner_dismissed", "true");
-                  }}
-                >
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setShowGuestBanner(false)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -409,421 +216,44 @@ const Index = () => {
 
         <div className="flex flex-1 relative z-10 min-h-0 h-[calc(100vh-73px)]">
           <DesignSystemSidebar activeTab={activeTab} onTabChange={handleTabChange} />
-
           <main data-ds-main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
             <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
               {isLoading && !designSystem ? (
                 <DesignSystemSkeleton />
               ) : designSystem && (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  {activeTab === "overview" && (
-                    <div className="flex flex-col gap-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start scroll-mt-24">
-                        <div className="lg:col-span-8 space-y-6 lg:order-1 order-2">
-                          <HeroSection designSystem={designSystem} isSaved={Boolean(designSystem.id)} />
-                          <FeaturesOverview designSystem={designSystem} />
-                        </div>
-                        <div className="lg:col-span-4 space-y-6 lg:order-2 order-1 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
-                          <DesignHealthScore designSystem={designSystem} />
-                          <QuickActionsCard
-                            designSystem={designSystem}
-                            onSave={handleSave}
-                            onRestoreVersion={handleRestoreVersion}
-                          />
-                          <AccessibilitySummaryCard
-                            designSystem={designSystem}
-                            onOpenDetails={() => handleTabChange("colors")}
-                          />
-                          <AIAdvisor
-                            designSystem={designSystem}
-                            onUpdate={(next) => {
-                              setDesignSystem(next);
-                              setThemedDesignSystem(next);
-                              injectDesignSystemVariables(next);
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Compact preview cards — full views live in dedicated tabs */}
-                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-colors">
-                        <div className="flex items-center justify-between gap-3 mb-3">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Palette className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-                            <h3 id="overview-colors" className="text-lg font-semibold text-foreground truncate">Brand Color Palette</h3>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleTabChange("colors")}
-                            className="text-xs font-semibold text-primary hover:underline shrink-0"
-                            aria-label="View all colors"
-                          >
-                            View all →
-                          </button>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-4">Top brand colors with semantic variants</p>
-                        <div className="flex flex-wrap gap-2">
-                          {Object.entries(designSystem.colors)
-                            .filter(([, v]) => typeof v === "string")
-                            .slice(0, 8)
-                            .map(([name, value]) => (
-                              <button
-                                key={name}
-                                type="button"
-                                onClick={() => handleTabChange("colors")}
-                                className="group flex flex-col items-center gap-1.5"
-                                aria-label={`${name} color`}
-                              >
-                                <div
-                                  className="h-12 w-12 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform"
-                                  style={{ backgroundColor: value as string }}
-                                />
-                                <span className="text-[10px] font-medium text-muted-foreground capitalize">{name}</span>
-                              </button>
-                            ))}
-                        </div>
-                      </section>
-
-                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-typography">
-                        <div className="flex items-center justify-between gap-3 mb-3">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Type className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-                            <h3 id="overview-typography" className="text-lg font-semibold text-foreground truncate">Typography</h3>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleTabChange("typography")}
-                            className="text-xs font-semibold text-primary hover:underline shrink-0"
-                            aria-label="View all typography"
-                          >
-                            View all →
-                          </button>
-                        </div>
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Heading · {designSystem.typography.fontFamily.heading}</p>
-                            <p className="text-2xl font-bold leading-tight" style={{ fontFamily: designSystem.typography.fontFamily.heading }}>
-                              The quick brown fox
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Body · {designSystem.typography.fontFamily.body}</p>
-                            <p className="text-base leading-relaxed" style={{ fontFamily: designSystem.typography.fontFamily.body }}>
-                              The quick brown fox jumps over the lazy dog.
-                            </p>
-                          </div>
-                        </div>
-                      </section>
-
-                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-spacing">
-                        <div className="flex items-center justify-between gap-3 mb-3">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Ruler className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-                            <h3 id="overview-spacing" className="text-lg font-semibold text-foreground truncate">Spacing & Radius</h3>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleTabChange("spacing")}
-                            className="text-xs font-semibold text-primary hover:underline shrink-0"
-                            aria-label="View all spacing tokens"
-                          >
-                            View all →
-                          </button>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-4">{designSystem.spacing.unit}px base unit · {designSystem.borderRadius.md} default radius</p>
-                        <div className="flex items-end gap-3 flex-wrap">
-                          {Object.entries(designSystem.spacing.scale || {}).slice(0, 6).map(([name, value]) => (
-                            <div key={name} className="flex flex-col items-center gap-1.5">
-                              <div className="bg-primary/20 rounded" style={{ width: value as string, height: value as string, minWidth: 8, minHeight: 8 }} />
-                              <span className="text-[10px] font-medium text-muted-foreground">{name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-
-                      <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="overview-elevation">
-                        <div className="flex items-center justify-between gap-3 mb-3">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Cast className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-                            <h3 id="overview-elevation" className="text-lg font-semibold text-foreground truncate">Elevation</h3>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleTabChange("shadows")}
-                            className="text-xs font-semibold text-primary hover:underline shrink-0"
-                            aria-label="View all shadows"
-                          >
-                            View all →
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                          {Object.entries(designSystem.shadows).slice(0, 4).map(([name, value]) => (
-                            <div key={name} className="flex flex-col items-center gap-2">
-                              <div className="h-12 w-full bg-background rounded-lg border border-border" style={{ boxShadow: value as string }} />
-                              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-                    </div>
-                  )}
-
-                  {activeTab === "colors" && (
-                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-colors-title">
-                      <div className="flex items-center justify-between gap-3 mb-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Palette className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-                          <h3 id="tab-colors-title" className="text-lg font-semibold text-foreground truncate">Brand Color Palette</h3>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleTabChange("accessibility")}
-                          className="text-xs font-semibold text-primary hover:underline shrink-0"
-                          aria-label="View accessibility audit"
-                        >
-                          Accessibility audit →
-                        </button>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-4">Primary, secondary, and accent colors with semantic variants</p>
-                      <ColorPaletteDisplay colors={designSystem.colors} />
-                      <div className="mt-6">
-                        <InteractiveColorsDisplay colors={designSystem.colors} />
-                      </div>
-                    </section>
-                  )}
-
-                  {activeTab === "typography" && (
-                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-typography-title">
-                      <div className="flex items-center justify-between gap-3 mb-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Type className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-                          <h3 id="tab-typography-title" className="text-lg font-semibold text-foreground truncate">Typography System</h3>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleTabChange("tokens")}
-                          className="text-xs font-semibold text-primary hover:underline shrink-0"
-                          aria-label="View token management"
-                        >
-                          Manage tokens →
-                        </button>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-4">Heading and body scales using modern font pairings</p>
-                      <TypographyDisplay typography={designSystem.typography} />
-                    </section>
-                  )}
-
-                  {activeTab === "spacing" && (
-                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-spacing-title">
-                      <div className="flex items-center justify-between gap-3 mb-4">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Ruler className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-                          <h3 id="tab-spacing-title" className="text-lg font-semibold text-foreground truncate">Spacing & Radius</h3>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleTabChange("grid")}
-                          className="text-xs font-semibold text-primary hover:underline shrink-0"
-                          aria-label="View grid system"
-                        >
-                          View grid →
-                        </button>
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Spacing Scale</h4>
-                          <SpacingDisplay spacing={designSystem.spacing} />
-                        </div>
-                        <div className="space-y-4">
-                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Border Radius</h4>
-                          <BorderRadiusDisplay borderRadius={designSystem.borderRadius} />
-                        </div>
-                      </div>
-                    </section>
-                  )}
-
-                  {activeTab === "shadows" && (
-                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-shadows-title">
-                      <div className="flex items-center justify-between gap-3 mb-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Cast className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-                          <h3 id="tab-shadows-title" className="text-lg font-semibold text-foreground truncate">Elevation & Shadows</h3>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleTabChange("motion")}
-                          className="text-xs font-semibold text-primary hover:underline shrink-0"
-                          aria-label="View motion gallery"
-                        >
-                          View motion →
-                        </button>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-4">Light and dark mode compatible elevation system</p>
-                      <ShadowDisplay shadows={designSystem.shadows} />
-                    </section>
-                  )}
-
-                  {activeTab === "grid" && (
-                    <section className="p-6 rounded-2xl border border-border bg-card shadow-sm" aria-labelledby="tab-grid-title">
-                      <div className="flex items-center justify-between gap-3 mb-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Grid3X3 className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-                          <h3 id="tab-grid-title" className="text-lg font-semibold text-foreground truncate">Layout Grid</h3>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleTabChange("spacing")}
-                          className="text-xs font-semibold text-primary hover:underline shrink-0"
-                          aria-label="View spacing scale"
-                        >
-                          View spacing →
-                        </button>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-4">Responsive 12-column grid with flexible layout system</p>
-                      <GridDisplay grid={designSystem.grid} />
-                    </section>
-                  )}
-
-                  {activeTab === "tokens" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <TokenManagementDashboard designSystem={designSystem} designSystemId={designSystem.id} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "docs" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <DocEditor designSystemId={designSystem?.id || ""} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "preview" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <InteractiveColorsDisplay colors={designSystem.colors} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "components" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <div className="space-y-8">
-                        <ComponentSandbox />
-                        <ComponentLibraryPreview designSystem={designSystem} />
-                        <ComponentBlueprints designSystem={designSystem} />
-                      </div>
-                    </Suspense>
-                  )}
-
-                  {activeTab === "motion" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <div className="space-y-8">
-                        <AnimationDisplay animations={designSystem.animations} />
-                        <MotionGallery designSystem={designSystem} />
-                        <AnimationSystemDocs />
-                      </div>
-                    </Suspense>
-                  )}
-
-                  {activeTab === "team" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <TeamSettings designSystemId={designSystem?.id || ""} currentUserRole={userRole} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "governance" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <ApprovalWorkflow designSystemId={designSystem?.id || ""} currentUserRole={userRole} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "vision" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <VisionGenerator onDesignGenerated={handleVisionGenerate} isGenerating={isLoading} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "insights" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <DesignInsights designSystem={themedDesignSystem || designSystem} onUpdate={setDesignSystem} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "themes" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <BrandSwapper designSystemId={designSystem?.id || ""} baseDesignSystem={designSystem!} onThemeChange={setThemedDesignSystem} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "analytics" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <AnalyticsDashboard designSystemId={designSystem?.id || searchParams.get("id") || ""} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "accessibility" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <div className="space-y-8">
-                        <AccessibilityChecker
-                          colors={designSystem.colors}
-                          darkColors={designSystem.darkColors}
-                          onUpdate={(colors, darkColors) => setDesignSystem({ ...designSystem, colors, darkColors })}
-                        />
-                        <ColorBlindnessSimulator colors={designSystem.colors} />
-                      </div>
-                    </Suspense>
-                  )}
-
-                  {activeTab === "figma" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <FigmaSync designSystemId={designSystem?.id || undefined} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "saved" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <DesignSystemDashboard onLoad={handleLoadDesign} currentSystem={designSystem} onSave={handleSave} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "marketplace" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <Marketplace onImport={handleRestoreVersion} currentSystemId={designSystem?.id} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "assets" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <AssetHub designSystem={designSystem!} tokens={tokens || []} />
-                    </Suspense>
-                  )}
-
-                  {activeTab === "settings" && (
-                    <Suspense fallback={<DesignSystemSkeleton />}>
-                      <div className="space-y-8">
-                        <GitSettings designSystemId={designSystem?.id || ""} />
-                        <DesignSystemSettings designSystemId={designSystem?.id || ""} />
-                      </div>
-                    </Suspense>
-                  )}
-                </div>
+                <DashboardTabs
+                  activeTab={activeTab}
+                  designSystem={designSystem}
+                  themedDesignSystem={themedDesignSystem}
+                  tokens={flattenDesignSystemToTokens(designSystem)}
+                  onUpdate={(next) => {
+                    setDesignSystem(next);
+                    setThemedDesignSystem(next);
+                    injectDesignSystemVariables(next);
+                  }}
+                />
               )}
             </div>
           </main>
         </div>
         <ShortcutOverlay />
         {designSystem && (
-          <AIChatPanel
-            designSystem={designSystem}
-            onUpdate={(updated) => {
-              setDesignSystem(updated);
-              setThemedDesignSystem(updated);
-              injectDesignSystemVariables(updated);
-            }}
-          />
+          <Suspense fallback={null}>
+            <AIChatPanel
+              designSystem={designSystem}
+              onUpdate={(updated) => {
+                setDesignSystem(updated);
+                setThemedDesignSystem(updated);
+                injectDesignSystemVariables(updated);
+              }}
+            />
+          </Suspense>
         )}
       </div>
     );
   }
 
-  // Home / Initial View
+  // Home / Initial View (Form)
   return (
     <div className="min-h-screen bg-background dark:bg-black/[0.96] antialiased bg-grid-black/[0.02] dark:bg-grid-white/[0.02] relative overflow-hidden transition-colors duration-300">
       <div className="fixed inset-0 pointer-events-none">
@@ -831,162 +261,79 @@ const Index = () => {
         <BackgroundBeams className="opacity-20 dark:opacity-40" />
       </div>
 
-      <div className="relative z-10">
-        <header className="py-6 animate-fade-in border-b border-border/40 bg-background/60 dark:bg-black/40 backdrop-blur-xl sticky top-0 z-50 transition-all">
-          <div className="container mx-auto px-4 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="relative">
-                <Wand2 className="h-8 w-8 text-primary dark:text-white transition-all duration-500 group-hover:rotate-12 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-              <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-b from-neutral-600 to-neutral-900 dark:from-neutral-50 dark:to-neutral-400 tracking-tighter">DesignForge</span>
-            </Link>
-
-            <div className="hidden md:flex items-center gap-2">
-              <ModeToggle />
-              {user ? (
-                <>
-                  <Button variant="ghost" size="sm" asChild className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
-                    <Link to="/profile">
-                      <User className="h-4 w-4 mr-2" />
-                      Profile
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <Button variant="ghost" size="sm" asChild className="hover-lift text-muted-foreground hover:text-foreground rounded-full px-4">
-                  <Link to="/auth">
-                    <User className="h-4 w-4 mr-2" />
-                    Sign In
-                  </Link>
-                </Button>
-              )}
-            </div>
-
-            <div className="md:hidden flex items-center gap-2">
-              <ModeToggle />
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Open menu" className="rounded-full">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
-                    <SheetTitle>Menu</SheetTitle>
-                  </SheetHeader>
-                  <div className="flex flex-col gap-4 mt-6">
-                    {user ? (
-                      <Button variant="ghost" onClick={signOut} className="justify-start">
-                        <LogOut className="h-4 w-4 mr-2" /> Sign Out
-                      </Button>
-                    ) : (
-                      <Button variant="ghost" asChild className="justify-start">
-                        <Link to="/auth">
-                          <User className="h-4 w-4 mr-2" /> Sign In
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+      <div className="relative z-10 container mx-auto px-4 py-8 md:py-20 min-h-screen flex flex-col items-center">
+        <header className="w-full flex items-center justify-between mb-12 md:mb-20 animate-slide-in-down">
+          <div className="flex items-center gap-2 group">
+            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">DF</div>
+            <span className="text-2xl font-black tracking-tighter text-foreground">DesignForge</span>
+          </div>
+          <div className="flex items-center gap-4">
+            {user ? (
+              <Button variant="ghost" asChild className="rounded-full">
+                <Link to="/profile">My Projects</Link>
+              </Button>
+            ) : (
+              <Button variant="ghost" asChild className="rounded-full">
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            )}
+            <ModeToggle />
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-12">
-          <div className="max-w-4xl mx-auto relative">
-            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-primary/20 blur-[100px] -z-10 rounded-full mix-blend-screen" />
-
-            <div className="text-center mb-16 relative">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-8 animate-fade-in-up hover-scale cursor-default shadow-sm shadow-primary/5">
-                <Brain className="h-3 w-3 animate-pulse-soft" />
-                Powered by AI
-              </div>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-8 leading-[1.1] animate-fade-in-up tracking-tighter" style={{ animationDelay: '0.1s' }}>
-                Create Complete{" "}
-                <span className="text-primary relative inline-block">
-                  Design Systems
-                  <svg className="absolute w-full h-3 -bottom-1 left-0 text-primary/30" viewBox="0 0 100 10" preserveAspectRatio="none">
-                    <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
-                  </svg>
-                </span>{" "}
-                in Seconds
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto animate-fade-in-up font-medium leading-relaxed" style={{ animationDelay: '0.2s' }}>
-                Our AI analyzes your project requirements and generates a comprehensive,
-                context-aware design system with complete token architecture.
-              </p>
-            </div>
-
-            <div className="animate-fade-in-up relative z-20" style={{ animationDelay: '0.3s' }} id="tour-input-section">
-              <div className="bg-card/40 backdrop-blur-md rounded-[2rem] border border-border/50 p-2 shadow-2xl ring-1 ring-white/10">
-                <DesignSystemForm
-                  onGenerate={handleGenerate}
-                  isLoading={isLoading}
-                  initialValues={
-                    selectedTemplate ? {
-                      industry: selectedTemplate.industry,
-                      brandMood: selectedTemplate.mood,
-                      primaryColor: selectedTemplate.primaryColor,
-                      description: selectedTemplate.description,
-                    } : undefined
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="mt-20 animate-fade-in-up" style={{ animationDelay: '0.35s' }} id="tour-presets">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-3 flex items-center justify-center gap-2">
-                  <Palette className="h-6 w-6 text-primary" />
-                  Or Start from a Preset
-                </h2>
-                <p className="text-muted-foreground font-medium">Choose from popular design system architectures</p>
-              </div>
-              <DesignSystemPresets onApplyPreset={handleApplyPreset} />
-            </div>
-
-            <div className="mt-24 grid md:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: Brain,
-                  title: "AI-Powered Analysis",
-                  description: "Our AI understands your industry and mood to create perfect color harmonies",
-                  delay: 0.4
-                },
-                {
-                  icon: Sparkles,
-                  title: "Smart Typography",
-                  description: "Professionally paired fonts based on industry best practices",
-                  delay: 0.5
-                },
-                {
-                  icon: Wand2,
-                  title: "Export Anywhere",
-                  description: "Download as CSS variables, Tailwind config, or JSON",
-                  delay: 0.6
-                },
-              ].map((feature, index) => (
-                <div
-                  key={index}
-                  className="p-8 rounded-[2rem] bg-card/30 border border-border/50 backdrop-blur-sm card-interactive animate-fade-in-up group hover:bg-card/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-primary/5 cursor-default"
-                  style={{ animationDelay: `${feature.delay}s` }}
-                >
-                  <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                    <feature.icon className="h-6 w-6 text-primary transition-all duration-300 group-hover:rotate-6" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-3 transition-colors duration-300 group-hover:text-primary">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed font-medium">{feature.description}</p>
+        <div className="w-full max-w-4xl space-y-20">
+          <HeroSection />
+          
+          <div id="generation-form" className="scroll-mt-24 p-1 md:p-8 rounded-[2rem] border border-border/50 bg-card/50 backdrop-blur-xl shadow-2xl relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="relative">
+              <div className="mb-8 text-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold mb-4 uppercase tracking-widest">
+                  <Sparkles className="h-3 w-3" /> Engine v2.0
                 </div>
-              ))}
+                <h2 className="text-3xl font-bold mb-2">Configure Your System</h2>
+                <p className="text-muted-foreground">Define your brand personality and let AI handle the rest.</p>
+              </div>
+              <DesignSystemForm 
+                onSubmit={(input) => { setCurrentInput(input); handleGenerate(input); }} 
+                isLoading={isLoading} 
+                initialValues={selectedTemplate ? {
+                  industry: selectedTemplate.industry,
+                  brandMood: selectedTemplate.mood,
+                  primaryColor: selectedTemplate.primaryColor,
+                  description: selectedTemplate.description,
+                } : undefined}
+              />
             </div>
           </div>
-        </main>
+
+          <div className="mt-20">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold mb-3 flex items-center justify-center gap-2">
+                <Palette className="h-6 w-6 text-primary" /> Or Start from a Preset
+              </h2>
+            </div>
+            <DesignSystemPresets onApplyPreset={(preset) => {
+              setCurrentInput({
+                appType: "web",
+                industry: "Technology",
+                brandMood: ["Modern"],
+                description: preset.name
+              });
+              handleApplyPreset(preset);
+            }} />
+          </div>
+
+          <FeaturesSection />
+        </div>
+
+        <footer className="w-full mt-20 pt-8 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground pb-12">
+          <p>© 2024 DesignForge AI. Built for the modern web.</p>
+          <div className="flex items-center gap-8">
+            <Link to="/docs" className="hover:text-foreground">Documentation</Link>
+            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+          </div>
+        </footer>
       </div>
       <ShortcutOverlay />
       <FeatureTour />

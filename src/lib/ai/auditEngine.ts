@@ -25,6 +25,25 @@ export interface AuditReport {
     };
 }
 
+/**
+ * Robust unit parser for design tokens
+ * Handles px, rem, em, %, and unitless values
+ */
+const parseUnitValue = (value: string | number): number => {
+    if (typeof value === 'number') return value;
+    if (!value) return 0;
+
+    const num = parseFloat(value);
+    if (isNaN(num)) return 0;
+
+    // Convert rem/em to px (approximate assuming 16px base)
+    if (value.includes('rem') || value.includes('em')) {
+        return num * 16;
+    }
+
+    return num;
+};
+
 export class DesignAuditEngine {
     static async audit(ds: GeneratedDesignSystem): Promise<AuditReport> {
         const issues: AuditIssue[] = [];
@@ -133,8 +152,12 @@ export class DesignAuditEngine {
     }
 
     private static checkSpacingRhythm(ds: GeneratedDesignSystem, issues: AuditIssue[]) {
-        const spacings = Object.values(ds.spacing).map(v => parseInt(v.toString()));
-        const is4pxGrid = spacings.every(s => s % 4 === 0);
+        const spacingScale = ds.spacing.scale || {};
+        const values = Object.values(spacingScale).map(v => parseUnitValue(v));
+
+        if (values.length === 0) return;
+
+        const is4pxGrid = values.every(s => s === 0 || s % 4 === 0);
 
         if (!is4pxGrid) {
             issues.push({
@@ -142,7 +165,7 @@ export class DesignAuditEngine {
                 category: "consistency",
                 level: "info",
                 message: "Off-grid spacing detected",
-                description: "Some spacing values do not align with a 4px grid.",
+                description: "Some spacing values do not align with a 4px grid (multiples of 4px).",
                 recommendation: "Align all spacing to multiples of 4px (4, 8, 12...).",
                 impact: 15
             });
@@ -152,8 +175,10 @@ export class DesignAuditEngine {
     private static checkTypographyScale(ds: GeneratedDesignSystem, issues: AuditIssue[]) {
         // Simplified check: see if sizes are roughly growing
         const sizes = Object.values(ds.typography.sizes)
-            .map(s => parseFloat(s.toString()))
+            .map(s => parseUnitValue(s))
             .sort((a, b) => a - b);
+
+        if (sizes.length === 0) return;
 
         // Check for duplicate sizes
         const uniqueSizes = new Set(sizes);
@@ -164,7 +189,7 @@ export class DesignAuditEngine {
                 level: "warning",
                 message: "Duplicate font sizes",
                 description: "Multiple tokens share the same font size.",
-                recommendation: "Consolidate redundant tokens.",
+                recommendation: "Consolidate redundant tokens to simplify the hierarchy.",
                 impact: 20
             });
         }
