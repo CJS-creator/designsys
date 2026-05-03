@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import {
@@ -65,7 +66,7 @@ import { resolveTemplate } from "@/lib/exporters/custom-templating";
 import { DesignToken } from "@/types/tokens";
 import { Separator } from "@/components/ui/separator";
 import { buildTokensPayload, tokensToYaml } from "@/lib/exporters/tokensPayload";
-import { exportDesignSystemToPdf } from "@/lib/exporters/designSystemPdf";
+import { exportDesignSystemToPdf, previewDesignSystemPdf } from "@/lib/exporters/designSystemPdf";
 
 interface ExportButtonProps {
   designSystem: GeneratedDesignSystem;
@@ -117,6 +118,194 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
   const [searchParams] = useSearchParams();
   const dsId = searchParams.get("id") || "";
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // PDF preview-before-download state
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [pdfFilename, setPdfFilename] = useState<string>("design-system.pdf");
+  const [pdfBuilding, setPdfBuilding] = useState(false);
+  // PDF preset persistence (orientation, sections, thumbnail toggle).
+  const PDF_PRESET_KEY = "designforge:pdf-presets:v1";
+  const PDF_LAST_KEY = "designforge:pdf-last:v1";
+  type PdfSectionsState = { colors: boolean; typography: boolean; spacing: boolean; shadows: boolean; borderRadius: boolean; grid: boolean };
+  type PdfPreset = { name: string; orientation: "portrait" | "landscape"; sections: PdfSectionsState; includeCoverThumbnail: boolean };
+  const DEFAULT_SECTIONS: PdfSectionsState = { colors: true, typography: true, spacing: true, shadows: true, borderRadius: true, grid: true };
+  const loadLastPreset = (): { orientation: "portrait" | "landscape"; sections: PdfSectionsState; includeCoverThumbnail: boolean } => {
+    try {
+      const raw = localStorage.getItem(PDF_LAST_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        return {
+          orientation: p.orientation === "landscape" ? "landscape" : "portrait",
+          sections: { ...DEFAULT_SECTIONS, ...(p.sections || {}) },
+          includeCoverThumbnail: p.includeCoverThumbnail !== false,
+        };
+      }
+    } catch { /* ignore */ }
+    return { orientation: "portrait", sections: DEFAULT_SECTIONS, includeCoverThumbnail: true };
+  };
+  const initialPreset = loadLastPreset();
+  const [pdfOrientation, setPdfOrientation] = useState<"portrait" | "landscape">(initialPreset.orientation);
+  const [pdfSections, setPdfSections] = useState<PdfSectionsState>(initialPreset.sections);
+  const [pdfIncludeThumbnail, setPdfIncludeThumbnail] = useState<boolean>(initialPreset.includeCoverThumbnail);
+  const [pdfThumbnail, setPdfThumbnail] = useState<string | null>(null);
+  const [pdfPresets, setPdfPresets] = useState<PdfPreset[]>(() => {
+    try { return JSON.parse(localStorage.getItem(PDF_PRESET_KEY) || "[]"); } catch { return []; }
+  });
+  const [presetNameInput, setPresetNameInput] = useState("");
+
+  // Persist last-used settings
+  useEffect(() => {
+    try {
+      localStorage.setItem(PDF_LAST_KEY, JSON.stringify({
+        orientation: pdfOrientation,
+        sections: pdfSections,
+        includeCoverThumbnail: pdfIncludeThumbnail,
+      }));
+    } catch { /* ignore quota */ }
+  }, [pdfOrientation, pdfSections, pdfIncludeThumbnail]);
+
+  const savePdfPreset = () => {
+    const name = presetNameInput.trim();
+    if (!name) { toast.error("Give your preset a name"); return; }
+    const next = [...pdfPresets.filter((p) => p.name !== name), { name, orientation: pdfOrientation, sections: pdfSections, includeCoverThumbnail: pdfIncludeThumbnail }];
+    setPdfPresets(next);
+    try { localStorage.setItem(PDF_PRESET_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    setPresetNameInput("");
+    toast.success(`Saved preset "${name}"`);
+  };
+  const applyPdfPreset = (p: PdfPreset) => {
+    setPdfOrientation(p.orientation);
+    setPdfSections({ ...DEFAULT_SECTIONS, ...p.sections });
+    setPdfIncludeThumbnail(p.includeCoverThumbnail);
+    regeneratePdfPreview({ orientation: p.orientation, sections: { ...DEFAULT_SECTIONS, ...p.sections }, includeCoverThumbnail: p.includeCoverThumbnail });
+    toast.success(`Applied preset "${p.name}"`);
+  };
+  const deletePdfPreset = (name: string) => {
+    const next = pdfPresets.filter((p) => p.name !== name);
+    setPdfPresets(next);
+    try { localStorage.setItem(PDF_PRESET_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  };
+
+  /** Build a tiny SVG-based thumbnail showing the palette + name as a cover preview. */
+  const buildPaletteThumbnail = (): string | null => {
+    try {
+      const swatches = Object.entries(designSystem.colors)
+        .filter(([, v]) => typeof v === "string")
+        .slice(0, 8) as [string, string][];
+      const w = 800;
+      const h = 320;
+      const sw = w / Math.max(1, swatches.length);
+      const rects = swatches.map(([, hex], i) =>
+        `<rect x="${i * sw}" y="0" width="${sw}" height="${h - 80}" fill="${hex}" />`
+      ).join("");
+      const safeName = (designSystem.name || "Design System").replace(/[<>&]/g, "");
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+        `<rect width="${w}" height="${h}" fill="#f5f5fa"/>` + rects +
+        `<text x="20" y="${h - 30}" font-family="Helvetica,Arial,sans-serif" font-size="28" font-weight="700" fill="#222">${safeName}</text>` +
+        `<text x="20" y="${h - 8}" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#777">App preview · ${swatches.length} key colors</text>` +
+        `</svg>`;
+      // jsPDF accepts PNG/JPEG dataURLs directly, so rasterize the SVG via canvas.
+      // We synchronously return the SVG dataURL — caller will convert to PNG.
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    } catch {
+      return null;
+    }
+  };
+
+  const svgToPngDataUrl = (svgUrl: string, width = 800, height = 320): Promise<string | null> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(null);
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/png"));
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = svgUrl;
+    });
+
+  const closePdfPreview = () => {
+    setPdfPreviewOpen(false);
+    if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
+    setPdfPreviewUrl(null);
+  };
+
+  const regeneratePdfPreview = async (overrides?: { orientation?: "portrait" | "landscape"; sections?: typeof pdfSections; thumbnail?: string | null; includeCoverThumbnail?: boolean }) => {
+    setPdfBuilding(true);
+    try {
+      if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
+      const orientation = overrides?.orientation ?? pdfOrientation;
+      const sections = overrides?.sections ?? pdfSections;
+      const includeThumb = overrides?.includeCoverThumbnail ?? pdfIncludeThumbnail;
+      let thumb = overrides?.thumbnail ?? pdfThumbnail;
+      if (includeThumb && thumb === null) {
+        const svgUrl = buildPaletteThumbnail();
+        if (svgUrl) thumb = await svgToPngDataUrl(svgUrl);
+        setPdfThumbnail(thumb);
+      }
+      const { url, filename } = previewDesignSystemPdf(designSystem, {
+        previewOnly: true,
+        orientation,
+        sections,
+        coverThumbnail: includeThumb ? thumb : null,
+        includeCoverThumbnail: includeThumb,
+      });
+      setPdfPreviewUrl(url);
+      setPdfFilename(filename);
+    } catch (e) {
+      toast.error("Could not generate PDF preview", { description: e instanceof Error ? e.message : undefined });
+    } finally {
+      setPdfBuilding(false);
+    }
+  };
+
+  const openPdfPreview = async () => {
+    if (!user) { setAuthDialogOpen(true); return; }
+    setPdfPreviewOpen(true);
+    await regeneratePdfPreview();
+  };
+
+  const confirmPdfDownload = () => {
+    try {
+      exportDesignSystemToPdf(designSystem, {
+        orientation: pdfOrientation,
+        sections: pdfSections,
+        coverThumbnail: pdfIncludeThumbnail ? pdfThumbnail : null,
+        includeCoverThumbnail: pdfIncludeThumbnail,
+      });
+      toast.success("PDF downloaded");
+      closePdfPreview();
+    } catch (e) {
+      toast.error("Could not generate PDF", { description: e instanceof Error ? e.message : undefined });
+    }
+  };
+
+  const toggleSection = (key: keyof typeof pdfSections) => {
+    const next = { ...pdfSections, [key]: !pdfSections[key] };
+    setPdfSections(next);
+    regeneratePdfPreview({ sections: next });
+  };
+
+  const setOrientation = (o: "portrait" | "landscape") => {
+    setPdfOrientation(o);
+    regeneratePdfPreview({ orientation: o });
+  };
+
+  const toggleIncludeThumbnail = () => {
+    const next = !pdfIncludeThumbnail;
+    setPdfIncludeThumbnail(next);
+    regeneratePdfPreview({ includeCoverThumbnail: next });
+  };
 
   const handleGitHubSync = async () => {
     if (!user) {
@@ -326,19 +515,9 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
             {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
             Copy JSON
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              if (!user) { setAuthDialogOpen(true); return; }
-              try {
-                exportDesignSystemToPdf(designSystem);
-                toast.success("PDF downloaded");
-              } catch (e) {
-                toast.error("Could not generate PDF", { description: e instanceof Error ? e.message : undefined });
-              }
-            }}
-          >
+          <DropdownMenuItem onClick={openPdfPreview} disabled={pdfBuilding}>
             <FileText className="h-4 w-4 mr-2" />
-            Download PDF
+            {pdfBuilding ? "Preparing PDF…" : "Preview & download PDF"}
           </DropdownMenuItem>
           <Separator className="my-1" />
           <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Git Integration</div>
@@ -377,6 +556,143 @@ export function ExportButton({ designSystem, tokens }: ExportButtonProps) {
               <Download className="h-4 w-4 mr-2" />
               Download
               {!user && <Lock className="h-3 w-3 ml-1" />}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* PDF Preview Dialog — confirm layout before download */}
+      <Dialog open={pdfPreviewOpen} onOpenChange={(o) => (o ? setPdfPreviewOpen(true) : closePdfPreview())}>
+        <DialogContent className="max-w-5xl max-h-[92vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              PDF preview · {pdfFilename}
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Export settings */}
+          <div className="rounded-xl border bg-muted/30 p-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-foreground">Orientation</span>
+              <div className="inline-flex rounded-lg border bg-background p-0.5">
+                {(["portrait", "landscape"] as const).map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    onClick={() => setOrientation(o)}
+                    className={`px-2.5 py-1 rounded-md capitalize transition-colors ${
+                      pdfOrientation === o
+                        ? "bg-primary text-primary-foreground font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {o}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-foreground">Sections</span>
+              {(Object.keys(pdfSections) as Array<keyof typeof pdfSections>).map((key) => (
+                <label
+                  key={key}
+                  className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 cursor-pointer select-none transition-colors ${
+                    pdfSections[key] ? "bg-primary/10 border-primary/40 text-foreground" : "bg-background border-border text-muted-foreground"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="h-3 w-3 accent-primary"
+                    checked={pdfSections[key]}
+                    onChange={() => toggleSection(key)}
+                  />
+                  <span className="capitalize">{key === "borderRadius" ? "radius" : key}</span>
+                </label>
+              ))}
+            </div>
+
+            <label
+              className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 cursor-pointer select-none transition-colors ${
+                pdfIncludeThumbnail ? "bg-primary/10 border-primary/40 text-foreground" : "bg-background border-border text-muted-foreground"
+              }`}
+              title="Disable for restricted browsers where SVG→PNG rendering is slow or blocked"
+            >
+              <input
+                type="checkbox"
+                className="h-3 w-3 accent-primary"
+                checked={pdfIncludeThumbnail}
+                onChange={toggleIncludeThumbnail}
+              />
+              <span>Cover thumbnail</span>
+            </label>
+
+            {pdfBuilding && (
+              <span className="text-muted-foreground ml-auto inline-flex items-center gap-1">
+                <RefreshCw className="h-3 w-3 animate-spin" /> Updating preview…
+              </span>
+            )}
+          </div>
+
+          {/* PDF presets — save & quickly reuse preferred orientation/sections */}
+          <div className="rounded-xl border bg-muted/20 p-3 flex flex-wrap items-center gap-2 text-xs mt-2">
+            <span className="font-semibold text-foreground">Presets</span>
+            {pdfPresets.length === 0 ? (
+              <span className="text-muted-foreground">None saved yet — save current settings below.</span>
+            ) : (
+              pdfPresets.map((p) => (
+                <span key={p.name} className="inline-flex items-center gap-1 rounded-md border bg-background px-1.5 py-0.5">
+                  <button
+                    type="button"
+                    className="font-medium hover:text-primary"
+                    onClick={() => applyPdfPreset(p)}
+                    title={`${p.orientation} · ${Object.entries(p.sections).filter(([, v]) => v).map(([k]) => k).join(", ")}`}
+                  >
+                    {p.name}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Delete preset ${p.name}`}
+                    className="text-muted-foreground hover:text-destructive px-1"
+                    onClick={() => deletePdfPreset(p.name)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))
+            )}
+            <span className="ml-auto inline-flex items-center gap-1">
+              <Input
+                value={presetNameInput}
+                onChange={(e) => setPresetNameInput(e.target.value)}
+                placeholder="Preset name"
+                className="h-7 text-xs w-32"
+              />
+              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={savePdfPreset}>
+                Save preset
+              </Button>
+            </span>
+          </div>
+
+          <div className="w-full h-[60vh] rounded-md border bg-muted/40 overflow-hidden mt-2">
+            {pdfPreviewUrl ? (
+              <iframe
+                title="Design system PDF preview"
+                src={pdfPreviewUrl}
+                className="w-full h-full"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
+                Generating preview…
+              </div>
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={closePdfPreview}>Cancel</Button>
+            <Button onClick={confirmPdfDownload} disabled={pdfBuilding}>
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
             </Button>
           </DialogFooter>
         </DialogContent>
