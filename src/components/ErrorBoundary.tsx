@@ -71,7 +71,9 @@ export class ErrorBoundary extends Component<Props, State> {
                         <div className="space-y-1">
                             <h3 className="font-bold text-foreground">Content failed to load</h3>
                             <p className="text-sm text-muted-foreground line-clamp-2">
-                                {this.state.error?.message || "An unexpected error occurred in this section."}
+                                {import.meta.env.DEV
+                                    ? (this.state.error?.message || "An unexpected error occurred in this section.")
+                                    : "An unexpected error occurred in this section."}
                             </p>
                         </div>
                         <Button
