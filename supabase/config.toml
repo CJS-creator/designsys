@@ -1,7 +1,13 @@
 project_id = "fzhzrdkojwrgdotrscug"
 
 [functions.generate-design-system]
-verify_jwt = false
+verify_jwt = true
+
+[functions.generate-design-adaptation]
+verify_jwt = true
+
+[functions.process-image]
+verify_jwt = true
 
 [functions.design-copilot]
 verify_jwt = false
