@@ -53,7 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         size="sm"
                         onClick={this.handleReset}
                         className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
-                        title={this.state.error?.message || "Error loading component"}
+                        title="Error loading component"
                     >
                         <AlertTriangle className="h-4 w-4" />
                     </Button>
