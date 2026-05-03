@@ -17,7 +17,8 @@ import {
     Code,
     CheckCircle2,
     FileJson,
-    Folder
+    Folder,
+    Terminal
 } from "lucide-react";
 import { GeneratedDesignSystem } from "@/types/designSystem";
 import { DesignToken } from "@/types/tokens";
@@ -429,32 +430,30 @@ export function AssetHub({ designSystem, tokens }: AssetHubProps) {
                 <Card className="border-dashed border-primary/20 bg-primary/5">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg flex items-center gap-2">
-                            <ExternalLink className="h-5 w-5 text-primary" /> Cloud Sync
+                            <Terminal className="h-5 w-5 text-primary" /> Developer CLI
                         </CardTitle>
-                        <CardDescription className="text-xs">Direct push to S3, GCS, or Azure</CardDescription>
+                        <CardDescription className="text-xs">Fetch tokens natively in your terminal</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground">Provider</label>
-                                <select className="w-full bg-background border rounded-lg p-1.5 text-xs">
-                                    <option>Amazon S3</option>
-                                    <option>Google Cloud</option>
-                                    <option>Azure Blob</option>
-                                </select>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground">Bucket</label>
-                                <input type="text" placeholder="ds-assets-prod" className="w-full bg-background border rounded-lg p-1.5 text-xs" />
-                            </div>
+                        <div className="bg-black/90 p-3 rounded-lg border border-border/50 text-[11px] font-mono flex items-center justify-between group">
+                            <span className="text-emerald-400">npx <span className="text-white">designforge pull</span> <span className="text-primary/70">{"<YOUR_SYSTEM_ID>"}</span></span>
+                            <button 
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`npx designforge pull <YOUR_SYSTEM_ID>`);
+                                    toast.success("CLI command copied!");
+                                }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-white/10 hover:bg-white/20 rounded text-white"
+                                title="Copy command"
+                            >
+                                <Copy className="h-3 w-3" />
+                            </button>
                         </div>
+                        <p className="text-[10px] text-muted-foreground leading-relaxed">
+                            Run this command in your project root to automatically fetch and transform the latest design tokens directly into your repository without downloading zip files.
+                        </p>
                         <Button variant="outline" size="sm" className="w-full text-[10px] font-bold h-8 border-primary/20 bg-primary/5 hover:bg-primary/10">
-                            Configure Credentials & Connect
+                            <FileText className="h-3 w-3 mr-1" /> View CLI Documentation
                         </Button>
-                        <div className="flex items-center gap-2 text-[9px] text-muted-foreground justify-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                            Awaiting Backend Integration
-                        </div>
                     </CardContent>
                 </Card>
             </div>

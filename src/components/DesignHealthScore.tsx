@@ -16,11 +16,16 @@ export const DesignHealthScore: React.FC<DesignHealthScoreProps> = ({ designSyst
     const [showAll, setShowAll] = useState(false);
 
     useEffect(() => {
-        const runAudit = async () => {
+        let isMounted = true;
+        const timer = setTimeout(async () => {
             const result = await DesignAuditEngine.audit(designSystem);
-            setReport(result);
+            if (isMounted) setReport(result);
+        }, 300);
+
+        return () => {
+            isMounted = false;
+            clearTimeout(timer);
         };
-        runAudit();
     }, [designSystem]);
 
     if (!report) return null;

@@ -11,6 +11,7 @@ import {
     hexToHsl,
     hslToString,
     pickAccessibleForeground,
+    generateInteractiveStates,
 } from "@/lib/colorUtils";
 import { toast } from "sonner";
 
@@ -45,20 +46,14 @@ function recalcRelatedTokens(ds: GeneratedDesignSystem, newPrimary: string): Gen
     next.colors.onPrimary = pickAccessibleForeground(newPrimary);
 
     // Interactive states derived from primary
+    next.colors.interactive = {
+        ...ds.colors.interactive,
+        primary: generateInteractiveStates(newPrimary),
+    };
+
+    // Container variants
     let hsl = parseHslString(newPrimary);
     if (!hsl && newPrimary.startsWith("#")) hsl = hexToHsl(newPrimary);
-    if (hsl) {
-        const { h, s, l } = hsl;
-        next.colors.interactive = {
-            ...ds.colors.interactive,
-            primary: {
-                hover: hslToString(h, Math.min(s + 5, 100), Math.max(l - 5, 0)),
-                active: hslToString(h, Math.min(s + 10, 100), Math.max(l - 10, 0)),
-                disabled: hslToString(h, Math.max(s - 40, 10), Math.min(l + 30, 90)),
-                focus: hslToString(h, Math.min(s + 15, 100), l),
-            },
-        };
-        // Container variants
         next.colors.primaryContainer = hslToString(h, Math.max(s - 10, 5), Math.min(l + 35, 92));
         next.colors.onPrimaryContainer = pickAccessibleForeground(next.colors.primaryContainer);
     }
@@ -74,9 +69,10 @@ export function AIAdvisor({ designSystem, onUpdate }: AIAdvisorProps) {
     useEffect(() => {
         if (!designSystem) return;
 
-        const newSuggestions: Suggestion[] = [];
+        const timer = setTimeout(() => {
+            const newSuggestions: Suggestion[] = [];
 
-        // 1. Accessibility — primary contrast
+            // 1. Accessibility — primary contrast
         const contrastRatio = getContrastRatio(designSystem.colors.primary, designSystem.colors.background);
         if (contrastRatio < 4.5) {
             newSuggestions.push({
@@ -179,7 +175,10 @@ export function AIAdvisor({ designSystem, onUpdate }: AIAdvisorProps) {
             });
         }
 
-        setSuggestions(newSuggestions);
+            setSuggestions(newSuggestions);
+        }, 300);
+
+        return () => clearTimeout(timer);
     }, [designSystem, onUpdate]);
 
     const visible = suggestions.filter((s) => !dismissed.has(s.id));

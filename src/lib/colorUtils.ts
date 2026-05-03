@@ -1,4 +1,6 @@
 // Color utility functions for accessibility and color manipulation
+import chroma from "chroma-js";
+
 
 export function hexToHsl(hex: string): { h: number; s: number; l: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -70,24 +72,11 @@ export function getRelativeLuminance(r: number, g: number, b: number): number {
 
 // Calculate contrast ratio between two colors
 export function getContrastRatio(color1: string, color2: string): number {
-  let hsl1 = parseHslString(color1);
-  let hsl2 = parseHslString(color2);
-
-  if (!hsl1 && color1.startsWith('#')) hsl1 = hexToHsl(color1);
-  if (!hsl2 && color2.startsWith('#')) hsl2 = hexToHsl(color2);
-
-  if (!hsl1 || !hsl2) return 1;
-
-  const rgb1 = hslToRgb(hsl1.h, hsl1.s, hsl1.l);
-  const rgb2 = hslToRgb(hsl2.h, hsl2.s, hsl2.l);
-
-  const L1 = getRelativeLuminance(rgb1.r, rgb1.g, rgb1.b);
-  const L2 = getRelativeLuminance(rgb2.r, rgb2.g, rgb2.b);
-
-  const lighter = Math.max(L1, L2);
-  const darker = Math.min(L1, L2);
-
-  return (lighter + 0.05) / (darker + 0.05);
+  try {
+    return chroma.contrast(color1, color2);
+  } catch (e) {
+    return 1;
+  }
 }
 
 // Get WCAG compliance level
@@ -113,8 +102,16 @@ export function generateInteractiveStates(baseColor: string): {
   disabled: string;
   focus: string;
 } {
-  const hsl = parseHslString(baseColor);
-  if (!hsl) {
+  try {
+    const c = chroma(baseColor);
+    const isDark = c.luminance() < 0.5;
+    return {
+      hover: isDark ? c.brighten(0.5).css('hsl') : c.darken(0.5).css('hsl'),
+      active: isDark ? c.brighten(1).css('hsl') : c.darken(1).css('hsl'),
+      disabled: chroma.mix(c, '#888888', 0.5, 'oklch').css('hsl'),
+      focus: isDark ? c.brighten(0.2).css('hsl') : c.darken(0.2).css('hsl')
+    };
+  } catch (e) {
     return {
       hover: baseColor,
       active: baseColor,
@@ -122,26 +119,17 @@ export function generateInteractiveStates(baseColor: string): {
       focus: baseColor
     };
   }
-
-  return {
-    hover: hslToString(hsl.h, Math.min(hsl.s + 5, 100), Math.max(hsl.l - 5, 0)),
-    active: hslToString(hsl.h, Math.min(hsl.s + 10, 100), Math.max(hsl.l - 10, 0)),
-    disabled: hslToString(hsl.h, Math.max(hsl.s - 40, 10), Math.min(hsl.l + 30, 90)),
-    focus: hslToString(hsl.h, Math.min(hsl.s + 15, 100), hsl.l)
-  };
 }
 
 // Generate dark mode colors from light mode
 export function generateDarkModeColor(lightColor: string): string {
-  const hsl = parseHslString(lightColor);
-  if (!hsl) return lightColor;
-
-  // Invert lightness while preserving hue and saturation
-  const newL = Math.abs(100 - hsl.l);
-  // Slightly reduce saturation for dark mode
-  const newS = Math.max(hsl.s - 10, 0);
-
-  return hslToString(hsl.h, newS, newL);
+  try {
+    const c = chroma(lightColor);
+    const l = c.get('lch.l');
+    return c.set('lch.l', Math.max(10, 100 - l)).set('lch.c', '*0.8').css('hsl');
+  } catch (e) {
+    return lightColor;
+  }
 }
 
 // Phase 3: Advanced Color Algorithms
@@ -245,42 +233,52 @@ export function autoFixContrast(
   } = {}
 ): { color: string; ratio: number; passed: boolean; iterations: number; deltaL: number } {
   const { targetLevel = "AA", textSize = "normal", maxLightnessDelta = 80, step = 1 } = options;
-  let hsl = parseHslString(color);
-  if (!hsl && color.startsWith("#")) hsl = hexToHsl(color);
-  let bgHsl = parseHslString(background);
-  if (!bgHsl && background.startsWith("#")) bgHsl = hexToHsl(background);
-  if (!hsl || !bgHsl) {
-    return { color, ratio: getContrastRatio(color, background), passed: false, iterations: 0, deltaL: 0 };
+  try {
+    let c = chroma(color);
+    const bg = chroma(background);
+    const target = targetLevel === "AAA" ? (textSize === "large" ? 4.5 : 7) : (textSize === "large" ? 3 : 4.5);
+    
+    let ratio = chroma.contrast(c, bg);
+    let iterations = 0;
+    const isBgDark = bg.luminance() < 0.5;
+    let deltaL = 0;
+
+    while (ratio < target && iterations < 200 && Math.abs(deltaL) <= maxLightnessDelta) {
+      let l = c.get('lch.l');
+      if (isBgDark) {
+         l += step;
+         deltaL += step;
+      } else {
+         l -= step;
+         deltaL -= step;
+      }
+      c = c.set('lch.l', Math.max(0, Math.min(100, l)));
+      ratio = chroma.contrast(c, bg);
+      iterations++;
+      
+      if (l >= 100 || l <= 0) break;
+    }
+
+    return {
+      color: c.css('hsl'),
+      ratio,
+      passed: ratio >= target,
+      iterations,
+      deltaL: Math.round(deltaL),
+    };
+  } catch (e) {
+    return { color, ratio: 1, passed: false, iterations: 0, deltaL: 0 };
   }
-
-  const target = targetLevel === "AAA" ? (textSize === "large" ? 4.5 : 7) : (textSize === "large" ? 3 : 4.5);
-  const isBgDark = bgHsl.l < 50;
-  const startL = hsl.l;
-  let l = startL;
-  let ratio = getContrastRatio(hslToString(hsl.h, hsl.s, l), background);
-  let iterations = 0;
-
-  while (ratio < target && Math.abs(l - startL) <= maxLightnessDelta && iterations < 200) {
-    l = isBgDark ? Math.min(l + step, 100) : Math.max(l - step, 0);
-    ratio = getContrastRatio(hslToString(hsl.h, hsl.s, l), background);
-    iterations++;
-    if (l >= 100 || l <= 0) break;
-  }
-
-  return {
-    color: hslToString(hsl.h, hsl.s, l),
-    ratio,
-    passed: ratio >= target,
-    iterations,
-    deltaL: Math.round(l - startL),
-  };
 }
 
 /** Pick the best foreground (black/white in HSL) for a given background. */
 export function pickAccessibleForeground(background: string): string {
-  const white = "hsl(0, 0%, 100%)";
-  const black = "hsl(0, 0%, 0%)";
-  return getContrastRatio(white, background) >= getContrastRatio(black, background) ? white : black;
+  try {
+    const bg = chroma(background);
+    return bg.luminance() > 0.45 ? "hsl(0, 0%, 0%)" : "hsl(0, 0%, 100%)";
+  } catch (e) {
+    return "hsl(0, 0%, 0%)";
+  }
 }
 
 // Phase 13: Semantic Token Helpers

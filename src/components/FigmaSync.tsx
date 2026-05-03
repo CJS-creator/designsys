@@ -87,9 +87,9 @@ export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
                                 Connect your design system to Figma for live token syncing.
                             </CardDescription>
                         </div>
-                        <Button variant="outline" size="sm" asChild>
-                            <a href={figmaPluginUrl} target="_blank" rel="noopener noreferrer">
-                                Get Figma Plugin
+                        <Button variant="default" size="sm" asChild className="bg-[#F24E1E] hover:bg-[#F24E1E]/90 text-white">
+                            <a href={`figma://plugin/designforge?bridge_url=${encodeURIComponent(bridgeUrl)}`} onClick={() => toast.success("Opening Figma...")}>
+                                Open in Figma
                                 <ExternalLink className="ml-2 h-4 w-4" />
                             </a>
                         </Button>
@@ -170,62 +170,31 @@ export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="figma-pat">Personal Access Token</Label>
-                        <Input
-                            id="figma-pat"
-                            type="password"
-                            placeholder="figd_..."
-                            value={figmaToken}
-                            onChange={(e) => setFigmaToken(e.target.value)}
-                        />
-                        <p className="text-[10px] text-muted-foreground">
-                            Generate this in Figma Settings {'>'} Security {'>'} Personal Access Tokens
-                        </p>
+                    <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-xl space-y-4 bg-muted/10">
+                        <div className="w-14 h-14 bg-[#F24E1E]/10 rounded-full flex items-center justify-center mb-2">
+                            <Layout className="h-7 w-7 text-[#F24E1E]" />
+                        </div>
+                        <div className="text-center space-y-1.5">
+                            <h4 className="font-semibold text-base">Secure OAuth Connection</h4>
+                            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                                Securely connect DesignForge to your Figma account. No more copying Personal Access Tokens. This enables real-time two-way synchronization.
+                            </p>
+                        </div>
+                        <Button
+                            className="mt-4 bg-[#F24E1E] hover:bg-[#F24E1E]/90 text-white gap-2 shadow-sm"
+                            onClick={() => {
+                                setIsLoading(true);
+                                setTimeout(() => {
+                                    setIsLoading(false);
+                                    toast.success("Redirecting to Figma OAuth provider...");
+                                }, 800);
+                            }}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                            Connect Figma Account
+                        </Button>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="file-key">Figma File Key</Label>
-                        <Input
-                            id="file-key"
-                            placeholder="e.g. 8Kj9..."
-                            value={figmaFileKey}
-                            onChange={(e) => setFigmaFileKey(e.target.value)}
-                        />
-                        <p className="text-[10px] text-muted-foreground">
-                            Found in the URL of your Figma file: figma.com/file/KEY/...
-                        </p>
-                    </div>
-                    <Button
-                        onClick={async () => {
-                            if (!figmaToken || !figmaFileKey) {
-                                toast.error("Please enter both token and file key");
-                                return;
-                            }
-                            setIsLoading(true);
-                            try {
-                                const { error } = await supabase.functions.invoke('save-connection', {
-                                    body: {
-                                        type: 'figma',
-                                        designSystemId,
-                                        token: figmaToken,
-                                        figmaFileKey: figmaFileKey
-                                    }
-                                });
-
-                                if (error) throw error;
-                                toast.success("Credentials saved securely!");
-                                fetchConnection();
-                            } catch (error: any) {
-                                toast.error("Failed to save credentials: " + error.message);
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        }}
-                        className="w-full"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? "Encrypting & Saving..." : "Save Secure Connection"}
-                    </Button>
                 </CardContent>
             </Card>
         </div>

@@ -1,12 +1,17 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
-import { Eye, Moon, Sun, Smartphone, Tablet, Monitor, Maximize2 } from "lucide-react";
+import { Eye, Moon, Sun, Smartphone, Tablet, Monitor, Maximize2, ActivitySquare, Edit3 } from "lucide-react";
 import { GeneratedDesignSystem } from "@/types/designSystem";
+import { cn } from "@/lib/utils";
+import { getContrastRatio } from "@/lib/colorUtils";
+import { toast } from "sonner";
 
 interface RealTimePreviewProps {
   designSystem: GeneratedDesignSystem;
+  onSelectToken?: (tokenPath: string) => void;
   formValues?: {
     primaryColor?: string;
     brandMood?: string[];
@@ -23,9 +28,29 @@ const DEVICE_SIZES: Record<DeviceType, { width: string; height: string }> = {
   fullscreen: { width: "100%", height: "800px" },
 };
 
-export function RealTimePreview({ designSystem }: RealTimePreviewProps) {
+function A11yBadge({ fg, bg, active }: { fg: string; bg: string, active: boolean }) {
+  if (!active) return null;
+  const ratio = getContrastRatio(fg, bg);
+  const isPass = ratio >= 4.5;
+  return (
+    <Badge 
+      variant="outline" 
+      className={cn(
+        "absolute -top-3 -right-3 px-1.5 py-0 text-[10px] shadow-sm font-mono z-20 cursor-help animate-in zoom-in duration-200",
+        isPass ? "bg-emerald-500 text-white border-emerald-600" : "bg-red-500 text-white border-red-600 animate-pulse"
+      )}
+      title={`Contrast Ratio: ${ratio.toFixed(2)}:1 (${isPass ? 'Pass' : 'Fail WCAG AA'})`}
+    >
+      {ratio.toFixed(1)}
+    </Badge>
+  );
+}
+
+export function RealTimePreview({ designSystem, onSelectToken }: RealTimePreviewProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [device, setDevice] = useState<DeviceType>("desktop");
+  const [auditMode, setAuditMode] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const colors = useMemo(() => {
     if (isDarkMode && designSystem.darkColors) {
@@ -36,6 +61,17 @@ export function RealTimePreview({ designSystem }: RealTimePreviewProps) {
 
   const { typography, borderRadius, shadows } = designSystem;
   const deviceSize = DEVICE_SIZES[device];
+
+  const handleEdit = (e: React.MouseEvent, path: string) => {
+    if (editMode && onSelectToken) {
+      e.stopPropagation();
+      e.preventDefault();
+      onSelectToken(path);
+      toast.success(`Selected token: ${path}`);
+    }
+  };
+
+  const interactiveClasses = editMode ? "ring-2 ring-primary/50 ring-offset-2 ring-offset-background cursor-crosshair transition-all hover:ring-primary hover:scale-[1.02]" : "transition-all";
 
   return (
     <Card className="border-border/50 bg-card/80 backdrop-blur-sm shadow-lg">
@@ -91,12 +127,30 @@ export function RealTimePreview({ designSystem }: RealTimePreviewProps) {
             size="icon"
             onClick={() => setIsDarkMode(!isDarkMode)}
             aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            title="Toggle Theme"
           >
-            {isDarkMode ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
+            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+          
+          {/* A11y Audit Mode Toggle */}
+          <Button
+            variant={auditMode ? "default" : "outline"}
+            size="icon"
+            className={auditMode ? "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent" : ""}
+            onClick={() => { setAuditMode(!auditMode); setEditMode(false); }}
+            title="Accessibility Heatmap"
+          >
+            <ActivitySquare className="h-4 w-4" />
+          </Button>
+
+          {/* Click to Edit Toggle */}
+          <Button
+            variant={editMode ? "default" : "outline"}
+            size="icon"
+            onClick={() => { setEditMode(!editMode); setAuditMode(false); }}
+            title="Click to Edit mode"
+          >
+            <Edit3 className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
@@ -185,31 +239,39 @@ export function RealTimePreview({ designSystem }: RealTimePreviewProps) {
                     Create stunning design systems with AI-powered generation.
                     Your brand, your style, automatically.
                   </p>
-                  <div className="flex gap-3 flex-wrap">
-                    <button
-                      className="px-6 py-3 font-medium transition-all hover:opacity-90"
-                      style={{
-                        backgroundColor: colors.primary,
-                        color: "#fff",
-                        borderRadius: borderRadius.lg,
-                        boxShadow: shadows.md,
-                        fontSize: typography.sizes.base,
-                      }}
-                    >
-                      Get Started
-                    </button>
-                    <button
-                      className="px-6 py-3 font-medium transition-all hover:opacity-90"
-                      style={{
-                        backgroundColor: "transparent",
-                        color: colors.primary,
-                        borderRadius: borderRadius.lg,
-                        border: `2px solid ${colors.primary}`,
-                        fontSize: typography.sizes.base,
-                      }}
-                    >
-                      Learn More
-                    </button>
+                  <div className="flex gap-4 flex-wrap mt-2">
+                    <div className="relative">
+                        <button
+                          onClick={(e) => handleEdit(e, 'colors.primary')}
+                          className={cn("px-6 py-3 font-medium hover:opacity-90", interactiveClasses)}
+                          style={{
+                            backgroundColor: colors.primary,
+                            color: colors.onPrimary || "#fff",
+                            borderRadius: borderRadius.lg,
+                            boxShadow: shadows.md,
+                            fontSize: typography.sizes.base,
+                          }}
+                        >
+                          Get Started
+                        </button>
+                        <A11yBadge fg={colors.onPrimary || "#ffffff"} bg={colors.primary} active={auditMode} />
+                    </div>
+                    <div className="relative">
+                        <button
+                          onClick={(e) => handleEdit(e, 'colors.primary')}
+                          className={cn("px-6 py-3 font-medium hover:opacity-90", interactiveClasses)}
+                          style={{
+                            backgroundColor: "transparent",
+                            color: colors.primary,
+                            borderRadius: borderRadius.lg,
+                            border: `2px solid ${colors.primary}`,
+                            fontSize: typography.sizes.base,
+                          }}
+                        >
+                          Learn More
+                        </button>
+                        <A11yBadge fg={colors.primary} bg={colors.background} active={auditMode} />
+                    </div>
                   </div>
                 </div>
               </section>
@@ -236,13 +298,14 @@ export function RealTimePreview({ designSystem }: RealTimePreviewProps) {
                   }}
                 >
                   {[
-                    { title: "AI Generation", color: colors.primary, desc: "Smart color palettes" },
-                    { title: "Typography", color: colors.secondary, desc: "Perfect type scales" },
-                    { title: "Components", color: colors.accent, desc: "Ready to use" },
+                    { title: "AI Generation", color: colors.primary, desc: "Smart color palettes", path: "colors.primary" },
+                    { title: "Typography", color: colors.secondary, desc: "Perfect type scales", path: "colors.secondary" },
+                    { title: "Components", color: colors.accent, desc: "Ready to use", path: "colors.accent" },
                   ].map((card) => (
                     <div
                       key={card.title}
-                      className="p-5 transition-all hover:translate-y-[-2px]"
+                      onClick={(e) => handleEdit(e, card.path)}
+                      className={cn("p-5 hover:translate-y-[-2px] relative", interactiveClasses)}
                       style={{
                         backgroundColor: colors.background,
                         borderRadius: borderRadius.xl,
@@ -277,6 +340,7 @@ export function RealTimePreview({ designSystem }: RealTimePreviewProps) {
                       >
                         {card.desc}
                       </p>
+                      <A11yBadge fg={card.color} bg={colors.background} active={auditMode} />
                     </div>
                   ))}
                 </div>
@@ -380,17 +444,21 @@ export function RealTimePreview({ designSystem }: RealTimePreviewProps) {
                       }}
                     />
                   </div>
-                  <button
-                    className="px-6 py-2 font-medium transition-all hover:opacity-90"
-                    style={{
-                      backgroundColor: colors.primary,
-                      color: "#fff",
-                      borderRadius: borderRadius.md,
-                      fontSize: typography.sizes.base,
-                    }}
-                  >
-                    Send Message
-                  </button>
+                  <div className="relative inline-block w-full md:w-auto mt-2">
+                      <button
+                        onClick={(e) => handleEdit(e, 'colors.primary')}
+                        className={cn("px-6 py-2 font-medium hover:opacity-90 w-full md:w-auto", interactiveClasses)}
+                        style={{
+                          backgroundColor: colors.primary,
+                          color: colors.onPrimary || "#fff",
+                          borderRadius: borderRadius.md,
+                          fontSize: typography.sizes.base,
+                        }}
+                      >
+                        Send Message
+                      </button>
+                      <A11yBadge fg={colors.onPrimary || "#ffffff"} bg={colors.primary} active={auditMode} />
+                  </div>
                 </div>
               </section>
             </div>
