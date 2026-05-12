@@ -7,7 +7,7 @@ import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { useOnboarding } from "@/contexts/OnboardingContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { ArrowLeft, X, Lock, LogOut, User, HelpCircle, Palette, Type, Ruler, Cast, Grid3X3, History, Settings, Brain, Sparkles, Wand2 } from "lucide-react";
+import { ArrowLeft, X, Lock, LogOut, User, HelpCircle, Palette, Sparkles } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
 import { ModeToggle } from "@/components/mode-toggle";
