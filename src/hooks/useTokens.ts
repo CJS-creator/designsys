@@ -207,6 +207,23 @@ export function useTokens(designSystemId?: string) {
         }
     };
 
+    const restoreToken = async (path: string) => {
+        if (!designSystemId) return;
+        try {
+            const { error } = await supabase
+                .from("design_tokens")
+                .update({ status: 'published' })
+                .eq("design_system_id", designSystemId)
+                .eq("path", path);
+            if (error) throw error;
+            toast.success("Token restored");
+            fetchTokens();
+        } catch (error) {
+            monitor.error("Restore failed", error as Error);
+            toast.error("Failed to restore token");
+        }
+    };
+
     const permanentlyDeleteToken = async (path: string) => {
         if (!designSystemId) return;
         try {
