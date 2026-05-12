@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, CheckCircle2 } from "lucide-react";
 
 interface HeroSectionProps {
-    designSystem: GeneratedDesignSystem;
+    designSystem?: GeneratedDesignSystem;
     isSaved?: boolean;
 }
 
@@ -27,7 +27,7 @@ export function HeroSection({ designSystem, isSaved }: HeroSectionProps) {
                     </Badge>
                 )}
                 <h2 id="design-system-title" className="text-3xl md:text-4xl font-bold mb-3 tracking-tight leading-tight">
-                    {designSystem.name}
+                    {designSystem?.name ?? "Your Design System"}
                 </h2>
                 <p className="text-base text-muted-foreground mb-2 leading-relaxed">
                     A high-performance design language generated for your specific industry and brand personality.

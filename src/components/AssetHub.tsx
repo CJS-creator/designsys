@@ -9,7 +9,7 @@ import {
     Image as ImageIcon,
     Loader2,
     AlertCircle,
-    ExternalLink,
+    Copy,
     Settings2,
     Package,
     ArrowRight,

@@ -4,17 +4,17 @@ import { DesignToken } from "@/types/tokens";
 import { lazy, Suspense } from "react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
-const FeaturesOverview = lazy(() => import("../FeaturesOverview"));
-const ColorPaletteDisplay = lazy(() => import("../ColorPaletteDisplay"));
-const TypographyDisplay = lazy(() => import("../TypographyDisplay"));
-const SpacingDisplay = lazy(() => import("../SpacingDisplay"));
-const ShadowDisplay = lazy(() => import("../ShadowDisplay"));
-const GridDisplay = lazy(() => import("../GridDisplay"));
-const BorderRadiusDisplay = lazy(() => import("../BorderRadiusDisplay"));
-const ComponentLibraryPreview = lazy(() => import("../ComponentLibraryPreview"));
-const AnimationDisplay = lazy(() => import("../AnimationDisplay"));
+const FeaturesOverview = lazy(() => import("../FeaturesOverview").then(m => ({ default: m.FeaturesOverview })));
+const ColorPaletteDisplay = lazy(() => import("../ColorPaletteDisplay").then(m => ({ default: m.ColorPaletteDisplay })));
+const TypographyDisplay = lazy(() => import("../TypographyDisplay").then(m => ({ default: m.TypographyDisplay })));
+const SpacingDisplay = lazy(() => import("../SpacingDisplay").then(m => ({ default: m.SpacingDisplay })));
+const ShadowDisplay = lazy(() => import("../ShadowDisplay").then(m => ({ default: m.ShadowDisplay })));
+const GridDisplay = lazy(() => import("../GridDisplay").then(m => ({ default: m.GridDisplay })));
+const BorderRadiusDisplay = lazy(() => import("../BorderRadiusDisplay").then(m => ({ default: m.BorderRadiusDisplay })));
+const ComponentLibraryPreview = lazy(() => import("../ComponentLibraryPreview").then(m => ({ default: m.ComponentLibraryPreview })));
+const AnimationDisplay = lazy(() => import("../AnimationDisplay").then(m => ({ default: m.AnimationDisplay })));
 const TokenManagementDashboard = lazy(() => import("../tokens/TokenManagementDashboard").then(m => ({ default: m.TokenManagementDashboard })));
-const AIAdvisor = lazy(() => import("../AIAdvisor"));
+const AIAdvisor = lazy(() => import("../AIAdvisor").then(m => ({ default: m.AIAdvisor })));
 
 interface DashboardTabsProps {
     activeTab: string;
@@ -25,10 +25,8 @@ interface DashboardTabsProps {
 }
 
 export function DashboardTabs({
-    activeTab,
     designSystem,
     themedDesignSystem,
-    tokens,
     onUpdate
 }: DashboardTabsProps) {
     const renderLoader = () => (
@@ -49,7 +47,6 @@ export function DashboardTabs({
                 <Suspense fallback={renderLoader()}>
                     <ColorPaletteDisplay
                         colors={(themedDesignSystem || designSystem).colors}
-                        darkColors={(themedDesignSystem || designSystem).darkColors}
                     />
                 </Suspense>
             </TabsContent>

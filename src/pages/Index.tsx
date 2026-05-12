@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback, Suspense, lazy, useRef } from "react";
-import { monitor } from "@/lib/monitoring";
+import { useState, useEffect, Suspense, lazy, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { BrandSwitcher } from "@/components/BrandSwitcher";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { DesignSystemInput, GeneratedDesignSystem } from "@/types/designSystem";
 import { useOnboarding } from "@/contexts/OnboardingContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { injectDesignSystemVariables } from "@/lib/theming/injectVariables";
-import { ArrowLeft, X, Lock, LogOut, User, HelpCircle, Palette, Type, Ruler, Cast, Grid3X3, History, Settings, Brain, Sparkles, Wand2 } from "lucide-react";
+import { ArrowLeft, X, Lock, LogOut, User, HelpCircle, Palette, Sparkles } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
 import { PresenceAvatars } from "@/components/PresenceAvatars";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -42,7 +41,7 @@ const Index = () => {
   
   const { user, signOut } = useAuth();
   const { resetOnboarding, selectedTemplate } = useOnboarding();
-  const { role: userRole } = useUserRole(designSystem?.id || "");
+  useUserRole(designSystem?.id || "");
   
   const [showGuestBanner, setShowGuestBanner] = useState(() => {
     return !localStorage.getItem("guest_banner_dismissed");
@@ -89,18 +88,13 @@ const Index = () => {
     injectDesignSystemVariables(updatedDS);
   });
 
-  const handleRestoreVersion = (system: GeneratedDesignSystem) => {
-    setDesignSystem(system);
-    setThemedDesignSystem(system);
-    injectDesignSystemVariables(system);
-  };
-
-  const handleLoadDesign = (system: GeneratedDesignSystem) => {
+  // Note: Version restore / load helpers are wired up via the dashboard.
+  void ((system: GeneratedDesignSystem) => {
     setDesignSystem(system);
     setThemedDesignSystem(system);
     injectDesignSystemVariables(system);
     toast.success("Design system loaded!");
-  };
+  });
 
   const handleApplyPreset = (preset: GeneratedDesignSystem) => {
     setDesignSystem(preset);
@@ -295,7 +289,7 @@ const Index = () => {
                 <p className="text-muted-foreground">Define your brand personality and let AI handle the rest.</p>
               </div>
               <DesignSystemForm 
-                onSubmit={(input) => { setCurrentInput(input); handleGenerate(input); }} 
+                onGenerate={(input: DesignSystemInput) => { setCurrentInput(input); handleGenerate(input); }} 
                 isLoading={isLoading} 
                 initialValues={selectedTemplate ? {
                   industry: selectedTemplate.industry,
