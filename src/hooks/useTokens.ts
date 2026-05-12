@@ -254,6 +254,7 @@ export function useTokens(designSystemId?: string) {
         batchSaveTokens,
         deleteToken,
         permanentlyDeleteToken,
+        restoreToken,
         resolveToken,
         refresh: fetchTokens,
     };
