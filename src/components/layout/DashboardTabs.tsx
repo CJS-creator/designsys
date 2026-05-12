@@ -25,10 +25,8 @@ interface DashboardTabsProps {
 }
 
 export function DashboardTabs({
-    activeTab,
     designSystem,
     themedDesignSystem,
-    tokens,
     onUpdate
 }: DashboardTabsProps) {
     const renderLoader = () => (
