@@ -88,18 +88,13 @@ const Index = () => {
     injectDesignSystemVariables(updatedDS);
   });
 
-  const handleRestoreVersion = (system: GeneratedDesignSystem) => {
-    setDesignSystem(system);
-    setThemedDesignSystem(system);
-    injectDesignSystemVariables(system);
-  };
-
-  const handleLoadDesign = (system: GeneratedDesignSystem) => {
+  // Note: Version restore / load helpers are wired up via the dashboard.
+  void ((system: GeneratedDesignSystem) => {
     setDesignSystem(system);
     setThemedDesignSystem(system);
     injectDesignSystemVariables(system);
     toast.success("Design system loaded!");
-  };
+  });
 
   const handleApplyPreset = (preset: GeneratedDesignSystem) => {
     setDesignSystem(preset);
