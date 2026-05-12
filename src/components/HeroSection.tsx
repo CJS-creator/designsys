@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, CheckCircle2 } from "lucide-react";
 
 interface HeroSectionProps {
-    designSystem: GeneratedDesignSystem;
+    designSystem?: GeneratedDesignSystem;
     isSaved?: boolean;
 }
 
