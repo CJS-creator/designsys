@@ -47,7 +47,6 @@ export function DashboardTabs({
                 <Suspense fallback={renderLoader()}>
                     <ColorPaletteDisplay
                         colors={(themedDesignSystem || designSystem).colors}
-                        darkColors={(themedDesignSystem || designSystem).darkColors}
                     />
                 </Suspense>
             </TabsContent>
