@@ -28,7 +28,7 @@ export function useDesignSystemActions(
           toast.warning("Significant visual shifts detected", {
             description: `${report.changes.length} major changes found in typography/colors.`,
           });
-          monitor.info("Visual regression detected", report);
+          monitor.info("Visual regression detected", report as unknown as Record<string, unknown>);
         }
       }
 
