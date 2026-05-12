@@ -41,7 +41,7 @@ const Index = () => {
   
   const { user, signOut } = useAuth();
   const { resetOnboarding, selectedTemplate } = useOnboarding();
-  const { role: userRole } = useUserRole(designSystem?.id || "");
+  useUserRole(designSystem?.id || "");
   
   const [showGuestBanner, setShowGuestBanner] = useState(() => {
     return !localStorage.getItem("guest_banner_dismissed");
