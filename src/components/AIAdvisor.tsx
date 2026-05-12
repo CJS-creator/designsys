@@ -54,6 +54,8 @@ function recalcRelatedTokens(ds: GeneratedDesignSystem, newPrimary: string): Gen
     // Container variants
     let hsl = parseHslString(newPrimary);
     if (!hsl && newPrimary.startsWith("#")) hsl = hexToHsl(newPrimary);
+    if (hsl) {
+        const { h, s, l } = hsl;
         next.colors.primaryContainer = hslToString(h, Math.max(s - 10, 5), Math.min(l + 35, 92));
         next.colors.onPrimaryContainer = pickAccessibleForeground(next.colors.primaryContainer);
     }
