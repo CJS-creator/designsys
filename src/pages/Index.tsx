@@ -289,7 +289,7 @@ const Index = () => {
                 <p className="text-muted-foreground">Define your brand personality and let AI handle the rest.</p>
               </div>
               <DesignSystemForm 
-                onSubmit={(input) => { setCurrentInput(input); handleGenerate(input); }} 
+                onGenerate={(input: DesignSystemInput) => { setCurrentInput(input); handleGenerate(input); }} 
                 isLoading={isLoading} 
                 initialValues={selectedTemplate ? {
                   industry: selectedTemplate.industry,
