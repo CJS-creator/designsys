@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback, Suspense, lazy, useRef } from "react";
-import { monitor } from "@/lib/monitoring";
+import { useState, useEffect, Suspense, lazy, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { BrandSwitcher } from "@/components/BrandSwitcher";
 import { Button } from "@/components/ui/button";
