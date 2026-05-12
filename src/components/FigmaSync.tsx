@@ -28,10 +28,10 @@ export const FigmaSync = ({ designSystemId }: FigmaSyncProps) => {
     const [_copied, setCopied] = useState(false);
     const [connection, setConnection] = useState<GitConnection | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [figmaToken, setFigmaToken] = useState("");
-    const [figmaFileKey, setFigmaFileKey] = useState("");
+    const [_figmaToken, setFigmaToken] = useState("");
+    const [_figmaFileKey, setFigmaFileKey] = useState("");
 
-    const figmaPluginUrl = "https://designforge.me/figma-plugin";
+    const _figmaPluginUrl = "https://designforge.me/figma-plugin";
     const bridgeUrl = `${window.location.origin}/api/tokens/${designSystemId || "default"}`;
 
     const fetchConnection = async () => {
