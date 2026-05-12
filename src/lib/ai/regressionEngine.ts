@@ -1,5 +1,5 @@
 import { GeneratedDesignSystem } from "@/types/designSystem";
-import { monitor } from "@/lib/monitoring";
+
 
 export interface RegressionReport {
     timestamp: string;
