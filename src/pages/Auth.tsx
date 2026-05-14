@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Wand2, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { Spotlight } from "@/components/ui/spotlight";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO } from "@/components/SEO";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -121,6 +122,11 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-background antialiased">
+      <SEO
+        title="Sign in — DesignForge"
+        description="Sign in or create a DesignForge account to generate, version, and export AI-powered design systems."
+        path="/auth"
+      />
       {/* Gradient background overlay for visual depth */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
       <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02]" />
