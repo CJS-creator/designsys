@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, User as UserIcon } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -71,6 +72,11 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
+      <SEO
+        title="Profile — DesignForge"
+        description="Manage your DesignForge profile and account details."
+        path="/profile"
+      />
       <div className="max-w-2xl mx-auto">
         <Button variant="ghost" size="sm" asChild className="mb-4">
           <Link to="/app">

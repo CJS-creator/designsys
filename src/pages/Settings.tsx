@@ -8,10 +8,16 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs";
 import { User, Key, Shield, Bell } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 export default function Settings() {
     return (
         <div className="container py-6 space-y-6">
+            <SEO
+                title="Settings — DesignForge"
+                description="Manage your DesignForge account, API keys, and notification preferences."
+                path="/settings"
+            />
             <AppBreadcrumb activeTab="settings" />
 
             <div className="flex flex-col gap-2">
