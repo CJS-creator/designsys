@@ -26,6 +26,7 @@ import { DesignSystemForm } from "@/components/DesignSystemForm";
 import { DesignSystemPresets } from "@/components/DesignSystemPresets";
 import { ShortcutOverlay } from "@/components/ShortcutOverlay";
 import { FeatureTour } from "@/components/FeatureTour";
+import { SEO } from "@/components/SEO";
 
 // Lazy-loaded components
 const ExportButton = lazy(() => import("@/components/ExportButton").then(m => ({ default: m.ExportButton })));
@@ -250,6 +251,11 @@ const Index = () => {
   // Home / Initial View (Form)
   return (
     <div className="min-h-screen bg-background dark:bg-black/[0.96] antialiased bg-grid-black/[0.02] dark:bg-grid-white/[0.02] relative overflow-hidden transition-colors duration-300">
+      <SEO
+        title="Dashboard — DesignForge"
+        description="Generate, edit, and export your AI-powered design system from the DesignForge dashboard."
+        path="/app"
+      />
       <div className="fixed inset-0 pointer-events-none">
         <Spotlight className="-top-40 left-0 md:left-60 md:-top-20 opacity-50 dark:opacity-100" fill="white" />
         <BackgroundBeams className="opacity-20 dark:opacity-40" />

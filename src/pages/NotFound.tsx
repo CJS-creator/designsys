@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft } from "lucide-react";
 import { Spotlight } from "@/components/ui/spotlight";
+import { SEO } from "@/components/SEO";
 
 const NotFound = () => {
   const location = useLocation();
@@ -14,6 +15,11 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background relative overflow-hidden antialiased">
+      <SEO
+        title="Page not found — DesignForge"
+        description="The page you're looking for doesn't exist or has been moved."
+        path={location.pathname}
+      />
       {/* Premium Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
       <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02]" />
