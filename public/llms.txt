@@ -1,0 +1,16 @@
+# DesignForge
+
+> AI-powered design system generator. Turn natural language prompts into production-ready design tokens, CSS variables, and Tailwind configs in seconds.
+
+DesignForge helps designers and developers generate, version, and export complete design systems — colors, typography, spacing, shadows, and components — with AI assistance and built-in governance.
+
+## Pages
+
+- [Home](/): Product overview, features, pricing, and FAQ.
+- [Sign in](/auth): Sign in or create an account.
+- [Dashboard](/app): Generate, edit, and export your design system.
+
+## Optional
+
+- [Settings](/settings): Account and workspace settings.
+- [Profile](/profile): Profile management.
